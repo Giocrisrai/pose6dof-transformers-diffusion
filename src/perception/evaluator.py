@@ -99,7 +99,10 @@ class PoseEvaluator:
             img_key = str(img_id)
             gt_list = gt_poses.get(img_key, [])
             cam = cameras.get(img_key, {})
-            K = np.array(cam.get("cam_K", self.dataset.default_K))
+            cam_K = cam.get("cam_K", self.dataset.default_K)
+            if cam_K is None:
+                continue
+            K = np.array(cam_K)
 
             R_est = np.array(pred["R_pred"])
             t_est = np.array(pred["t_pred"])
@@ -227,6 +230,8 @@ def evaluate_method(
             pred = predictions[key]
             cam = cameras.get(img_id_str, {})
             K = cam.get("cam_K", dataset.default_K)
+            if K is None:
+                continue
 
             for gt in gt_list:
                 obj_id = gt["obj_id"]

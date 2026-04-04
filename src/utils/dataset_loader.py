@@ -217,10 +217,10 @@ class BOPDataset:
         return mask > 0
 
     def load_sample(self, scene_id: str, img_id: int) -> Dict:
-        """Load a complete sample: RGB, depth, camera, and GT.
+        """Load a complete sample: RGB, depth, camera, GT, and first-object mask.
 
         Returns:
-            dict with keys: rgb, depth, cam_K, depth_scale, gt_poses
+            dict with keys: rgb, depth, cam_K, depth_scale, gt_poses, mask
         """
         rgb = self.load_rgb(scene_id, img_id)
         depth = self.load_depth(scene_id, img_id)
@@ -234,12 +234,16 @@ class BOPDataset:
         gts = self.load_scene_gt(scene_id)
         gt_poses = gts.get(str(img_id), [])
 
+        # Load visible mask for the first annotated object (if available)
+        mask = self.load_mask(scene_id, img_id, obj_idx=0, visible_only=True)
+
         return {
             "rgb": rgb,
             "depth": depth,
             "cam_K": cam["cam_K"],
             "depth_scale": cam["depth_scale"],
             "gt_poses": gt_poses,
+            "mask": mask,
         }
 
     def get_model_path(self, obj_id: int) -> Path:
