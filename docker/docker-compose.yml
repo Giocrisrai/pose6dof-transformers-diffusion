@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  ros2-sim:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: tfm_ros2_sim
+    image: tfm-pose6dof:humble
+
+    # GUI support (XQuartz en macOS)
+    environment:
+      - DISPLAY=host.docker.internal:0
+      - QT_X11_NO_MITSHM=1
+      - LIBGL_ALWAYS_SOFTWARE=1
+      - ROS_DOMAIN_ID=42
+
+    # Volúmenes: código fuente y datos montados
+    volumes:
+      - ../src:/ros2_ws/src/pose6dof
+      - ../data:/ros2_ws/data
+      - ../experiments:/ros2_ws/experiments
+      - ../notebooks:/ros2_ws/notebooks
+      # CoppeliaSim (descargar manualmente y montar)
+      # - ~/CoppeliaSim_Edu:/opt/CoppeliaSim
+
+    # Red: permitir comunicación ROS 2 DDS
+    network_mode: host
+
+    # Recursos
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+
+    stdin_open: true
+    tty: true
+    command: bash
