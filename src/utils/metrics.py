@@ -252,3 +252,23 @@ def compute_auc(
     thresholds = np.linspace(0, max_threshold, num_steps)
     recalls = [compute_recall(errors, t) for t in thresholds]
     return np.trapz(recalls, thresholds) / max_threshold
+
+
+# ── Convenience aliases (used by notebooks and Colab) ──────────────────
+
+def compute_add(
+    R_est: np.ndarray, t_est: np.ndarray,
+    R_gt: np.ndarray, t_gt: np.ndarray,
+    points: np.ndarray,
+) -> float:
+    """Alias for add_metric — used in notebooks."""
+    return add_metric(R_est, t_est, R_gt, t_gt, points)
+
+
+def compute_adds(
+    R_est: np.ndarray, t_est: np.ndarray,
+    R_gt: np.ndarray, t_gt: np.ndarray,
+    points: np.ndarray,
+) -> float:
+    """Alias for add_s_metric — used in notebooks."""
+    return add_s_metric(R_est, t_est, R_gt, t_gt, points)

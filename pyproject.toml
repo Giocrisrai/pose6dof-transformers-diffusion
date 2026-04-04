@@ -57,6 +57,14 @@ notebooks = [
 ]
 bop = [
     "pycocotools>=2.0",
+    "bop_toolkit_lib",
+]
+colab = [
+    "diffusers>=0.25",
+    "accelerate>=0.25",
+    "transformers>=4.36",
+    "bop_toolkit_lib",
+    "pyrender>=0.1.45",
 ]
 
 [build-system]

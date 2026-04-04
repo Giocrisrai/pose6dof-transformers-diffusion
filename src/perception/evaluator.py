@@ -20,6 +20,149 @@ from src.utils.dataset_loader import BOPDataset
 logger = logging.getLogger(__name__)
 
 
+class PoseEvaluator:
+    """High-level evaluator class used by Colab notebooks.
+
+    Wraps the module-level functions into a convenient OOP interface.
+
+    Usage (Colab):
+        evaluator = PoseEvaluator(dataset_root, models_dir)
+        metrics = evaluator.evaluate(predictions, metrics=['add', 'adds'])
+    """
+
+    def __init__(
+        self,
+        dataset_root: str,
+        models_dir: str,
+        split: str = "test",
+    ):
+        self.dataset = BOPDataset(dataset_root, split=split)
+        self.models_dir = Path(models_dir)
+        self._mesh_cache: Dict[int, np.ndarray] = {}
+
+    def _get_points(self, obj_id: int, n_points: int = 1000) -> Optional[np.ndarray]:
+        """Load and cache model points for an object."""
+        if obj_id in self._mesh_cache:
+            return self._mesh_cache[obj_id]
+
+        model_path = self.dataset.get_model_path(obj_id)
+        if not model_path.exists():
+            return None
+
+        try:
+            import trimesh
+            mesh = trimesh.load(str(model_path))
+            points = np.array(mesh.vertices)
+            if len(points) > n_points:
+                idx = np.random.choice(len(points), n_points, replace=False)
+                points = points[idx]
+            self._mesh_cache[obj_id] = points
+            return points
+        except ImportError:
+            logger.warning("trimesh not available")
+            return None
+
+    def evaluate(
+        self,
+        predictions: List[Dict],
+        metrics: Optional[List[str]] = None,
+    ) -> Dict[str, float]:
+        """Evaluate predictions and return metric scores.
+
+        Args:
+            predictions: list of dicts with keys:
+                scene_id, img_id, R_pred, t_pred, score
+            metrics: list of metric names to compute.
+                Supported: 'add', 'adds', 'vsd', 'mssd', 'mspd'
+                If None, computes all available.
+
+        Returns:
+            dict mapping metric name → score
+        """
+        if metrics is None:
+            metrics = ["add", "adds", "mssd", "mspd"]
+
+        errors = {m: [] for m in metrics}
+        n_evaluated = 0
+
+        for pred in predictions:
+            scene_id = pred["scene_id"]
+            img_id = pred["img_id"]
+
+            # Load ground truth for this image
+            try:
+                gt_poses = self.dataset.load_scene_gt(scene_id)
+                cameras = self.dataset.load_scene_camera(scene_id)
+            except Exception:
+                continue
+
+            img_key = str(img_id)
+            gt_list = gt_poses.get(img_key, [])
+            cam = cameras.get(img_key, {})
+            K = np.array(cam.get("cam_K", self.dataset.default_K))
+
+            R_est = np.array(pred["R_pred"])
+            t_est = np.array(pred["t_pred"])
+
+            for gt in gt_list:
+                obj_id = gt["obj_id"]
+                R_gt = np.array(gt["cam_R_m2c"]).reshape(3, 3)
+                t_gt = np.array(gt["cam_t_m2c"]).reshape(3)
+
+                points = self._get_points(obj_id)
+                if points is None:
+                    continue
+
+                if "add" in metrics:
+                    errors["add"].append(
+                        add_metric(R_est, t_est, R_gt, t_gt, points)
+                    )
+                if "adds" in metrics:
+                    errors["adds"].append(
+                        add_s_metric(R_est, t_est, R_gt, t_gt, points)
+                    )
+                if "mssd" in metrics:
+                    sym = self.dataset.get_symmetries(obj_id)
+                    sym_transforms = self._parse_symmetries(sym)
+                    errors["mssd"].append(
+                        mssd(R_est, t_est, R_gt, t_gt, points, sym_transforms)
+                    )
+                if "mspd" in metrics:
+                    sym = self.dataset.get_symmetries(obj_id)
+                    sym_transforms = self._parse_symmetries(sym)
+                    errors["mspd"].append(
+                        mspd(R_est, t_est, R_gt, t_gt, points, K, sym_transforms)
+                    )
+
+                n_evaluated += 1
+
+        # Aggregate
+        results = {}
+        for m in metrics:
+            errs = errors.get(m, [])
+            if errs:
+                results[f"{m}_mean"] = float(np.mean(errs))
+                results[f"{m}_median"] = float(np.median(errs))
+                results[f"{m}_auc"] = compute_auc(errs, max_threshold=50.0)
+            else:
+                results[f"{m}_mean"] = 0.0
+                results[f"{m}_median"] = 0.0
+                results[f"{m}_auc"] = 0.0
+
+        results["n_evaluated"] = n_evaluated
+        logger.info(f"Evaluated {n_evaluated} predictions")
+        return results
+
+    @staticmethod
+    def _parse_symmetries(sym_info: Dict) -> List[np.ndarray]:
+        """Parse symmetry info from BOP format."""
+        transforms = [np.eye(4)]
+        for sym in sym_info.get("symmetries_discrete", []):
+            if isinstance(sym, list) and len(sym) == 16:
+                transforms.append(np.array(sym).reshape(4, 4))
+        return transforms
+
+
 # BOP standard thresholds
 BOP_VSD_THRESHOLDS = [0.05, 0.10, 0.15, 0.20, 0.25, 0.30]
 BOP_MSSD_THRESHOLDS = [0.05, 0.10, 0.15, 0.20, 0.25, 0.30]  # fraction of diameter

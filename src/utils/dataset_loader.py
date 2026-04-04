@@ -10,6 +10,7 @@ References:
 
 import json
 import os
+from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -71,6 +72,10 @@ class BOPDataset:
             if d.is_dir() and d.name.isdigit()
         ]) if self.split_dir.exists() else []
 
+        # JSON cache for scene_camera and scene_gt (avoid re-reading per image)
+        self._camera_cache: Dict[str, Dict] = {}
+        self._gt_cache: Dict[str, Dict] = {}
+
         # Load models info
         models_info_path = self.root / "models" / "models_info.json"
         if models_info_path.exists():
@@ -97,11 +102,14 @@ class BOPDataset:
         return len(list(rgb_dir.glob("*.png")) + list(rgb_dir.glob("*.jpg")))
 
     def load_scene_camera(self, scene_id: str) -> Dict:
-        """Load per-image camera parameters for a scene.
+        """Load per-image camera parameters for a scene (cached).
 
         Returns:
             dict mapping image_id (str) → {"cam_K": (3,3), "depth_scale": float}
         """
+        if scene_id in self._camera_cache:
+            return self._camera_cache[scene_id]
+
         path = self.split_dir / scene_id / "scene_camera.json"
         with open(path) as f:
             raw = json.load(f)
@@ -111,10 +119,12 @@ class BOPDataset:
             K = np.array(cam["cam_K"]).reshape(3, 3)
             ds = cam.get("depth_scale", self.depth_scale)
             cameras[img_id] = {"cam_K": K, "depth_scale": ds}
+
+        self._camera_cache[scene_id] = cameras
         return cameras
 
     def load_scene_gt(self, scene_id: str) -> Dict:
-        """Load ground-truth annotations for a scene.
+        """Load ground-truth annotations for a scene (cached).
 
         Returns:
             dict mapping image_id (str) → list of {
@@ -123,6 +133,9 @@ class BOPDataset:
                 "cam_t_m2c": (3,) translation in mm
             }
         """
+        if scene_id in self._gt_cache:
+            return self._gt_cache[scene_id]
+
         path = self.split_dir / scene_id / "scene_gt.json"
         with open(path) as f:
             raw = json.load(f)
@@ -139,6 +152,8 @@ class BOPDataset:
                     "cam_t_m2c": t,
                 })
             gts[img_id] = gt_list
+
+        self._gt_cache[scene_id] = gts
         return gts
 
     def load_rgb(self, scene_id: str, img_id: int) -> np.ndarray:
