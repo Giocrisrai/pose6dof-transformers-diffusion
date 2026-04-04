@@ -73,7 +73,7 @@ class PoseEvaluator:
             predictions: list of dicts with keys:
                 scene_id, img_id, R_pred, t_pred, score
             metrics: list of metric names to compute.
-                Supported: 'add', 'adds', 'vsd', 'mssd', 'mspd'
+                Supported: 'add', 'adds', 'mssd', 'mspd'
                 If None, computes all available.
 
         Returns:
