@@ -251,7 +251,9 @@ def compute_auc(
     """
     thresholds = np.linspace(0, max_threshold, num_steps)
     recalls = [compute_recall(errors, t) for t in thresholds]
-    return np.trapz(recalls, thresholds) / max_threshold
+    # np.trapz removed in NumPy 2.0; use np.trapezoid if available
+    _trapz = getattr(np, "trapezoid", getattr(np, "trapz", None))
+    return _trapz(recalls, thresholds) / max_threshold
 
 
 # ── Convenience aliases (used by notebooks and Colab) ──────────────────
