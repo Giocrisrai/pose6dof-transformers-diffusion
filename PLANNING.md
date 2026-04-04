@@ -10,25 +10,26 @@
 ## Fase 0 · Entorno de Trabajo (Semana 1: 4–10 abril)
 
 ### Setup Local
-- [ ] Crear entorno virtual Python 3.10+ con dependencias del TFM
-- [ ] Verificar PyTorch con soporte MPS (GPU Apple Silicon)
-- [ ] Instalar Open3D, OpenCV, trimesh para manipulación 3D
-- [ ] Instalar Docker Desktop y verificar que funciona en ARM64
+- [x] Crear entorno virtual Python 3.12 con `uv` y dependencias del TFM
+- [x] Verificar PyTorch 2.11 con soporte MPS (GPU Apple Silicon)
+- [x] Instalar Open3D, OpenCV, trimesh para manipulación 3D
+- [x] Instalar Docker Desktop y verificar que funciona en ARM64
 - [ ] Clonar repositorio en máquina de José Miguel
 
 ### Docker para ROS 2
-- [ ] Crear `Dockerfile` con ROS 2 Humble (base `ros:humble-desktop`)
+- [x] Crear `Dockerfile` con ROS 2 Humble (base `ros:humble-desktop`)
+- [x] Crear `docker-compose.yml` con volúmenes para `src/` y `data/`
 - [ ] Añadir MoveIt 2, CoppeliaSim EDU dentro del contenedor
-- [ ] Crear `docker-compose.yml` con volúmenes para `src/` y `data/`
 - [ ] Verificar que CoppeliaSim abre GUI (XQuartz/X11 forwarding)
 - [ ] Ejecutar demo MoveIt 2 `move_group` con robot genérico
 
 ### Datasets
-- [ ] Descargar T-LESS (subset de test, ~2 GB) desde BOP Challenge
-- [ ] Descargar YCB-Video (subset de test, ~3 GB) desde BOP Challenge
-- [ ] Organizar en `data/datasets/{tless,ycb_video}/`
+- [x] Descargar T-LESS (base + modelos CAD) desde BOP Challenge
+- [x] Descargar YCB-Video (base + modelos 3D) desde BOP Challenge
+- [x] Organizar en `data/datasets/{tless,ycbv}/`
+- [ ] Descargar imágenes de test YCB-Video (en progreso)
+- [ ] Descargar imágenes de test T-LESS (pendiente espacio disco)
 - [ ] Verificar carga de imágenes RGB-D y anotaciones con script de prueba
-- [ ] (Opcional) Descargar modelos CAD de objetos T-LESS para visualización
 
 ---
 
@@ -68,22 +69,23 @@
 ## Fase 2 · Fundamentos Matemáticos + Capítulo 4 (Semanas 3–5: 18 abril – 15 mayo)
 
 ### Implementaciones Matemáticas (src/utils/)
-- [ ] `src/utils/lie_groups.py` — Funciones SE(3), SO(3): exp, log, adjoint
-- [ ] `src/utils/rotations.py` — Conversiones: quaternion ↔ matrix ↔ 6D ↔ axis-angle
-- [ ] `src/utils/metrics.py` — Implementar VSD, MSSD, MSPD (wrapper de bop_toolkit)
-- [ ] `src/utils/visualization.py` — Visualizar poses sobre imagen RGB, nubes de puntos
-- [ ] Tests unitarios para cada módulo (`pytest`)
-- [ ] Notebook demostrativo: `notebooks/04_math_foundations.ipynb`
-  - [ ] Visualizar rotaciones en SO(3) con Open3D
-  - [ ] Demostrar exp/log maps
-  - [ ] Score matching conceptual en 2D (toy example)
+- [x] `src/utils/lie_groups.py` — Funciones SE(3), SO(3): exp, log, adjoint
+- [x] `src/utils/rotations.py` — Conversiones: quaternion ↔ matrix ↔ 6D ↔ axis-angle
+- [x] `src/utils/metrics.py` — Implementar VSD, MSSD, MSPD (+ ADD, ADD-S, AUC)
+- [x] `src/utils/visualization.py` — Visualizar poses sobre imagen RGB, nubes de puntos
+- [x] Tests unitarios para cada módulo (`pytest` — 24/24 passing)
+- [x] Notebook demostrativo: `notebooks/04_math_foundations.ipynb`
+  - [x] Visualizar rotaciones en SO(3)
+  - [x] Demostrar exp/log maps y 6D representation
+  - [x] Score matching conceptual en 2D (toy example)
+  - [x] Langevin dynamics sampling
 
 ### Redacción Capítulo 4 — Marco Matemático
 - [ ] 4.1 Grupos de Lie: SE(3) como grupo de isometrías rígidas
 - [ ] 4.2 Representaciones de rotación y singularidades (Gimbal lock, continuidad 6D)
 - [ ] 4.3 Mecanismo de atención multi-cabeza como operador en SE(3)
 - [ ] 4.4 SDEs, score matching y dinámica de Langevin para difusión
-- [ ] 4.5 Conexión matemática: FoundationPose (atención en SE(3)) + Diffusion Policy (SDE en espacio de acciones)
+- [ ] 4.5 Conexión matemática: FoundationPose + Diffusion Policy
 - [ ] Revisión cruzada del capítulo (José Miguel ↔ Giocrisrai)
 
 ---
@@ -91,28 +93,21 @@
 ## Fase 3 · Pipeline Integrado (Semanas 5–8: 2 mayo – 29 mayo)
 
 ### 3A — Percepción: FoundationPose Wrapper
-- [ ] `src/perception/foundation_pose.py` — Clase wrapper con API unificada
-  - [ ] `estimate_pose(rgb, depth, mask, cad_model) → SE(3)`
-  - [ ] `track_pose(rgb_sequence, ...) → SE(3) trajectory`
-- [ ] `src/perception/gdrnet.py` — Clase wrapper GDR-Net (mismo API)
+- [x] `src/perception/foundation_pose.py` — Clase wrapper con API unificada
+- [x] `src/perception/gdrnet.py` — Clase wrapper GDR-Net (mismo API)
+- [x] `src/perception/evaluator.py` — Evaluación comparativa BOP
 - [ ] `src/perception/detector.py` — Detección 2D (CNOS/SAM para segmentación)
 - [ ] Test de integración: imagen → detección → pose 6-DoF
 
 ### 3B — Planificación: Diffusion Policy para Bin Picking
-- [ ] `src/planning/diffusion_grasp.py` — Adaptar Diffusion Policy para grasping
-  - [ ] Input: pose 6-DoF del objeto + estado del gripper
-  - [ ] Output: trayectoria de agarre (secuencia de waypoints SE(3))
+- [x] `src/planning/diffusion_policy.py` — DDPM scheduler + ConditionalUNet1D
+  - [x] Heuristic baseline grasp planner (verificado)
+  - [ ] Entrenar/fine-tune en datos sintéticos (Colab GPU)
 - [ ] `src/planning/grasp_sampler.py` — Muestreo de agarres candidatos
-- [ ] Entrenar/fine-tune en datos sintéticos (Colab GPU)
 - [ ] Notebook: `notebooks/05_grasp_planning.ipynb`
 
 ### 3C — Integración End-to-End
-- [ ] `src/pipeline.py` — Orquestador del pipeline completo:
-  1. Captura RGB-D
-  2. Detección + Segmentación
-  3. Estimación de Pose (FoundationPose)
-  4. Planificación de Agarre (Diffusion Policy)
-  5. Ejecución (envío a simulador)
+- [x] `src/pipeline.py` — Orquestador del pipeline completo
 - [ ] Test end-to-end con imágenes estáticas de T-LESS
 - [ ] Notebook: `notebooks/06_full_pipeline.ipynb`
 
