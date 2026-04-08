@@ -27,8 +27,8 @@
 - [x] Descargar T-LESS (base + modelos CAD) desde BOP Challenge
 - [x] Descargar YCB-Video (base + modelos 3D) desde BOP Challenge
 - [x] Organizar en `data/datasets/{tless,ycbv}/`
-- [ ] Descargar imágenes de test YCB-Video (en progreso)
-- [ ] Descargar imágenes de test T-LESS (pendiente espacio disco)
+- [x] Descargar imágenes de test T-LESS (7.8 GB, extrayendo)
+- [ ] Descargar imágenes de test YCB-Video (11 GB, en progreso)
 - [ ] Verificar carga de imágenes RGB-D y anotaciones con script de prueba
 
 ---
@@ -96,7 +96,7 @@
 - [x] `src/perception/foundation_pose.py` — Clase wrapper con API unificada
 - [x] `src/perception/gdrnet.py` — Clase wrapper GDR-Net (mismo API)
 - [x] `src/perception/evaluator.py` — Evaluación comparativa BOP
-- [ ] `src/perception/detector.py` — Detección 2D (CNOS/SAM para segmentación)
+- [x] `src/perception/detector.py` — GTDetector, SimpleSegmentor (depth-based)
 - [ ] Test de integración: imagen → detección → pose 6-DoF
 
 ### 3B — Planificación: Diffusion Policy para Bin Picking
@@ -104,12 +104,12 @@
   - [x] Heuristic baseline grasp planner (verificado)
   - [ ] Entrenar/fine-tune en datos sintéticos (Colab GPU)
 - [ ] `src/planning/grasp_sampler.py` — Muestreo de agarres candidatos
-- [ ] Notebook: `notebooks/05_grasp_planning.ipynb`
+- [x] Notebook: `notebooks/05_grasp_planning.ipynb`
 
 ### 3C — Integración End-to-End
 - [x] `src/pipeline.py` — Orquestador del pipeline completo
 - [ ] Test end-to-end con imágenes estáticas de T-LESS
-- [ ] Notebook: `notebooks/06_full_pipeline.ipynb`
+- [x] Notebook: `notebooks/06_diffusion_policy_training.ipynb` (Colab GPU)
 
 ---
 
@@ -123,7 +123,7 @@
 - [ ] Verificar comunicación CoppeliaSim ↔ ROS 2 via ZMQ Remote API
 
 ### Visual Servoing (IBVS/PBVS)
-- [ ] `src/simulation/visual_servoing.py` — Implementar IBVS y PBVS
+- [x] `src/simulation/visual_servoing.py` — PBVS, IBVS, HybridServoController
 - [ ] Integrar con pose estimada por FoundationPose
 - [ ] Test: servo hacia objeto con pose conocida (ground truth)
 - [ ] Test: servo con pose estimada (pipeline real)
