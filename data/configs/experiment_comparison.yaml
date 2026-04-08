@@ -1,0 +1,58 @@
+# =============================================================
+# Comparative Evaluation Config — All Methods
+# =============================================================
+
+defaults:
+  - base
+
+comparison:
+  methods:
+    - foundationpose
+    - gdrnet_pp
+    - heuristic_grasp
+
+  datasets:
+    - tless
+    - ycbv
+
+  # Experiment-specific settings
+  experiments:
+    # Exp 1: Pose estimation comparison
+    pose_estimation:
+      enabled: true
+      metrics: [vsd, mssd, mspd, add, add_s]
+      visualize_top_k: 20  # best and worst predictions
+
+    # Exp 2: Rotation representation ablation
+    rotation_ablation:
+      enabled: true
+      representations:
+        - quaternion
+        - continuous_6d
+        - axis_angle
+      dataset: tless  # focus on symmetric objects
+
+    # Exp 3: Grasp success rate in simulation
+    grasp_success:
+      enabled: false  # requires CoppeliaSim
+      n_trials: 100
+      methods:
+        - diffusion_policy
+        - heuristic_grasp
+
+    # Exp 4: End-to-end pipeline
+    end_to_end:
+      enabled: false  # requires full pipeline
+      scenario: bin_picking
+      objects: [1, 2, 3, 5, 8]  # subset of T-LESS objects
+
+# Plotting
+plotting:
+  style: seaborn-v0_8-paper
+  colors:
+    foundationpose: "#0098CD"   # UNIR blue
+    gdrnet_pp: "#006C8F"        # UNIR dark blue
+    heuristic: "#858591"        # UNIR gray
+    diffusion: "#333333"        # UNIR black
+  dpi: 300
+  format: [png, pdf]

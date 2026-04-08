@@ -1,0 +1,38 @@
+# =============================================================
+# FoundationPose Evaluation Config
+# =============================================================
+
+defaults:
+  - base
+
+method:
+  name: foundationpose
+  version: "2024-cvpr"
+
+  # Model weights
+  weights:
+    refiner: weights/2023-10-28-18-33-37
+    scorer: weights/2024-01-11-20-02-45
+
+  # Inference settings
+  inference:
+    n_hypotheses: 64
+    n_refine_iterations: 5
+    use_depth: true
+    use_cad_model: true    # model-based mode
+
+  # For model-free mode (reference images)
+  model_free:
+    enabled: false
+    n_reference_views: 16
+
+# Which datasets to evaluate
+eval_datasets:
+  - tless
+  - ycbv
+
+# Output
+output:
+  save_predictions: true
+  save_visualizations: true
+  n_vis_samples: 50  # number of samples to visualize

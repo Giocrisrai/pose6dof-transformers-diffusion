@@ -1,0 +1,48 @@
+# =============================================================
+# Base Configuration — TFM Pose 6-DoF
+# =============================================================
+
+# Paths
+paths:
+  data_root: data/datasets
+  models_root: data/models
+  experiments: experiments
+  results: experiments/results
+
+# Datasets
+datasets:
+  tless:
+    root: ${paths.data_root}/tless
+    split: test
+    camera: camera_primesense.json
+    models: models_cad
+    n_objects: 30
+    type: industrial
+  ycbv:
+    root: ${paths.data_root}/ycbv
+    split: test
+    camera: camera_uw.json
+    models: models
+    n_objects: 21
+    type: household
+
+# BOP evaluation
+evaluation:
+  metrics:
+    - vsd
+    - mssd
+    - mspd
+  vsd:
+    delta: 15.0    # mm
+    tau: 20.0      # mm
+  mssd:
+    threshold_fraction: 0.1  # fraction of object diameter
+  mspd:
+    threshold_px: 10.0  # pixels
+  n_top: -1  # -1 = evaluate all detections
+
+# Hardware
+hardware:
+  device: auto  # auto, cuda, mps, cpu
+  dtype: float32
+  num_workers: 4

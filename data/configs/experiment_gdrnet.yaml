@@ -1,0 +1,36 @@
+# =============================================================
+# GDR-Net++ Evaluation Config (Baseline)
+# =============================================================
+
+defaults:
+  - base
+
+method:
+  name: gdrnet_pp
+  version: "bop2022"
+
+  # Model weights
+  weights:
+    tless: output/gdrn/tless/best.pth
+    ycbv: output/gdrn/ycbv/best.pth
+    yolox: pretrained_models/yolox/best.pth
+
+  # Architecture
+  backbone: convnext
+  use_augmentation: true
+
+  # Inference settings
+  inference:
+    confidence_threshold: 0.3
+    nms_threshold: 0.5
+
+# Which datasets to evaluate
+eval_datasets:
+  - tless
+  - ycbv
+
+# Output
+output:
+  save_predictions: true
+  save_visualizations: true
+  n_vis_samples: 50
