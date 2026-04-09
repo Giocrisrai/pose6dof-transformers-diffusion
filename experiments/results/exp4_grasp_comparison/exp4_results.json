@@ -1,0 +1,21 @@
+{
+  "n_objects": 50,
+  "heuristic_topdown": {
+    "success_rate": 100.0,
+    "avg_time_ms": 0.6511163711547852,
+    "diversity": 62.137967093157386,
+    "avg_score": 0.48677062065760446
+  },
+  "heuristic_multi": {
+    "success_rate": 100.0,
+    "avg_time_ms": 0.8932781219482422,
+    "diversity": 61.70803928620667,
+    "avg_score": 0.4887619249528971
+  },
+  "diffusion_policy": {
+    "success_rate": 100.0,
+    "avg_time_ms": 0.9919500350952148,
+    "diversity": 61.44864759289797,
+    "avg_score": 0.4903796007231617
+  }
+}

@@ -49,7 +49,7 @@ def draw_pose_axes(
     # Project to 2D
     def proj(pt3d):
         pt2d = K @ pt3d.reshape(3, 1)
-        return int(pt2d[0] / pt2d[2]), int(pt2d[1] / pt2d[2])
+        return int(pt2d[0, 0] / pt2d[2, 0]), int(pt2d[1, 0] / pt2d[2, 0])
 
     center = proj(origin)
     x_end = proj(axes_3d[:, 0])

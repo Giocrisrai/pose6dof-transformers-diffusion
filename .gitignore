@@ -37,9 +37,12 @@ data/datasets/
 # Papers PDFs (no subir por copyright)
 papers/*.pdf
 
-# Resultados temporales
-experiments/results/
+# Resultados temporales (mantener JSONs y PNGs finales)
 experiments/logs/
+!experiments/results/
+!experiments/results/**/*.json
+!experiments/results/**/*.png
+!experiments/results/**/*.md
 *.log
 
 # Secretos y credenciales
