@@ -2,7 +2,8 @@
 #
 # Módulos:
 #   - visual_servoing: PBVS, IBVS, Hybrid controller
-#   - (TODO) coppeliasim_bridge: ZMQ Remote API interface
-#   - (TODO) ros2_interface: ROS 2 node wrappers
+#   - coppeliasim_bridge: ZMQ Remote API interface
+#   - ros2_interface: ROS 2 node wrappers (requires rclpy)
 
 from .visual_servoing import PBVSController, IBVSController, HybridServoController
+from .coppeliasim_bridge import CoppeliaSimBridge, CameraConfig, RobotConfig
