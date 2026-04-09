@@ -73,7 +73,7 @@
 - [x] `src/utils/rotations.py` — Conversiones: quaternion ↔ matrix ↔ 6D ↔ axis-angle
 - [x] `src/utils/metrics.py` — Implementar VSD, MSSD, MSPD (+ ADD, ADD-S, AUC)
 - [x] `src/utils/visualization.py` — Visualizar poses sobre imagen RGB, nubes de puntos
-- [x] Tests unitarios para cada módulo (`pytest` — 24/24 passing)
+- [x] Tests unitarios para cada módulo (`pytest` — 77/77 passing)
 - [x] Notebook demostrativo: `notebooks/04_math_foundations.ipynb`
   - [x] Visualizar rotaciones en SO(3)
   - [x] Demostrar exp/log maps y 6D representation
@@ -81,11 +81,11 @@
   - [x] Langevin dynamics sampling
 
 ### Redacción Capítulo 4 — Marco Matemático
-- [ ] 4.1 Grupos de Lie: SE(3) como grupo de isometrías rígidas
-- [ ] 4.2 Representaciones de rotación y singularidades (Gimbal lock, continuidad 6D)
-- [ ] 4.3 Mecanismo de atención multi-cabeza como operador en SE(3)
-- [ ] 4.4 SDEs, score matching y dinámica de Langevin para difusión
-- [ ] 4.5 Conexión matemática: FoundationPose + Diffusion Policy
+- [x] 4.1 Grupos de Lie: SE(3) como grupo de isometrías rígidas
+- [x] 4.2 Representaciones de rotación y singularidades (Gimbal lock, continuidad 6D)
+- [x] 4.3 Mecanismo de atención multi-cabeza como operador en SE(3)
+- [x] 4.4 SDEs, score matching y dinámica de Langevin para difusión
+- [x] 4.5 Conexión matemática: FoundationPose + Diffusion Policy
 - [ ] Revisión cruzada del capítulo (José Miguel ↔ Giocrisrai)
 
 ---
@@ -103,7 +103,7 @@
 - [x] `src/planning/diffusion_policy.py` — DDPM scheduler + ConditionalUNet1D
   - [x] Heuristic baseline grasp planner (verificado)
   - [ ] Entrenar/fine-tune en datos sintéticos (Colab GPU)
-- [ ] `src/planning/grasp_sampler.py` — Muestreo de agarres candidatos
+- [x] `src/planning/grasp_sampler.py` — Muestreo de agarres candidatos (antipodal, topdown, surface, side)
 - [x] Notebook: `notebooks/05_grasp_planning.ipynb`
 
 ### 3C — Integración End-to-End
@@ -120,6 +120,8 @@
 - [ ] Configurar cámara RGB-D virtual (simular Intel RealSense)
 - [ ] Añadir robot manipulador (UR5e o Franka Panda)
 - [ ] Configurar gripper (paralelo o vacuum)
+- [x] `src/simulation/coppeliasim_bridge.py` — CoppeliaSimBridge, CameraConfig, RobotConfig
+- [x] `src/simulation/ros2_interface.py` — PoseEstimationNode, GraspPlannerNode, launch_pipeline
 - [ ] Verificar comunicación CoppeliaSim ↔ ROS 2 via ZMQ Remote API
 
 ### Visual Servoing (IBVS/PBVS)
@@ -159,7 +161,7 @@
 ## Fase 6 · Redacción Final + Entrega (Semanas 10–12: 13 junio – 3 julio)
 
 ### Capítulos Pendientes
-- [ ] Capítulo 5 — Diseño del Pipeline y Arquitectura
+- [x] Capítulo 5 — Diseño del Pipeline y Arquitectura
 - [ ] Capítulo 6 — Experimentos y Resultados
 - [ ] Capítulo 7 — Conclusiones y Trabajo Futuro
 - [ ] Revisar y pulir Capítulos 1–4 (ya escritos)

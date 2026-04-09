@@ -99,7 +99,7 @@ def run_comparison(datasets=None, data_root: str = "data/datasets"):
 
             # Generate comparison plot
             method_names = list(results.keys())
-            vsd_scores = [results[m].get("MSSD", {}).get("auc", 0) * 100 for m in method_names]
+            vsd_scores = [results[m].get("ADD-S", {}).get("mean", 0) for m in method_names]
             mssd_scores = [results[m].get("MSSD", {}).get("auc", 0) * 100 for m in method_names]
             mspd_scores = [results[m].get("MSPD", {}).get("auc", 0) * 100 for m in method_names]
 
