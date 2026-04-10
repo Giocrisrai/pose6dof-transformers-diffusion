@@ -7,3 +7,4 @@
 from .foundation_pose import FoundationPoseEstimator
 from .gdrnet import GDRNetEstimator
 from .detector import GTDetector, SimpleSegmentor, Detection
+from .evaluator import PoseEvaluator

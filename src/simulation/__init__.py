@@ -7,3 +7,8 @@
 
 from .visual_servoing import PBVSController, IBVSController, HybridServoController
 from .coppeliasim_bridge import CoppeliaSimBridge, CameraConfig, RobotConfig
+
+try:
+    from .ros2_interface import PoseEstimationNode, GraspPlannerNode
+except ImportError:
+    pass  # ROS 2 only available inside Docker container

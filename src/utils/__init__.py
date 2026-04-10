@@ -21,4 +21,12 @@ from .metrics import (
     add_metric, add_s_metric,
     vsd, mssd, mspd,
     compute_recall, compute_auc,
+    compute_add, compute_adds,
 )
+
+from .visualization import (
+    draw_pose_axes, draw_projected_points, draw_bbox_3d,
+    plot_pose_comparison, plot_metrics_comparison,
+)
+
+from .dataset_loader import BOPDataset, verify_dataset
