@@ -62,7 +62,6 @@ colab = [
     "diffusers>=0.25",
     "accelerate>=0.25",
     "transformers>=4.36",
-    "bop_toolkit_lib",
     "trimesh>=4.0",
 ]
 
