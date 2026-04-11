@@ -94,12 +94,21 @@ class BOPDataset:
         """List all scene IDs in this split."""
         return self.scenes
 
-    def get_num_images(self, scene_id: str) -> int:
-        """Number of images in a scene."""
+    def get_image_ids(self, scene_id: str) -> List[int]:
+        """List available image IDs in a scene (sorted).
+
+        BOP image IDs may not start from 0 (e.g., YCB-Video starts from 1).
+        """
         rgb_dir = self.split_dir / scene_id / "rgb"
         if not rgb_dir.exists():
-            return 0
-        return len(list(rgb_dir.glob("*.png")) + list(rgb_dir.glob("*.jpg")))
+            return []
+        files = list(rgb_dir.glob("*.png")) + list(rgb_dir.glob("*.jpg"))
+        ids = sorted(int(f.stem) for f in files)
+        return ids
+
+    def get_num_images(self, scene_id: str) -> int:
+        """Number of images in a scene."""
+        return len(self.get_image_ids(scene_id))
 
     def load_scene_camera(self, scene_id: str) -> Dict:
         """Load per-image camera parameters for a scene (cached).
