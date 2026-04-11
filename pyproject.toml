@@ -26,7 +26,6 @@ dependencies = [
     "diffusers>=0.25",
 
     # 3D geometry & pose
-    "open3d>=0.17",
     "pytransform3d>=3.0",
     "trimesh>=4.0",
 
@@ -64,7 +63,7 @@ colab = [
     "accelerate>=0.25",
     "transformers>=4.36",
     "bop_toolkit_lib",
-    "pyrender>=0.1.45",
+    "trimesh>=4.0",
 ]
 
 [build-system]
