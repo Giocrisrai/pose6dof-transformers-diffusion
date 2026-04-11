@@ -20,6 +20,12 @@ def download_weights(output_dir: str) -> None:
 
     fp_dir = os.environ.get("FP_DIR", "/content/FoundationPose")
 
+    if not os.path.isdir(fp_dir):
+        print(f"[!] Repo FoundationPose no encontrado en: {fp_dir}")
+        print("    Clonalo primero: git clone https://github.com/NVlabs/FoundationPose.git")
+        print("    O establece FP_DIR al directorio correcto.")
+        return
+
     # Check if weights script exists
     download_script = os.path.join(fp_dir, "download_weights.sh")
     if os.path.exists(download_script):
@@ -28,7 +34,7 @@ def download_weights(output_dir: str) -> None:
         print("Pesos descargados en el repo de FoundationPose.")
     else:
         print("Script de descarga no encontrado.")
-        print("Descargando pesos manualmente...")
+        print("Instrucciones para descarga manual:")
 
         readme = os.path.join(fp_dir, "README.md")
         if os.path.exists(readme):
