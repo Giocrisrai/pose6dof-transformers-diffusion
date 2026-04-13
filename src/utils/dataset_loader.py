@@ -229,12 +229,12 @@ class BOPDataset:
         """Load a complete sample: RGB, depth, camera, GT, and first-object mask.
 
         Returns:
-            dict with keys: rgb, depth, depth_m, cam_K, depth_scale, gt_poses, mask
-            - depth: raw uint16 from BOP PNG
-            - depth_m: depth converted to meters (float32), ready for FoundationPose
+            dict with keys: rgb, depth, cam_K, depth_scale, gt_poses, mask
+            - depth: depth in METERS (float32), ready for FoundationPose
+                     Converted from BOP raw uint16 via: raw * depth_scale * 0.001
         """
         rgb = self.load_rgb(scene_id, img_id)
-        depth = self.load_depth(scene_id, img_id)
+        depth_raw = self.load_depth(scene_id, img_id)
 
         cameras = self.load_scene_camera(scene_id)
         cam = cameras.get(str(img_id), {
@@ -248,15 +248,15 @@ class BOPDataset:
         # Load visible mask for the first annotated object (if available)
         mask = self.load_mask(scene_id, img_id, obj_idx=0, visible_only=True)
 
-        # Convert depth to meters: raw_uint16 * depth_scale * 0.001
-        # BOP depth_scale converts raw to mm, then *0.001 converts mm to meters
+        # Convert depth to METERS: raw_uint16 * depth_scale * 0.001
+        # BOP depth_scale converts raw sensor ticks to mm, then *0.001 -> meters
+        # FoundationPose expects depth in meters with zfar=100
         depth_scale = cam["depth_scale"]
-        depth_m = depth.astype(np.float32) * depth_scale * 1e-3
+        depth = depth_raw.astype(np.float32) * depth_scale * 1e-3
 
         return {
             "rgb": rgb,
             "depth": depth,
-            "depth_m": depth_m,
             "cam_K": cam["cam_K"],
             "depth_scale": depth_scale,
             "gt_poses": gt_poses,
