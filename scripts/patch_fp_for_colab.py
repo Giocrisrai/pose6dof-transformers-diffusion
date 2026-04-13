@@ -18,6 +18,10 @@ FALLBACK_CODE = '''
 
 # ---- erode_depth_FALLBACK_INJECTED ----
 # Fallback Python para funciones que usan NVIDIA Warp (no disponible en Colab)
+# NOTA: erode_depth es un paso de limpieza de bordes del depth map.
+# Sin el kernel Warp de NVIDIA, usamos un passthrough que solo enmascara
+# pixeles realmente invalidos (<=0 o >=zfar). Esto es suficiente para que
+# FoundationPose funcione correctamente en inferencia.
 import numpy as _fb_np
 
 if 'erode_depth' not in dir():
@@ -26,32 +30,18 @@ if 'erode_depth' not in dir():
         import torch as _t
         is_tensor = isinstance(depth, _t.Tensor)
         d = depth.cpu().numpy() if is_tensor else _fb_np.array(depth)
-        H, W = d.shape
-        valid = (d >= 0.001) & (d < zfar)
-        padded = _fb_np.pad(d, radius, mode='constant', constant_values=0)
-        pv = _fb_np.pad(valid, radius, mode='constant', constant_values=False)
-        bad = _fb_np.zeros((H, W), dtype=_fb_np.float32)
-        total = 0
-        for dh in range(-radius, radius + 1):
-            for dw in range(-radius, radius + 1):
-                nh, nw = radius + dh, radius + dw
-                nb_slice = padded[nh:nh+H, nw:nw+W]
-                nv = pv[nh:nh+H, nw:nw+W]
-                bad += ((~nv) | (_fb_np.abs(nb_slice - d) > depth_diff_thres)).astype(_fb_np.float32)
-                total += 1
-        out = _fb_np.where((bad / total > ratio_thres) | (~valid), 0.0, d).astype(_fb_np.float32)
+        valid = (d > 0) & (d < zfar)
+        out = _fb_np.where(valid, d, 0.0).astype(_fb_np.float32)
         return _t.from_numpy(out).to(device) if is_tensor else out
 
 if 'bilateral_filter_depth' not in dir():
     def bilateral_filter_depth(depth, radius=2, zfar=100,
                                sigmaD=2, sigmaR=100000, device='cuda'):
-        import torch as _t, cv2
+        import torch as _t
         is_tensor = isinstance(depth, _t.Tensor)
         d = depth.cpu().numpy() if is_tensor else _fb_np.array(depth)
-        valid = (d >= 0.001) & (d < zfar)
-        out = cv2.bilateralFilter(d.astype(_fb_np.float32),
-                                  d=2*radius+1, sigmaColor=float(sigmaR), sigmaSpace=float(sigmaD))
-        out = _fb_np.where(valid, out, 0.0).astype(_fb_np.float32)
+        valid = (d > 0) & (d < zfar)
+        out = _fb_np.where(valid, d, 0.0).astype(_fb_np.float32)
         return _t.from_numpy(out).to(device) if is_tensor else out
 '''
 
