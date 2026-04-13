@@ -229,7 +229,9 @@ class BOPDataset:
         """Load a complete sample: RGB, depth, camera, GT, and first-object mask.
 
         Returns:
-            dict with keys: rgb, depth, cam_K, depth_scale, gt_poses, mask
+            dict with keys: rgb, depth, depth_m, cam_K, depth_scale, gt_poses, mask
+            - depth: raw uint16 from BOP PNG
+            - depth_m: depth converted to meters (float32), ready for FoundationPose
         """
         rgb = self.load_rgb(scene_id, img_id)
         depth = self.load_depth(scene_id, img_id)
@@ -246,11 +248,17 @@ class BOPDataset:
         # Load visible mask for the first annotated object (if available)
         mask = self.load_mask(scene_id, img_id, obj_idx=0, visible_only=True)
 
+        # Convert depth to meters: raw_uint16 * depth_scale * 0.001
+        # BOP depth_scale converts raw to mm, then *0.001 converts mm to meters
+        depth_scale = cam["depth_scale"]
+        depth_m = depth.astype(np.float32) * depth_scale * 1e-3
+
         return {
             "rgb": rgb,
             "depth": depth,
+            "depth_m": depth_m,
             "cam_K": cam["cam_K"],
-            "depth_scale": cam["depth_scale"],
+            "depth_scale": depth_scale,
             "gt_poses": gt_poses,
             "mask": mask,
         }
