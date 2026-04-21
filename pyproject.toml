@@ -64,6 +64,21 @@ colab = [
     "transformers>=4.36",
     "trimesh>=4.0",
 ]
+# Deps específicas para el contenedor GPU (docker/inference-gpu.Dockerfile).
+# pytorch3d y nvdiffrast NO se resuelven desde PyPI — se instalan en el Dockerfile
+# con versiones de wheel compatibles con torch 2.1.2+cu121. Las declaramos aquí
+# solo como marcadores informativos.
+inference-gpu = [
+    "accelerate>=0.25",
+    "transformers>=4.36",
+    "kornia>=0.7",
+    "einops>=0.7",
+    "ruamel.yaml>=0.18",
+    "ninja>=1.11",
+    "pybind11>=2.11",
+    "transformations>=2024.5.24",
+    "gdown>=5.0",
+]
 
 [build-system]
 requires = ["hatchling"]

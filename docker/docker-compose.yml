@@ -1,4 +1,53 @@
 services:
+  # -----------------------------------------------------------
+  # Inference GPU: FoundationPose / GDR-Net evaluation con CUDA
+  # -----------------------------------------------------------
+  # Requiere NVIDIA GPU + nvidia-container-toolkit.
+  # No usar en Mac M1 (no tiene CUDA). Usar en Vast.ai, RunPod,
+  # Lambda Cloud, servidor UNIR o cualquier host con GPU NVIDIA.
+  inference-gpu:
+    build:
+      context: ..
+      dockerfile: docker/inference-gpu.Dockerfile
+      args:
+        FP_COMMIT: main  # cambiar a SHA específico para reproducibilidad total
+    container_name: tfm_inference_gpu
+    image: ghcr.io/giocrisrai/pose6dof-inference:cu121
+
+    # GPU passthrough
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+    environment:
+      - REPO_DIR=/workspace/repo_tfm
+      - DATASETS_DIR=/datasets
+      - WEIGHTS_DIR=/weights/foundationpose
+      - RESULTS_DIR=/workspace/results
+      - FP_DIR=/opt/FoundationPose
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics
+
+    # Volúmenes: código + datasets + pesos + resultados
+    volumes:
+      - ..:/workspace/repo_tfm
+      # Ajustar rutas según dónde tengas datasets y pesos localmente
+      # o cómo los montes en Vast.ai/RunPod:
+      - ${DATASETS_HOST:-/tmp/datasets}:/datasets
+      - ${WEIGHTS_HOST:-/tmp/weights}:/weights
+      - ../experiments/results:/workspace/results
+
+    stdin_open: true
+    tty: true
+    command: bash
+
+  # -----------------------------------------------------------
+  # Simulación ROS 2 + MoveIt + CoppeliaSim (sin GPU NVIDIA)
+  # -----------------------------------------------------------
   ros2-sim:
     build:
       context: ..
