@@ -1,0 +1,63 @@
+# =============================================================
+# Lockfile de dependencias validadas en Google Colab (T4 GPU)
+# =============================================================
+# Snapshot de las versiones que ejecutaron el pipeline completo de
+# 01_foundationpose_eval.ipynb con exito (smoke test ADD=11.5mm en YCB-V,
+# T-LESS ADD-S AUC=0.98).
+#
+# Fecha del run validado: 2026-04-21
+# Plataforma: Google Colab Free, runtime T4 GPU, Python 3.12
+# Commit del repo: abd57b7+ (feat/harden-fp-eval-pipeline)
+#
+# Como regenerar este archivo:
+#   1. Ejecutar 01_foundationpose_eval.ipynb completo en Colab (MODE cualquiera)
+#   2. En la ultima celda, ejecutar:
+#        !pip freeze > /content/drive/MyDrive/TFM/requirements.colab.lock.txt
+#   3. Descargar desde Drive y reemplazar este archivo.
+#
+# Este lockfile NO se aplica automaticamente en Colab (demasiado costoso
+# reinstalar todo). Se usa como DOCUMENTACION de las versiones validadas
+# para referencia cruzada en el TFM (reproducibilidad).
+# =============================================================
+
+# --- Core Deep Learning (preinstalado por Colab, NO reinstalar) ---
+# torch==2.10.0+cu128   # <- NOTA: version de Colab cambia con el tiempo
+# torchvision==0.25.0+cu128
+# numpy==2.0.2
+
+# --- Compiladas from source en el notebook (cell 8 install FP) ---
+# pytorch3d==0.7.8      # @stable branch, ~15-25 min de build
+# nvdiffrast==0.4.0     # from source tras PyPI fallar con torch 2.10
+# iopath==0.1.10        # pytorch3d dependency
+# portalocker==3.2.0    # iopath dependency
+
+# --- Instaladas via pip en el notebook ---
+trimesh>=4.0
+diffusers>=0.25
+accelerate>=0.25
+transformers>=4.36
+scikit-learn>=1.3
+kornia>=0.7
+einops>=0.7
+ruamel.yaml>=0.18
+transformations>=2024.5.24
+opencv-python-headless>=4.8
+pybind11>=2.11
+ninja>=1.11
+cmake>=3.27
+gdown>=5.0
+
+# --- FoundationPose (se clona, no es paquete pip) ---
+# Repo: https://github.com/NVlabs/FoundationPose
+# Branch: main, commit validado el 2026-04-21
+# Parches aplicados: docker/patch_foundationpose.py (fallbacks Warp/open3d/mycpp)
+
+# --- Sistema (apt-get en Colab) ---
+# ninja-build
+# libgl1-mesa-dev libegl1-mesa-dev libgles2-mesa-dev libglvnd-dev
+# libboost-all-dev libeigen3-dev
+
+# --- Mocks runtime (no instalados, pero criticos para FP) ---
+# open3d: mockeado en memoria (cell 8). Solo voxel_down_sample + transform son usados.
+# mycpp.cluster_poses: fallback Python puro (cell 8). mycpp C++ falla en Colab.
+# warp: erode_depth y bilateral_filter_depth reemplazados por Python/OpenCV.

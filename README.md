@@ -94,6 +94,22 @@ bash scripts/download_datasets.sh
 2. Ejecutar todas las celdas (descarga datasets + configura entorno)
 3. Abrir `01_foundationpose_eval.ipynb` para evaluacion
 
+### Reproducibilidad (cualquier recurso)
+
+Ver [`REPRODUCIBILITY.md`](REPRODUCIBILITY.md) para las alternativas soportadas:
+
+| Escenario | Opcion | Costo | Ver |
+|-----------|--------|-------|-----|
+| Sin presupuesto | Colab Free (actual) | $0 | Notebook 01 |
+| Colab agotado | Kaggle Notebooks T4x2, 30h/sem | $0 | REPRODUCIBILITY Opcion B |
+| Con credito cloud | Docker GPU en Vast.ai / RunPod | ~$1-3/run | `docker/README-GPU.md` |
+| GPU NVIDIA local | `docker compose run inference-gpu` | $0 | `docker/README-GPU.md` |
+| Mac M1 sin GPU | Analisis local + Docker ROS 2 simulacion | $0 | REPRODUCIBILITY Opcion E |
+
+El `docker/inference-gpu.Dockerfile` congela torch 2.1.2+cu121 + pytorch3d v0.7.8 +
+nvdiffrast v0.3.3 + FoundationPose commit fijo. El `requirements.colab.lock.txt`
+documenta las versiones validadas en Colab Free.
+
 ## Datasets de Evaluacion
 
 | Dataset | Objetos | Tipo | Uso en TFM |
