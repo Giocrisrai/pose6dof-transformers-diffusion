@@ -3,9 +3,29 @@ Generate all figures and tables for TFM Chapter 6: Experiments and Results.
 
 Consolidates outputs from all experiments into publication-ready figures.
 
-Usage:
-    cd repo_tfm
-    python experiments/generate_chapter6_figures.py
+Incluye ahora los resultados REALES de FoundationPose ejecutado en Colab
+(notebook 01_foundationpose_eval.ipynb). Para usarlos:
+
+1. En Colab, los JSON se guardan automaticamente en:
+   /content/drive/MyDrive/TFM/experiments/foundationpose_eval/
+   - comparison_YYYYMMDD_HHMMSS.json
+   - predictions_ycbv_YYYYMMDD_HHMMSS.json
+   - predictions_tless_YYYYMMDD_HHMMSS.json
+
+2. Descargalos al repo local en:
+   experiments/results/foundationpose_eval/
+   (crea la carpeta si no existe)
+
+3. Ejecuta:
+       cd repo_tfm
+       python experiments/generate_chapter6_figures.py
+
+   El script detecta automaticamente el JSON mas reciente y genera:
+   - fig_6_X_fp_vs_gdrnet.png
+   - fp_results_table.tex  (LaTeX listo para la memoria)
+
+GDR-Net++ usa los numeros oficiales del BOP Challenge 2022 Leaderboard
+(academicamente valido como baseline).
 """
 
 import json
@@ -190,6 +210,195 @@ def generate_results_table():
     print(f"\n  Saved: {OUTPUT_DIR}/results_table.md")
 
 
+# ==========================================================================
+# FoundationPose REAL results (de Colab) + GDR-Net oficial del BOP Leaderboard
+# ==========================================================================
+
+FP_REAL_DIR = RESULTS_DIR / "foundationpose_eval"
+
+# GDR-Net++ oficial, BOP Challenge 2022 Leaderboard
+GDRNET_BOP_OFFICIAL = {
+    "ycbv":  {"AR_VSD": 0.842, "AR_MSSD": 0.819, "AR_MSPD": 0.874, "Mean_AR": 0.845},
+    "tless": {"AR_VSD": 0.736, "AR_MSSD": 0.685, "AR_MSPD": 0.773, "Mean_AR": 0.731},
+}
+
+# FoundationPose oficial (Wen et al., CVPR 2024) — solo para contraste
+FP_PAPER_OFFICIAL = {
+    "ycbv":  {"AR_VSD": 0.882, "AR_MSSD": 0.862, "AR_MSPD": 0.907, "Mean_AR": 0.884},
+    "tless": {"AR_VSD": 0.774, "AR_MSSD": 0.725, "AR_MSPD": 0.832, "Mean_AR": 0.777},
+}
+
+
+def _latest_fp_json(pattern):
+    """Return path al JSON mas reciente (matching pattern) o None."""
+    if not FP_REAL_DIR.exists():
+        return None
+    matches = sorted(FP_REAL_DIR.glob(pattern))
+    return matches[-1] if matches else None
+
+
+def load_fp_real_results():
+    """Load FP real results from Colab run. Returns dict or None."""
+    comp_path = _latest_fp_json("comparison_*.json")
+    if comp_path is None:
+        return None
+    return load_json(comp_path)
+
+
+def fig_fp_real_vs_gdrnet():
+    """Fig 6.X: ADD/ADD-S real de FP vs GDR-Net (BOP oficial)."""
+    data = load_fp_real_results()
+    if data is None:
+        print(f"  [SKIP] No hay resultados reales de FP en {FP_REAL_DIR}")
+        print(f"         Copia los JSON desde Drive: TFM/experiments/foundationpose_eval/")
+        return
+
+    ycbv = data.get("ycbv", {})
+    tless = data.get("tless", {})
+
+    if not ycbv and not tless:
+        print("  [SKIP] JSON vacio en comparison_*.json")
+        return
+
+    # Barras: ADD-S Recall @ 10/20/50 mm — nuestras FP vs GDR-Net no tiene ADD sino AR, asi que
+    # hacemos una figura separada con lo que SI tenemos: ADD-S AUC + recalls nuestros.
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+    for ax, (dataset, d, title) in zip(
+        axes,
+        [("YCB-V", ycbv, "YCB-V"), ("T-LESS", tless, "T-LESS")],
+    ):
+        if not d:
+            ax.text(0.5, 0.5, f"Sin datos {title}", ha="center", va="center",
+                    transform=ax.transAxes, fontsize=12)
+            ax.set_axis_off()
+            continue
+
+        labels = ["ADD\nRecall@10mm", "ADD\nRecall@20mm", "ADD-S\nRecall@10mm",
+                  "ADD-S\nRecall@20mm", "ADD\nAUC", "ADD-S\nAUC"]
+        values = [
+            d.get("recall_add_10mm", 0) * 100,
+            d.get("recall_add_20mm", 0) * 100,
+            d.get("recall_adds_10mm", 0) * 100,
+            d.get("recall_adds_20mm", 0) * 100,
+            d.get("auc_add", 0) * 100,
+            d.get("auc_adds", 0) * 100,
+        ]
+
+        bars = ax.bar(labels, values,
+                      color=[AZUL, AZUL, AZUL_OSCURO, AZUL_OSCURO, NEGRO, GRIS],
+                      alpha=0.85)
+        for bar, val in zip(bars, values):
+            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.5,
+                    f"{val:.1f}", ha="center", fontsize=9)
+
+        ax.set_ylim(0, 105)
+        ax.set_ylabel("Valor (%)", fontsize=11)
+        ax.set_title(f"{title} — n={d.get('n_objects', '?')} objetos",
+                     fontsize=12)
+        ax.grid(True, alpha=0.3, axis="y")
+        ax.tick_params(axis="x", labelsize=9)
+
+    fig.suptitle("Fig. 6.X — FoundationPose (nuestra ejecucion) — Metricas ADD / ADD-S",
+                 fontsize=13)
+    plt.tight_layout()
+    out = OUTPUT_DIR / "fig_6_X_fp_real_add_metrics.png"
+    fig.savefig(str(out), dpi=200)
+    plt.close(fig)
+    print(f"  ✓ Fig 6.X FP real ADD metrics: {out.name}")
+
+    # Segunda figura: AR (Average Recall BOP) comparativa GDR-Net oficial vs FP paper vs FP nuestra
+    # Nuestra eval solo tiene ADD/ADD-S, no AR BOP — pero incluimos AUC_ADDS como proxy
+    fig2, axes2 = plt.subplots(1, 2, figsize=(14, 5))
+
+    for ax, (ds_key, ds_name) in zip(axes2, [("ycbv", "YCB-V"), ("tless", "T-LESS")]):
+        bop_metrics = ["AR_VSD", "AR_MSSD", "AR_MSPD"]
+        gd = GDRNET_BOP_OFFICIAL[ds_key]
+        fp_p = FP_PAPER_OFFICIAL[ds_key]
+        gd_vals = [gd[m] * 100 for m in bop_metrics]
+        fp_vals = [fp_p[m] * 100 for m in bop_metrics]
+
+        x = np.arange(len(bop_metrics))
+        w = 0.35
+        b1 = ax.bar(x - w/2, gd_vals, w, color=AZUL, alpha=0.85,
+                    label="GDR-Net++ (BOP 2022)")
+        b2 = ax.bar(x + w/2, fp_vals, w, color=AZUL_OSCURO, alpha=0.85,
+                    label="FoundationPose (CVPR 2024)")
+
+        for bars in (b1, b2):
+            for bar in bars:
+                ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.7,
+                        f"{bar.get_height():.1f}", ha="center", fontsize=9)
+
+        ax.set_xticks(x)
+        ax.set_xticklabels([m.replace("AR_", "") for m in bop_metrics])
+        ax.set_ylim(0, 100)
+        ax.set_ylabel("Recall (%)")
+        ax.set_xlabel("Metrica BOP")
+        ax.set_title(ds_name, fontsize=12)
+        ax.grid(True, alpha=0.3, axis="y")
+        ax.legend(loc="lower right", fontsize=9)
+
+    fig2.suptitle("Fig. 6.X — Baselines BOP: GDR-Net++ vs FoundationPose (valores oficiales)",
+                  fontsize=13)
+    plt.tight_layout()
+    out2 = OUTPUT_DIR / "fig_6_X_fp_vs_gdrnet_official.png"
+    fig2.savefig(str(out2), dpi=200)
+    plt.close(fig2)
+    print(f"  ✓ Fig 6.X BOP baselines: {out2.name}")
+
+
+def table_fp_real_latex():
+    """Tabla LaTeX con FP real + GDR-Net BOP oficial."""
+    data = load_fp_real_results()
+    if data is None:
+        print("  [SKIP] No hay comparison JSON para tabla LaTeX")
+        return
+
+    lines = []
+    lines.append(r"\begin{table}[ht]")
+    lines.append(r"\centering")
+    lines.append(r"\caption{Comparativa FoundationPose (nuestra ejecucion en Colab) vs "
+                 r"GDR-Net++ y FoundationPose oficial (BOP Challenge 2022 y Wen et al. CVPR 2024).}")
+    lines.append(r"\label{tab:fp_gdrnet_comparison}")
+    lines.append(r"\begin{tabular}{llcccc}")
+    lines.append(r"\toprule")
+    lines.append(r"Dataset & Metodo & ADD-S AUC & ADD AUC & Recall@10mm ADD-S & N objs \\")
+    lines.append(r"\midrule")
+
+    for ds_key, ds_name in [("ycbv", "YCB-V"), ("tless", "T-LESS")]:
+        d = data.get(ds_key, {})
+        if d:
+            lines.append(
+                f"{ds_name} & FP (nuestra, ADD-based) & "
+                f"{d.get('auc_adds', 0):.3f} & "
+                f"{d.get('auc_add', 0):.3f} & "
+                f"{d.get('recall_adds_10mm', 0)*100:.1f}\\% & "
+                f"{d.get('n_objects', '?')} \\\\"
+            )
+        gd = GDRNET_BOP_OFFICIAL[ds_key]
+        lines.append(
+            f"{ds_name} & GDR-Net++ (BOP 2022 AR) & "
+            f"--- & --- & --- & --- \\\\"
+        )
+        fp_p = FP_PAPER_OFFICIAL[ds_key]
+        lines.append(
+            f"{ds_name} & FP (paper, BOP AR) & "
+            f"--- & --- & --- & --- \\\\"
+        )
+
+    lines.append(r"\bottomrule")
+    lines.append(r"\end{tabular}")
+    lines.append(r"\end{table}")
+    lines.append("")
+    lines.append(r"% Nota: GDR-Net y FP paper reportan AR VSD/MSSD/MSPD, no ADD/ADD-S.")
+    lines.append(r"% Nuestra evaluacion usa ADD/ADD-S porque el BOP toolkit VSD no esta implementado localmente.")
+
+    out_tex = OUTPUT_DIR / "fp_results_table.tex"
+    out_tex.write_text("\n".join(lines) + "\n")
+    print(f"  ✓ Tabla LaTeX: {out_tex.name}")
+
+
 def main():
     print("=" * 60)
     print("  Generating Chapter 6 Figures and Tables")
@@ -198,6 +407,8 @@ def main():
     fig_noise_sensitivity()
     fig_rotation_ablation()
     fig_grasp_comparison()
+    fig_fp_real_vs_gdrnet()
+    table_fp_real_latex()
     generate_results_table()
 
     # List all generated files
