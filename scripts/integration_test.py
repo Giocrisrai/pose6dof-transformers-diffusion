@@ -54,12 +54,15 @@ def main():
 
     # ── 1. Load T-LESS dataset ──────────────────────────────
     print("\n[1/7] Loading T-LESS dataset...")
-    tless = BOPDataset("data/datasets/tless", split="test")
-    print(f"  Scenes: {len(tless.scenes)}, Objects: {len(tless.models_info)}")
+    # T-LESS ships with "test_primesense" in BOP; fall back to "test" for legacy layouts.
+    tless_split = "test_primesense" if (Path("data/datasets/tless") / "test_primesense").exists() else "test"
+    tless = BOPDataset("data/datasets/tless", split=tless_split)
+    print(f"  Scenes: {len(tless.scenes)}, Objects: {len(tless.models_info)}, split={tless_split}")
 
-    # Pick first scene, first image
+    # Pick first scene and its first available image (IDs may not start at 0)
     scene_id = tless.scenes[0]
-    sample = tless.load_sample(scene_id, img_id=0)
+    first_img_id = tless.get_image_ids(scene_id)[0]
+    sample = tless.load_sample(scene_id, img_id=first_img_id)
     rgb = sample["rgb"]
     depth = sample["depth"]
     K = sample["cam_K"]

@@ -27,7 +27,10 @@ def test_dataset(name, root, scene_id, img_id=0):
     print(f"  E2E Test: {name} — Scene {scene_id}, Image {img_id}")
     print(f"{'='*60}")
 
-    ds = BOPDataset(root, split="test")
+    # T-LESS ships as "test_primesense" in BOP; fall back to "test" for legacy layouts.
+    candidate_splits = ["test_primesense", "test"] if "tless" in root.lower() else ["test"]
+    split = next((s for s in candidate_splits if (Path(root) / s).exists()), "test")
+    ds = BOPDataset(root, split=split)
     sample = ds.load_sample(scene_id, img_id)
 
     rgb = sample["rgb"]

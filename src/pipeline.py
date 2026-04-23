@@ -277,12 +277,13 @@ class BinPickingPipeline:
             scenes = scenes[:max_scenes]
 
         for scene_id in scenes:
-            n_images = dataset.get_num_images(scene_id)
-            logger.info(f"Processing scene {scene_id} ({n_images} images)")
+            image_ids = dataset.get_image_ids(scene_id)
+            logger.info(f"Processing scene {scene_id} ({len(image_ids)} images)")
 
             cameras = dataset.load_scene_camera(scene_id)
 
-            for img_id in range(n_images):
+            # BOP image IDs are not always 0..N-1 (YCB-V starts at 1, T-LESS may have gaps).
+            for img_id in image_ids:
                 try:
                     sample = dataset.load_sample(scene_id, img_id)
                     result = self.run(
