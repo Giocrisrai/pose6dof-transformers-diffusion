@@ -225,6 +225,23 @@ class BOPDataset:
         mask = cv2.imread(str(path), cv2.IMREAD_GRAYSCALE)
         return mask > 0
 
+    def load_bop_test_targets(self) -> List[Dict]:
+        """Load official BOP-19 evaluation targets from test_targets_bop19.json.
+
+        This is the subset of (scene_id, im_id, obj_id) tuples that the BOP
+        leaderboard scores. Video-style datasets like YCB-V have thousands of
+        annotated frames but only ~75 per scene are eval targets.
+
+        Returns:
+            list of dicts with keys scene_id (int), im_id (int), obj_id (int),
+            inst_count (int). Empty list if the file is missing.
+        """
+        path = self.root / "test_targets_bop19.json"
+        if not path.exists():
+            return []
+        with open(path) as f:
+            return json.load(f)
+
     def load_sample(self, scene_id: str, img_id: int) -> Dict:
         """Load a complete sample: RGB, depth, camera, GT, and first-object mask.
 
@@ -232,6 +249,9 @@ class BOPDataset:
             dict with keys: rgb, depth, cam_K, depth_scale, gt_poses, mask
             - depth: depth in METERS (float32), ready for FoundationPose
                      Converted from BOP raw uint16 via: raw * depth_scale * 0.001
+            - mask: ONLY the mask of GT object at index 0 (gt_idx=0). For
+                    multi-object scenes, callers must use ``load_mask`` per
+                    ``gt_idx`` instead — do NOT reuse ``sample['mask']``.
         """
         rgb = self.load_rgb(scene_id, img_id)
         depth_raw = self.load_depth(scene_id, img_id)
