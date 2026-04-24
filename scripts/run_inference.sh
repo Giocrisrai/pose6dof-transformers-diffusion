@@ -70,29 +70,15 @@ EOF
         ;;
 
     smoke|dev|full)
-        cd "$REPO_DIR"
-        export PYTHONPATH="$REPO_DIR:$FP_DIR:${PYTHONPATH:-}"
-        python3 - <<EOF
-import os, sys, json, time
-sys.path.insert(0, '$REPO_DIR')
-sys.path.insert(0, '$FP_DIR')
-
-from pathlib import Path
-from src.utils.dataset_loader import BOPDataset
-
-MODE = '$MODE'
-PRESETS = {
-    'smoke': dict(MAX_SCENES=1, MAX_IMAGES=3),
-    'dev':   dict(MAX_SCENES=5, MAX_IMAGES=50),
-    'full':  dict(MAX_SCENES=None, MAX_IMAGES=None),
-}
-p = PRESETS[MODE]
-print(f"Running {MODE}: MAX_SCENES={p['MAX_SCENES']} MAX_IMAGES={p['MAX_IMAGES']}")
-print("Este runner shell es un placeholder: la lógica completa está en")
-print("notebooks/colab/01_foundationpose_eval.ipynb — ejecutarla adaptada")
-print("para el contenedor (sin celdas Colab-específicas) requiere extraer")
-print("las cells 13-26 a un script Python. Se hará en commit siguiente.")
+        cat <<EOF
+[NOT_IMPLEMENTED] 'run-inference $MODE' todavia no ejecuta inferencia real.
+  El pipeline de evaluacion vive en notebooks/colab/01_foundationpose_eval.ipynb.
+  Para validar el contenedor usa:
+      run-inference test-imports
+  Para reproducir los resultados BOP:
+      Abre el notebook en Colab y corre celdas 1-26 (ver docker/README-GPU.md).
 EOF
+        exit 2
         ;;
 
     *)

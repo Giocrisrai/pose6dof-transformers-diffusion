@@ -267,22 +267,32 @@ class BinPickingPipeline:
         Returns:
             dict with predictions in BOP format
         """
+        from collections import defaultdict
         from src.utils.dataset_loader import BOPDataset
 
         dataset = BOPDataset(dataset_root, split)
         predictions = {}
 
-        scenes = dataset.get_scene_ids()
+        # BOP-19 test subset: un dataset de video (YCB-V) tiene miles de frames pero solo
+        # los listados en test_targets_bop19.json son evaluables contra el leaderboard.
+        bop_targets = dataset.load_bop_test_targets()
+        targets_by_scene: Dict[str, set] = defaultdict(set)
+        for t in bop_targets:
+            targets_by_scene[f"{t['scene_id']:06d}"].add(int(t['im_id']))
+
+        scenes = [s for s in dataset.get_scene_ids() if s in targets_by_scene] \
+            if targets_by_scene else dataset.get_scene_ids()
         if max_scenes:
             scenes = scenes[:max_scenes]
 
         for scene_id in scenes:
-            image_ids = dataset.get_image_ids(scene_id)
+            # Solo imagenes del BOP subset (si existe). Sin subset, fallback a todos los frames.
+            if targets_by_scene:
+                image_ids = sorted(targets_by_scene[scene_id])
+            else:
+                image_ids = dataset.get_image_ids(scene_id)
             logger.info(f"Processing scene {scene_id} ({len(image_ids)} images)")
 
-            cameras = dataset.load_scene_camera(scene_id)
-
-            # BOP image IDs are not always 0..N-1 (YCB-V starts at 1, T-LESS may have gaps).
             for img_id in image_ids:
                 try:
                     sample = dataset.load_sample(scene_id, img_id)
@@ -292,8 +302,10 @@ class BinPickingPipeline:
                         K=sample["cam_K"],
                     )
 
+                    # Key format debe coincidir con `evaluator.evaluate_method` que usa
+                    # `img_id_str` de scene_gt.json (entero como string, NO zero-padded).
                     for pose in result.poses:
-                        key = f"{scene_id}/{img_id:06d}"
+                        key = f"{scene_id}/{img_id}"
                         predictions[key] = {
                             "obj_id": pose.obj_id,
                             "R": pose.R.tolist(),

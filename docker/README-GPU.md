@@ -71,11 +71,16 @@ Los fallbacks Python para `erode_depth`, `bilateral_filter_depth`, `mycpp.cluste
 2. SSH a la instancia, ejecutar:
    ```bash
    cd /workspace/repo_tfm
-   run-inference smoke       # validación rápida
-   run-inference dev         # corrida de desarrollo
+   run-inference test-imports   # valida que torch+pytorch3d+nvdiffrast+FP cargan
    ```
 
-3. Los resultados JSON quedan en `/workspace/results/` — descargar vía SCP antes de destruir la instancia.
+   > ⚠️ `run-inference smoke|dev|full` hoy devuelve exit 2 — son placeholders.
+   > El pipeline completo sigue siendo `notebooks/colab/01_foundationpose_eval.ipynb`.
+   > El contenedor garantiza reproducibilidad del *entorno* (versiones pinadas de
+   > torch 2.1.2, pytorch3d, nvdiffrast). Para la *ejecución* usa Colab o adapta
+   > el notebook a script con nbconvert.
+
+3. Resultados: JSON en `/content/drive/MyDrive/TFM/experiments/foundationpose_eval/` (Colab) — no en el contenedor.
 
 ## Opción 2: Ejecutar en RunPod
 

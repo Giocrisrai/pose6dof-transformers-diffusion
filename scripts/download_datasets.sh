@@ -33,6 +33,12 @@ download_tless() {
     unzip -qo tless_base.zip
     unzip -qo tless_models.zip
     unzip -qo tless_test_primesense_all.zip
+    # BOP zips pueden extraer en subcarpeta <name>/ ; aplanar para que test_targets_bop19.json
+    # y camera.json queden en la raiz del dataset (donde el loader los busca).
+    if [ -d "tless" ] && [ -f "tless/test_targets_bop19.json" ] && [ ! -f "test_targets_bop19.json" ]; then
+        cp -f tless/test_targets_bop19.json . 2>/dev/null || true
+        cp -f tless/camera*.json . 2>/dev/null || true
+    fi
     cd -
 
     echo "  ✓ T-LESS ready"
@@ -60,6 +66,11 @@ download_ycbv() {
     unzip -qo ycbv_base.zip
     unzip -qo ycbv_models.zip
     unzip -qo ycbv_test_all.zip
+    # Aplanar subcarpeta ycbv/ si el zip la creo.
+    if [ -d "ycbv" ] && [ -f "ycbv/test_targets_bop19.json" ] && [ ! -f "test_targets_bop19.json" ]; then
+        cp -f ycbv/test_targets_bop19.json . 2>/dev/null || true
+        cp -f ycbv/camera*.json . 2>/dev/null || true
+    fi
     cd -
 
     echo "  ✓ YCB-Video ready"

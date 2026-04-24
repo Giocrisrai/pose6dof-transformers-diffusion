@@ -232,15 +232,24 @@ class BOPDataset:
         leaderboard scores. Video-style datasets like YCB-V have thousands of
         annotated frames but only ~75 per scene are eval targets.
 
+        The BOP zip (`ycbv_base.zip`, `tless_base.zip`) may unzip the file
+        either at the dataset root or inside a `<name>/` subdirectory
+        depending on how the archive was prepared. We probe both paths.
+
         Returns:
             list of dicts with keys scene_id (int), im_id (int), obj_id (int),
             inst_count (int). Empty list if the file is missing.
         """
-        path = self.root / "test_targets_bop19.json"
-        if not path.exists():
-            return []
-        with open(path) as f:
-            return json.load(f)
+        # Try root, then nested <dataset_name>/test_targets_bop19.json
+        candidates = [
+            self.root / "test_targets_bop19.json",
+            self.root / self.root.name / "test_targets_bop19.json",
+        ]
+        for path in candidates:
+            if path.exists():
+                with open(path) as f:
+                    return json.load(f)
+        return []
 
     def load_sample(self, scene_id: str, img_id: int) -> Dict:
         """Load a complete sample: RGB, depth, camera, GT, and first-object mask.

@@ -217,11 +217,25 @@ def evaluate_method(
     n_evaluated = 0
     n_skipped = 0
 
+    # Filtrar por BOP-19 test targets (subset oficial). Si no hay, evaluar todo
+    # (compatibilidad, pero con warning).
+    bop_targets = dataset.load_bop_test_targets()
+    if bop_targets:
+        target_pairs = {(f"{t['scene_id']:06d}", str(t['im_id'])) for t in bop_targets}
+    else:
+        logger.warning(
+            "test_targets_bop19.json no encontrado; evaluando TODOS los frames "
+            "(no comparable al leaderboard BOP)."
+        )
+        target_pairs = None
+
     for scene_id in dataset.get_scene_ids():
         gt_poses = dataset.load_scene_gt(scene_id)
         cameras = dataset.load_scene_camera(scene_id)
 
         for img_id_str, gt_list in gt_poses.items():
+            if target_pairs is not None and (scene_id, img_id_str) not in target_pairs:
+                continue
             key = f"{scene_id}/{img_id_str}"
             if key not in predictions:
                 n_skipped += 1
