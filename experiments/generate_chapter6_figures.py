@@ -238,11 +238,40 @@ def _latest_fp_json(pattern):
 
 
 def load_fp_real_results():
-    """Load FP real results from Colab run. Returns dict or None."""
+    """Load FP real results from Colab run.
+
+    El notebook escribe el comparison JSON con esta estructura:
+
+        {"our_results": {"ycbv": {"metrics": {...}, "n_predictions": ...},
+                         "tless": {"metrics": {...}, "n_predictions": ...}}}
+
+    Devolvemos un dict aplanado {"ycbv": {...}, "tless": {...}} con las
+    claves que esperan las funciones consumidoras (auc_add, recall_*,
+    n_objects). Mantiene compatibilidad con un comparison ya plano por si
+    se edita a mano.
+    """
     comp_path = _latest_fp_json("comparison_*.json")
     if comp_path is None:
         return None
-    return load_json(comp_path)
+    raw = load_json(comp_path)
+
+    # Compat: ya viene plano (uso manual)
+    if "our_results" not in raw and ("ycbv" in raw or "tless" in raw):
+        return raw
+
+    flat = {"_meta": {k: raw[k] for k in ("timestamp", "gpu", "config") if k in raw}}
+    for ds in ("ycbv", "tless"):
+        bucket = raw.get("our_results", {}).get(ds, {})
+        metrics = bucket.get("metrics", {}) or {}
+        if not metrics:
+            continue
+        flat[ds] = {
+            **metrics,
+            # alias usado en titles/tablas: n_objects ← n_evaluated o n_predictions
+            "n_objects": metrics.get("n_evaluated", bucket.get("n_predictions", "?")),
+            "timing_total_s": bucket.get("timing_total_s"),
+        }
+    return flat
 
 
 def fig_fp_real_vs_gdrnet():

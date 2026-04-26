@@ -45,6 +45,11 @@ experiments/logs/
 !experiments/results/**/*.md
 *.log
 
+# FoundationPose eval: los checkpoints son artefactos reanudables (MB), no respaldo final.
+# Los comparison_*.json y predictions_*.json sí se versionan (son la evidencia del TFM).
+experiments/results/foundationpose_eval/*_checkpoint.json
+experiments/results/foundationpose_eval/fp_*_checkpoint.json
+
 # Secretos y credenciales
 .env
 *.key
