@@ -1,0 +1,39 @@
+{
+  "connect_ms": 149.83,
+  "server_version": 41000,
+  "scene_loaded": "pickAndPlaceDemo.ttt",
+  "discovered_handles": {
+    "/Floor": {
+      "handle": 295,
+      "alias": "Floor"
+    },
+    "/genericConveyorTypeA": {
+      "handle": 8,
+      "alias": "genericConveyorTypeA"
+    },
+    "/genericDetectionWindow": {
+      "handle": 27,
+      "alias": "genericDetectionWindow"
+    }
+  },
+  "vision_sensor": {
+    "handle": 297,
+    "resolution": [
+      640,
+      480
+    ],
+    "image_mean_intensity": 152.8868044704861,
+    "image_std": 45.72128940231936,
+    "image_max": 255
+  },
+  "stepping": {
+    "n_steps": 100,
+    "sim_time_advanced_s": 5.0,
+    "step_ms_mean": 18.117,
+    "step_ms_min": 10.844,
+    "step_ms_max": 241.608
+  },
+  "outputs": {
+    "overview_png": "experiments/results/coppelia_smoke/coppelia_overview_pickandplace.png"
+  }
+}

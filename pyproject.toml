@@ -64,6 +64,12 @@ colab = [
     "transformers>=4.36",
     "trimesh>=4.0",
 ]
+# Cliente Python para CoppeliaSim ZMQ Remote API.
+# Necesario para experiments/run_coppelia_smoke_test.py y src/simulation/coppeliasim_bridge.py.
+# Requiere CoppeliaSim Edu V4.10.0 corriendo localmente (no es dependencia runtime de los modelos).
+sim = [
+    "coppeliasim-zmqremoteapi-client>=2.0.4",
+]
 # Deps específicas para el contenedor GPU (docker/inference-gpu.Dockerfile).
 # pytorch3d y nvdiffrast NO se resuelven desde PyPI — se instalan en el Dockerfile
 # con versiones de wheel compatibles con torch 2.1.2+cu121. Las declaramos aquí
