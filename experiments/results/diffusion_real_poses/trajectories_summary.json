@@ -1,0 +1,2329 @@
+{
+  "meta": {
+    "generated_at": "2026-04-27T19:21:33",
+    "rng_seed": 42,
+    "horizon": 16,
+    "n_grasp_candidates": 64,
+    "sampler": {
+      "gripper_width_m": 0.085,
+      "standoff_distance_m": 0.1,
+      "approach_min_angle_rad": 0.0,
+      "approach_max_angle_rad": 1.0471975511965976
+    },
+    "planner": {
+      "action_dim": 7,
+      "horizon": 16,
+      "n_diffusion_steps": 100,
+      "trained": false
+    },
+    "source_run": "experiments/results/foundationpose_eval/comparison_20260427_084807.json"
+  },
+  "datasets": {
+    "ycbv": {
+      "source_predictions": "predictions_ycbv_20260427_084807.json",
+      "n_total_predictions": 1098,
+      "sample_size": 30,
+      "records": [
+        {
+          "scene_id": "000048",
+          "img_id": 1113,
+          "obj_id": 14,
+          "ok": true,
+          "n_candidates_after_filter": 17,
+          "best_grasp": {
+            "score": 0.9620103803719702,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.10079559683799744,
+              -0.08534250408411026,
+              1.024725317955017
+            ],
+            "approach_vector": [
+              -0.47688933022772917,
+              0.23108904030150043,
+              -0.8480415214878806
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.10000000000000002,
+            "smoothness_jerk_mean": 2.0381070291717735e-16,
+            "compute_ms": 0.030499999411404133
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205315,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 3.769167000427842
+          },
+          "sampling_ms": 3.086542012169957
+        },
+        {
+          "scene_id": "000048",
+          "img_id": 1119,
+          "obj_id": 1,
+          "ok": true,
+          "n_candidates_after_filter": 20,
+          "best_grasp": {
+            "score": 0.9655795776817938,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.09614679962396622,
+              0.009218607097864151,
+              1.0582035779953003
+            ],
+            "approach_vector": [
+              -0.49871605092619087,
+              -0.08768940376816285,
+              -0.8623183107271752
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999996,
+            "smoothness_jerk_mean": 3.774909183885327e-16,
+            "compute_ms": 0.028374954126775265
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205315,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.03483297768980265
+          },
+          "sampling_ms": 1.9157499773427844
+        },
+        {
+          "scene_id": "000048",
+          "img_id": 1120,
+          "obj_id": 6,
+          "ok": true,
+          "n_candidates_after_filter": 24,
+          "best_grasp": {
+            "score": 0.9617842240685969,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.07982095330953598,
+              0.08265015482902527,
+              0.9906229972839355
+            ],
+            "approach_vector": [
+              0.2578020049314885,
+              -0.4646473988132317,
+              -0.8471368962743875
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999998,
+            "smoothness_jerk_mean": 3.761507077939881e-16,
+            "compute_ms": 0.026124995201826096
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205315,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.03383401781320572
+          },
+          "sampling_ms": 1.8662919756025076
+        },
+        {
+          "scene_id": "000048",
+          "img_id": 1137,
+          "obj_id": 20,
+          "ok": true,
+          "n_candidates_after_filter": 19,
+          "best_grasp": {
+            "score": 0.9648740884648297,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.06982098519802094,
+              0.10897639393806458,
+              0.9426602721214294
+            ],
+            "approach_vector": [
+              0.09196026631232727,
+              0.5028014788386191,
+              -0.8594963538593189
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.10000000000000002,
+            "smoothness_jerk_mean": 1.8349031156856392e-16,
+            "compute_ms": 0.028125010430812836
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.0051282051282052635,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.03845791798084974
+          },
+          "sampling_ms": 1.9826249917969108
+        },
+        {
+          "scene_id": "000048",
+          "img_id": 1583,
+          "obj_id": 20,
+          "ok": true,
+          "n_candidates_after_filter": 15,
+          "best_grasp": {
+            "score": 0.9647394281812884,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.0975588858127594,
+              0.1287752240896225,
+              0.920049786567688
+            ],
+            "approach_vector": [
+              0.02558278183888523,
+              0.5114070482730528,
+              -0.8589577127251535
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.1000000000000001,
+            "smoothness_jerk_mean": 1.598688699829383e-16,
+            "compute_ms": 0.026999972760677338
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.0051282051282052635,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.03475008998066187
+          },
+          "sampling_ms": 1.936041982844472
+        },
+        {
+          "scene_id": "000048",
+          "img_id": 1589,
+          "obj_id": 6,
+          "ok": true,
+          "n_candidates_after_filter": 16,
+          "best_grasp": {
+            "score": 0.9574206852313205,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.05260114371776581,
+              0.13480789959430695,
+              0.9720911383628845
+            ],
+            "approach_vector": [
+              0.5186879862338926,
+              0.2063718060863459,
+              -0.8296827409252822
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999995,
+            "smoothness_jerk_mean": 3.15186233462739e-16,
+            "compute_ms": 0.02704199869185686
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205315,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.03975001163780689
+          },
+          "sampling_ms": 1.9054580479860306
+        },
+        {
+          "scene_id": "000049",
+          "img_id": 1157,
+          "obj_id": 9,
+          "ok": true,
+          "n_candidates_after_filter": 16,
+          "best_grasp": {
+            "score": 0.9604250188109866,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "approach_vector": [
+              0.4205073864015515,
+              -0.33869532225301063,
+              -0.8417000752439467
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.10000000000000002,
+            "smoothness_jerk_mean": 1.6298428493236567e-17,
+            "compute_ms": 0.025333021767437458
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205139,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.0315000070258975
+          },
+          "sampling_ms": 1.8264580285176635
+        },
+        {
+          "scene_id": "000049",
+          "img_id": 1568,
+          "obj_id": 9,
+          "ok": true,
+          "n_candidates_after_filter": 17,
+          "best_grasp": {
+            "score": 0.9640167780328274,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.03833426535129547,
+              -0.034988608211278915,
+              0.978689432144165
+            ],
+            "approach_vector": [
+              -0.062134364826018675,
+              -0.5131163807898043,
+              -0.8560671121313094
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999996,
+            "smoothness_jerk_mean": 3.162965560670076e-16,
+            "compute_ms": 0.031000003218650818
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205315,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.046042026951909065
+          },
+          "sampling_ms": 1.9731250358745456
+        },
+        {
+          "scene_id": "000050",
+          "img_id": 629,
+          "obj_id": 15,
+          "ok": true,
+          "n_candidates_after_filter": 13,
+          "best_grasp": {
+            "score": 0.948214360489347,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.10170741379261017,
+              0.032093897461891174,
+              0.909760594367981
+            ],
+            "approach_vector": [
+              -0.6087464242779304,
+              -0.028370189664876935,
+              -0.792857441957388
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.10000000000000006,
+            "smoothness_jerk_mean": 1.9774145787389043e-16,
+            "compute_ms": 0.02675002906471491
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.04066689871251583
+          },
+          "sampling_ms": 1.9527919357642531
+        },
+        {
+          "scene_id": "000050",
+          "img_id": 640,
+          "obj_id": 2,
+          "ok": true,
+          "n_candidates_after_filter": 18,
+          "best_grasp": {
+            "score": 0.9662205381413966,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.06898053735494614,
+              -0.09465280175209045,
+              1.0227251052856445
+            ],
+            "approach_vector": [
+              0.5011967657036962,
+              0.027940369032497348,
+              -0.8648821525655863
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.10000000000000006,
+            "smoothness_jerk_mean": 2.150262330797447e-16,
+            "compute_ms": 0.027499976567924023
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205315,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.0363329891115427
+          },
+          "sampling_ms": 1.8538340227678418
+        },
+        {
+          "scene_id": "000050",
+          "img_id": 651,
+          "obj_id": 5,
+          "ok": true,
+          "n_candidates_after_filter": 14,
+          "best_grasp": {
+            "score": 0.9658250152264056,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.11488529294729233,
+              -0.021165756508708,
+              0.8337680101394653
+            ],
+            "approach_vector": [
+              0.48137136608256226,
+              -0.15163974662388732,
+              -0.8633000609056223
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.10000000000000006,
+            "smoothness_jerk_mean": 1.5029672638833504e-16,
+            "compute_ms": 0.02562499139457941
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.035082921385765076
+          },
+          "sampling_ms": 1.8758339574560523
+        },
+        {
+          "scene_id": "000050",
+          "img_id": 653,
+          "obj_id": 5,
+          "ok": true,
+          "n_candidates_after_filter": 18,
+          "best_grasp": {
+            "score": 0.9638910574308074,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.11724348366260529,
+              -0.021084822714328766,
+              0.8336119055747986
+            ],
+            "approach_vector": [
+              -0.47118434493703865,
+              0.21446482673005132,
+              -0.8555642297232294
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999998,
+            "smoothness_jerk_mean": 1.0533055431142019e-16,
+            "compute_ms": 0.024999957531690598
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.03116705920547247
+          },
+          "sampling_ms": 1.860458985902369
+        },
+        {
+          "scene_id": "000050",
+          "img_id": 737,
+          "obj_id": 4,
+          "ok": true,
+          "n_candidates_after_filter": 17,
+          "best_grasp": {
+            "score": 0.9661365799933405,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.18066778779029846,
+              -0.008480027318000793,
+              0.8941423296928406
+            ],
+            "approach_vector": [
+              -0.45928335740604503,
+              0.20400602498541198,
+              -0.8645463199733618
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999996,
+            "smoothness_jerk_mean": 1.1171536949407487e-16,
+            "compute_ms": 0.02537504769861698
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.2499999999999999,
+            "smoothness_jerk_mean": 0.005128205128205212,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.03004097379744053
+          },
+          "sampling_ms": 1.758083002641797
+        },
+        {
+          "scene_id": "000050",
+          "img_id": 757,
+          "obj_id": 10,
+          "ok": true,
+          "n_candidates_after_filter": 18,
+          "best_grasp": {
+            "score": 0.9651123252280416,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.07597358524799347,
+              0.09328791499137878,
+              0.8146910071372986
+            ],
+            "approach_vector": [
+              0.27331516255824734,
+              -0.43003002508606714,
+              -0.8604493009121661
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.1,
+            "smoothness_jerk_mean": 8.327726399044047e-17,
+            "compute_ms": 0.026832916773855686
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.03912497777491808
+          },
+          "sampling_ms": 1.874667010270059
+        },
+        {
+          "scene_id": "000050",
+          "img_id": 1026,
+          "obj_id": 2,
+          "ok": true,
+          "n_candidates_after_filter": 15,
+          "best_grasp": {
+            "score": 0.9643233534252221,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.07142380625009537,
+              -0.08896679431200027,
+              0.9391429424285889
+            ],
+            "approach_vector": [
+              0.21550910700803555,
+              -0.4675508823878705,
+              -0.8572934137008885
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999998,
+            "smoothness_jerk_mean": 6.4051328343759035e-18,
+            "compute_ms": 0.026166089810431004
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.0051282051282052635,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.02962502185255289
+          },
+          "sampling_ms": 1.7883750842884183
+        },
+        {
+          "scene_id": "000050",
+          "img_id": 1094,
+          "obj_id": 2,
+          "ok": true,
+          "n_candidates_after_filter": 16,
+          "best_grasp": {
+            "score": 0.9637259152713646,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.04758051782846451,
+              -0.07639270275831223,
+              0.9227976202964783
+            ],
+            "approach_vector": [
+              0.36462942078031607,
+              0.3690326757403611,
+              -0.8549036610854587
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999992,
+            "smoothness_jerk_mean": 9.137183674786871e-17,
+            "compute_ms": 0.025416957214474678
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.0051282051282052635,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.0290420139208436
+          },
+          "sampling_ms": 1.7687500221654773
+        },
+        {
+          "scene_id": "000051",
+          "img_id": 1,
+          "obj_id": 12,
+          "ok": true,
+          "n_candidates_after_filter": 19,
+          "best_grasp": {
+            "score": 0.9641822521075966,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.05263415351510048,
+              -0.07184579223394394,
+              1.0293941497802734
+            ],
+            "approach_vector": [
+              0.510817552046775,
+              0.07127997358885191,
+              -0.8567290084303862
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999996,
+            "smoothness_jerk_mean": 4.1123529109905937e-16,
+            "compute_ms": 0.024999957531690598
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205315,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.03758305683732033
+          },
+          "sampling_ms": 1.8702909583225846
+        },
+        {
+          "scene_id": "000051",
+          "img_id": 35,
+          "obj_id": 3,
+          "ok": true,
+          "n_candidates_after_filter": 19,
+          "best_grasp": {
+            "score": 0.960007304608366,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.038307033479213715,
+              0.11899125576019287,
+              0.911274254322052
+            ],
+            "approach_vector": [
+              0.3528703631233937,
+              0.41210850392491044,
+              -0.840029218433464
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.10000000000000006,
+            "smoothness_jerk_mean": 1.516411259445417e-16,
+            "compute_ms": 0.02479099202901125
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.028708018362522125
+          },
+          "sampling_ms": 1.7812090227380395
+        },
+        {
+          "scene_id": "000051",
+          "img_id": 515,
+          "obj_id": 4,
+          "ok": true,
+          "n_candidates_after_filter": 14,
+          "best_grasp": {
+            "score": 0.9547613514509481,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.1254771649837494,
+              0.0827435627579689,
+              0.9814160466194153
+            ],
+            "approach_vector": [
+              0.2882284815718136,
+              0.49607354862208475,
+              -0.8190454058037924
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.10000000000000006,
+            "smoothness_jerk_mean": 1.532931346081508e-16,
+            "compute_ms": 0.025042099878191948
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205315,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.03666605334728956
+          },
+          "sampling_ms": 1.7870001029223204
+        },
+        {
+          "scene_id": "000051",
+          "img_id": 571,
+          "obj_id": 17,
+          "ok": true,
+          "n_candidates_after_filter": 15,
+          "best_grasp": {
+            "score": 0.9644697587034239,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.08957619965076447,
+              0.07594099640846252,
+              1.0194828510284424
+            ],
+            "approach_vector": [
+              0.30734230645720817,
+              0.4118061052105538,
+              -0.8578790348136955
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999999,
+            "smoothness_jerk_mean": 1.553965952203881e-16,
+            "compute_ms": 0.024625100195407867
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205315,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.029708025977015495
+          },
+          "sampling_ms": 1.7893750919029117
+        },
+        {
+          "scene_id": "000051",
+          "img_id": 618,
+          "obj_id": 4,
+          "ok": true,
+          "n_candidates_after_filter": 15,
+          "best_grasp": {
+            "score": 0.962053889579457,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.13134901225566864,
+              0.10011789202690125,
+              0.949216902256012
+            ],
+            "approach_vector": [
+              -0.49891969010425813,
+              0.1777906337629921,
+              -0.848215558317828
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.10000000000000005,
+            "smoothness_jerk_mean": 1.8309382200610199e-16,
+            "compute_ms": 0.02558401320129633
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.0051282051282052635,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.030374969355762005
+          },
+          "sampling_ms": 1.8837909447029233
+        },
+        {
+          "scene_id": "000051",
+          "img_id": 672,
+          "obj_id": 1,
+          "ok": true,
+          "n_candidates_after_filter": 14,
+          "best_grasp": {
+            "score": 0.9540523147466131,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.10085868090391159,
+              0.04480033740401268,
+              0.9896484613418579
+            ],
+            "approach_vector": [
+              -0.5777520121896512,
+              -0.00224898990563528,
+              -0.8162092589864522
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.10000000000000009,
+            "smoothness_jerk_mean": 9.39376127004288e-17,
+            "compute_ms": 0.02508307807147503
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205315,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.029166927561163902
+          },
+          "sampling_ms": 1.7535000806674361
+        },
+        {
+          "scene_id": "000051",
+          "img_id": 675,
+          "obj_id": 1,
+          "ok": true,
+          "n_candidates_after_filter": 20,
+          "best_grasp": {
+            "score": 0.9649203687705932,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.1033550351858139,
+              0.0415705107152462,
+              0.9870811104774475
+            ],
+            "approach_vector": [
+              0.005496472019712369,
+              0.5108008909502144,
+              -0.8596814750823725
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999998,
+            "smoothness_jerk_mean": 2.5041699067885734e-16,
+            "compute_ms": 0.02766598481684923
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205315,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.029415939934551716
+          },
+          "sampling_ms": 1.7957499949261546
+        },
+        {
+          "scene_id": "000051",
+          "img_id": 698,
+          "obj_id": 17,
+          "ok": true,
+          "n_candidates_after_filter": 13,
+          "best_grasp": {
+            "score": 0.964726946449342,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.0986626148223877,
+              0.07888324558734894,
+              0.9791395664215088
+            ],
+            "approach_vector": [
+              -0.42787943814871576,
+              0.2814189082243798,
+              -0.8589077857973679
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999992,
+            "smoothness_jerk_mean": 2.5018506219365734e-16,
+            "compute_ms": 0.025374931283295155
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205315,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.030749943107366562
+          },
+          "sampling_ms": 1.749916933476925
+        },
+        {
+          "scene_id": "000051",
+          "img_id": 780,
+          "obj_id": 3,
+          "ok": true,
+          "n_candidates_after_filter": 16,
+          "best_grasp": {
+            "score": 0.966092745508349,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.05785313993692398,
+              0.0987774059176445,
+              0.8909608125686646
+            ],
+            "approach_vector": [
+              0.2723608158413872,
+              -0.4227083999790358,
+              -0.864370982033396
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999998,
+            "smoothness_jerk_mean": 1.3598818439049547e-16,
+            "compute_ms": 0.025499961338937283
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.2499999999999999,
+            "smoothness_jerk_mean": 0.005128205128205212,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.029292074032127857
+          },
+          "sampling_ms": 1.762708998285234
+        },
+        {
+          "scene_id": "000051",
+          "img_id": 1092,
+          "obj_id": 12,
+          "ok": true,
+          "n_candidates_after_filter": 11,
+          "best_grasp": {
+            "score": 0.9527568101007184,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.062187936156988144,
+              -0.06554572284221649,
+              0.9233834147453308
+            ],
+            "approach_vector": [
+              -0.3088995504334368,
+              -0.4968056793823111,
+              -0.8110272404028739
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999994,
+            "smoothness_jerk_mean": 1.98373489584586e-16,
+            "compute_ms": 0.0254589831456542
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.0051282051282052635,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.03616698086261749
+          },
+          "sampling_ms": 1.8665409879758954
+        },
+        {
+          "scene_id": "000051",
+          "img_id": 1111,
+          "obj_id": 17,
+          "ok": true,
+          "n_candidates_after_filter": 13,
+          "best_grasp": {
+            "score": 0.9605161988776836,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.09952831268310547,
+              0.05392174795269966,
+              0.8673991560935974
+            ],
+            "approach_vector": [
+              -0.1581786319649606,
+              -0.515661129571697,
+              -0.8420647955107345
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.10000000000000007,
+            "smoothness_jerk_mean": 2.06251210250183e-16,
+            "compute_ms": 0.02575002145022154
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.2499999999999999,
+            "smoothness_jerk_mean": 0.005128205128205212,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.030832947231829166
+          },
+          "sampling_ms": 1.763541018590331
+        },
+        {
+          "scene_id": "000051",
+          "img_id": 1150,
+          "obj_id": 17,
+          "ok": true,
+          "n_candidates_after_filter": 15,
+          "best_grasp": {
+            "score": 0.9627559723622893,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.10978050529956818,
+              0.048415109515190125,
+              0.876646101474762
+            ],
+            "approach_vector": [
+              0.41510389399182135,
+              -0.32163192748801517,
+              -0.851023889449157
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.10000000000000002,
+            "smoothness_jerk_mean": 2.243255291390083e-16,
+            "compute_ms": 0.024875043891370296
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.2499999999999999,
+            "smoothness_jerk_mean": 0.005128205128205212,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.03254192415624857
+          },
+          "sampling_ms": 1.7577080288901925
+        },
+        {
+          "scene_id": "000052",
+          "img_id": 132,
+          "obj_id": 6,
+          "ok": true,
+          "n_candidates_after_filter": 17,
+          "best_grasp": {
+            "score": 0.9659127377036234,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.13391435146331787,
+              0.1213308796286583,
+              0.9103908538818359
+            ],
+            "approach_vector": [
+              0.26183958958233483,
+              -0.43075174344925776,
+              -0.8636509508144938
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.1,
+            "smoothness_jerk_mean": 6.406972900087453e-17,
+            "compute_ms": 0.02729194238781929
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.032207928597927094
+          },
+          "sampling_ms": 1.7577920807525516
+        },
+        {
+          "scene_id": "000052",
+          "img_id": 388,
+          "obj_id": 5,
+          "ok": true,
+          "n_candidates_after_filter": 16,
+          "best_grasp": {
+            "score": 0.9494039789256616,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.045647479593753815,
+              0.0687803104519844,
+              0.8099254965782166
+            ],
+            "approach_vector": [
+              -0.045566826863494066,
+              0.6014420298810362,
+              -0.7976159157026463
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.1,
+            "smoothness_jerk_mean": 7.565459416977185e-17,
+            "compute_ms": 0.02437504008412361
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.028792070224881172
+          },
+          "sampling_ms": 1.8082919996231794
+        }
+      ],
+      "aggregate": {
+        "n_ok": 30,
+        "n_total": 30,
+        "best_grasp_score": {
+          "mean": 0.96169706519814,
+          "median": 0.9639539177318174,
+          "std": 0.004966292691234007,
+          "min": 0.948214360489347,
+          "max": 0.9662205381413966
+        },
+        "approach_trajectory_length_m": {
+          "mean": 0.10000000000000003,
+          "median": 0.1
+        },
+        "approach_jerk": {
+          "mean": 1.821206558126813e-16,
+          "median": 1.7148134599452013e-16
+        },
+        "diffusion_trajectory_length_m": {
+          "mean": 0.25,
+          "median": 0.25
+        },
+        "diffusion_jerk": {
+          "mean": 0.005128205128205259,
+          "median": 0.0051282051282052635
+        },
+        "sampling_ms": {
+          "mean": 1.8784167439055939,
+          "median": 1.8401460256427526,
+          "p95": 1.9783500116318464
+        },
+        "gripper_phase_consistency": {
+          "open_at_start_pct": 100.0,
+          "closed_at_end_pct": 100.0
+        }
+      }
+    },
+    "tless": {
+      "source_predictions": "predictions_tless_20260427_084807.json",
+      "n_total_predictions": 1012,
+      "sample_size": 30,
+      "records": [
+        {
+          "scene_id": "000001",
+          "img_id": 236,
+          "obj_id": 2,
+          "ok": true,
+          "n_candidates_after_filter": 13,
+          "best_grasp": {
+            "score": 0.9628922184666235,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.08584325760602951,
+              -0.05721951276063919,
+              0.8098357319831848
+            ],
+            "approach_vector": [
+              -0.2986583446109759,
+              0.43085223250667115,
+              -0.851568873866494
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999999,
+            "smoothness_jerk_mean": 4.681383823044504e-17,
+            "compute_ms": 0.02875004429370165
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.038624973967671394
+          },
+          "sampling_ms": 1.9257499370723963
+        },
+        {
+          "scene_id": "000001",
+          "img_id": 236,
+          "obj_id": 30,
+          "ok": true,
+          "n_candidates_after_filter": 17,
+          "best_grasp": {
+            "score": 0.9632994665726848,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.08626095205545425,
+              0.004937724210321903,
+              0.7484822273254395
+            ],
+            "approach_vector": [
+              -0.2670797331598856,
+              0.4480198847062197,
+              -0.8531978662907391
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999999,
+            "smoothness_jerk_mean": 1.5443465266407868e-16,
+            "compute_ms": 0.02575002145022154
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.030499999411404133
+          },
+          "sampling_ms": 1.8584589706733823
+        },
+        {
+          "scene_id": "000001",
+          "img_id": 252,
+          "obj_id": 2,
+          "ok": true,
+          "n_candidates_after_filter": 17,
+          "best_grasp": {
+            "score": 0.9557790635318653,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.028014076873660088,
+              -0.08042991906404495,
+              0.8348329663276672
+            ],
+            "approach_vector": [
+              0.5462302928003374,
+              -0.1552807116754521,
+              -0.8231162541274609
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999998,
+            "smoothness_jerk_mean": 1.9675489625022285e-16,
+            "compute_ms": 0.026417081244289875
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.030000112019479275
+          },
+          "sampling_ms": 1.8717919010668993
+        },
+        {
+          "scene_id": "000001",
+          "img_id": 347,
+          "obj_id": 25,
+          "ok": true,
+          "n_candidates_after_filter": 14,
+          "best_grasp": {
+            "score": 0.9654536886813814,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.04753092676401138,
+              -0.006183010991662741,
+              0.7371417880058289
+            ],
+            "approach_vector": [
+              -0.5035314303098553,
+              0.061085409284817586,
+              -0.8618147547255255
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999996,
+            "smoothness_jerk_mean": 1.7118910528075164e-16,
+            "compute_ms": 0.028542010113596916
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.04516600165516138
+          },
+          "sampling_ms": 2.0671250531449914
+        },
+        {
+          "scene_id": "000001",
+          "img_id": 474,
+          "obj_id": 29,
+          "ok": true,
+          "n_candidates_after_filter": 15,
+          "best_grasp": {
+            "score": 0.9597522927472286,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.07354713976383209,
+              -0.047929130494594574,
+              0.7731829881668091
+            ],
+            "approach_vector": [
+              -0.483956265606144,
+              -0.2486964896757683,
+              -0.8390091709889146
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.10000000000000002,
+            "smoothness_jerk_mean": 1.2034858442657157e-16,
+            "compute_ms": 0.02554105594754219
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.031791976653039455
+          },
+          "sampling_ms": 1.8669159617275
+        },
+        {
+          "scene_id": "000002",
+          "img_id": 3,
+          "obj_id": 7,
+          "ok": true,
+          "n_candidates_after_filter": 13,
+          "best_grasp": {
+            "score": 0.9586513274207679,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.015234512276947498,
+              0.07068074494600296,
+              0.7397767305374146
+            ],
+            "approach_vector": [
+              -0.47928739437144224,
+              0.27150979843360745,
+              -0.8346053096830713
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.10000000000000005,
+            "smoothness_jerk_mean": 1.971931561616603e-16,
+            "compute_ms": 0.026124995201826096
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.03487500362098217
+          },
+          "sampling_ms": 1.9367499044165015
+        },
+        {
+          "scene_id": "000003",
+          "img_id": 41,
+          "obj_id": 12,
+          "ok": true,
+          "n_candidates_after_filter": 19,
+          "best_grasp": {
+            "score": 0.9602995452540974,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.08056166768074036,
+              0.06508688628673553,
+              0.7458268404006958
+            ],
+            "approach_vector": [
+              -0.5313070997709968,
+              0.10049072587880536,
+              -0.8411981810163899
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999996,
+            "smoothness_jerk_mean": 1.4105109769312628e-16,
+            "compute_ms": 0.024833017960190773
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.03095809370279312
+          },
+          "sampling_ms": 1.8519159639254212
+        },
+        {
+          "scene_id": "000003",
+          "img_id": 109,
+          "obj_id": 11,
+          "ok": true,
+          "n_candidates_after_filter": 19,
+          "best_grasp": {
+            "score": 0.9658699403440262,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.03134259581565857,
+              0.0944727286696434,
+              0.7225695848464966
+            ],
+            "approach_vector": [
+              -0.49043023569446625,
+              -0.11781717027044754,
+              -0.8634797613761046
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.1,
+            "smoothness_jerk_mean": 1.1026244975044849e-16,
+            "compute_ms": 0.02475001383572817
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.033541000448167324
+          },
+          "sampling_ms": 1.8819579854607582
+        },
+        {
+          "scene_id": "000003",
+          "img_id": 163,
+          "obj_id": 12,
+          "ok": true,
+          "n_candidates_after_filter": 14,
+          "best_grasp": {
+            "score": 0.9645440952624623,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.011715976521372795,
+              -0.09915675222873688,
+              0.8355220556259155
+            ],
+            "approach_vector": [
+              0.02305646848227959,
+              -0.5128369119606245,
+              -0.8581763810498494
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999996,
+            "smoothness_jerk_mean": 1.6436974332383593e-16,
+            "compute_ms": 0.028166919946670532
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.04229205660521984
+          },
+          "sampling_ms": 2.053124946542084
+        },
+        {
+          "scene_id": "000003",
+          "img_id": 179,
+          "obj_id": 12,
+          "ok": true,
+          "n_candidates_after_filter": 17,
+          "best_grasp": {
+            "score": 0.9662329268907607,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.10076802223920822,
+              -0.01338590495288372,
+              0.769160270690918
+            ],
+            "approach_vector": [
+              0.3482510503684993,
+              0.36140606963541144,
+              -0.8649317075630428
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999996,
+            "smoothness_jerk_mean": 1.734299525176154e-16,
+            "compute_ms": 0.02720800694078207
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.03400002606213093
+          },
+          "sampling_ms": 1.8945420160889626
+        },
+        {
+          "scene_id": "000003",
+          "img_id": 216,
+          "obj_id": 5,
+          "ok": true,
+          "n_candidates_after_filter": 22,
+          "best_grasp": {
+            "score": 0.9652922250568094,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.09012329578399658,
+              0.0017347445245832205,
+              0.750026524066925
+            ],
+            "approach_vector": [
+              -0.4289112173577444,
+              0.2728063285668198,
+              -0.8611689002272377
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.10000000000000006,
+            "smoothness_jerk_mean": 1.4225573878668403e-16,
+            "compute_ms": 0.02654106356203556
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.030708033591508865
+          },
+          "sampling_ms": 1.8817080417647958
+        },
+        {
+          "scene_id": "000003",
+          "img_id": 225,
+          "obj_id": 12,
+          "ok": true,
+          "n_candidates_after_filter": 17,
+          "best_grasp": {
+            "score": 0.9624078278501255,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.0732969343662262,
+              -0.08145767450332642,
+              0.838163435459137
+            ],
+            "approach_vector": [
+              0.45256219324569336,
+              0.2707657584195444,
+              -0.8496313114005019
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.1,
+            "smoothness_jerk_mean": 1.2497927420321008e-16,
+            "compute_ms": 0.025417073629796505
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.029916991479694843
+          },
+          "sampling_ms": 1.8442081054672599
+        },
+        {
+          "scene_id": "000003",
+          "img_id": 323,
+          "obj_id": 12,
+          "ok": true,
+          "n_candidates_after_filter": 20,
+          "best_grasp": {
+            "score": 0.9650966036265715,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.10170464217662811,
+              -0.028265200555324554,
+              0.7787501215934753
+            ],
+            "approach_vector": [
+              -0.05959961157113632,
+              -0.506145338844079,
+              -0.8603864145062857
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999998,
+            "smoothness_jerk_mean": 1.3169698664888192e-16,
+            "compute_ms": 0.025709043256938457
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.02912490162998438
+          },
+          "sampling_ms": 1.8259999342262745
+        },
+        {
+          "scene_id": "000003",
+          "img_id": 354,
+          "obj_id": 18,
+          "ok": true,
+          "n_candidates_after_filter": 15,
+          "best_grasp": {
+            "score": 0.9640276043413774,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.04151265695691109,
+              0.02089710347354412,
+              0.6922618746757507
+            ],
+            "approach_vector": [
+              -0.45235551965132303,
+              0.2498988537773519,
+              -0.8561104173655096
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.1,
+            "smoothness_jerk_mean": 1.0730653216146624e-16,
+            "compute_ms": 0.026416033506393433
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.03333308268338442
+          },
+          "sampling_ms": 2.007458941079676
+        },
+        {
+          "scene_id": "000003",
+          "img_id": 374,
+          "obj_id": 5,
+          "ok": true,
+          "n_candidates_after_filter": 16,
+          "best_grasp": {
+            "score": 0.9624484456275034,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.003385902615264058,
+              0.0042215571738779545,
+              0.690906286239624
+            ],
+            "approach_vector": [
+              0.14224134699833463,
+              0.5075607612999876,
+              -0.8497937825100137
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999998,
+            "smoothness_jerk_mean": 1.5403182832342021e-16,
+            "compute_ms": 0.024916953407227993
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.029957969672977924
+          },
+          "sampling_ms": 1.8076669657602906
+        },
+        {
+          "scene_id": "000003",
+          "img_id": 454,
+          "obj_id": 8,
+          "ok": true,
+          "n_candidates_after_filter": 13,
+          "best_grasp": {
+            "score": 0.9662157454962871,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.030158843845129013,
+              -0.05422200262546539,
+              0.7431890964508057
+            ],
+            "approach_vector": [
+              0.35286282347607156,
+              -0.35707121166547684,
+              -0.8648629819851483
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999998,
+            "smoothness_jerk_mean": 1.5599326525068548e-16,
+            "compute_ms": 0.025250017642974854
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.029333052225410938
+          },
+          "sampling_ms": 1.7643750179558992
+        },
+        {
+          "scene_id": "000004",
+          "img_id": 177,
+          "obj_id": 5,
+          "ok": true,
+          "n_candidates_after_filter": 16,
+          "best_grasp": {
+            "score": 0.9650620627387964,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.027658570557832718,
+              -0.07825076580047607,
+              0.8167157769203186
+            ],
+            "approach_vector": [
+              -0.0618598608922086,
+              0.5061089846455412,
+              -0.8602482509551855
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.1,
+            "smoothness_jerk_mean": 1.352390204798374e-16,
+            "compute_ms": 0.02437504008412361
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.029250048100948334
+          },
+          "sampling_ms": 1.7773329745978117
+        },
+        {
+          "scene_id": "000004",
+          "img_id": 193,
+          "obj_id": 8,
+          "ok": true,
+          "n_candidates_after_filter": 15,
+          "best_grasp": {
+            "score": 0.9637376780319221,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.05213306471705437,
+              0.01119278185069561,
+              0.7478639483451843
+            ],
+            "approach_vector": [
+              0.51016485828375,
+              -0.09376085113030681,
+              -0.8549507121276885
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.10000000000000003,
+            "smoothness_jerk_mean": 1.2405403671252151e-17,
+            "compute_ms": 0.024916953407227993
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.028709066100418568
+          },
+          "sampling_ms": 1.772582996636629
+        },
+        {
+          "scene_id": "000004",
+          "img_id": 286,
+          "obj_id": 26,
+          "ok": true,
+          "n_candidates_after_filter": 17,
+          "best_grasp": {
+            "score": 0.9654418227436172,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.054184574633836746,
+              -0.09113200008869171,
+              0.7565627098083496
+            ],
+            "approach_vector": [
+              0.044557876151295854,
+              -0.5053431822825069,
+              -0.8617672909744688
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.1,
+            "smoothness_jerk_mean": 8.540177112501205e-18,
+            "compute_ms": 0.028916983865201473
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.04341697786003351
+          },
+          "sampling_ms": 1.995457918383181
+        },
+        {
+          "scene_id": "000004",
+          "img_id": 338,
+          "obj_id": 5,
+          "ok": true,
+          "n_candidates_after_filter": 17,
+          "best_grasp": {
+            "score": 0.9636314810420126,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.07851739972829819,
+              -0.01353696919977665,
+              0.7527831196784973
+            ],
+            "approach_vector": [
+              0.25772100211511917,
+              0.45096045280436564,
+              -0.8545259241680502
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.1,
+            "smoothness_jerk_mean": 7.942810596225242e-17,
+            "compute_ms": 0.026374938897788525
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.034415978007018566
+          },
+          "sampling_ms": 1.9209589809179306
+        },
+        {
+          "scene_id": "000004",
+          "img_id": 411,
+          "obj_id": 8,
+          "ok": true,
+          "n_candidates_after_filter": 17,
+          "best_grasp": {
+            "score": 0.9609281814595927,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.056748755276203156,
+              -0.031249405816197395,
+              0.7632387280464172
+            ],
+            "approach_vector": [
+              0.5153940752173369,
+              -0.150059266589079,
+              -0.8437127258383708
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999995,
+            "smoothness_jerk_mean": 1.1748224530033616e-16,
+            "compute_ms": 0.02662499900907278
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.03324996214359999
+          },
+          "sampling_ms": 1.8764169653877616
+        },
+        {
+          "scene_id": "000004",
+          "img_id": 479,
+          "obj_id": 26,
+          "ok": true,
+          "n_candidates_after_filter": 20,
+          "best_grasp": {
+            "score": 0.9610718975957442,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.014527569524943829,
+              -0.08942162245512009,
+              0.7226468324661255
+            ],
+            "approach_vector": [
+              -0.4157567231204211,
+              0.33811952310606963,
+              -0.844287590382977
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.1,
+            "smoothness_jerk_mean": 7.699860816137434e-17,
+            "compute_ms": 0.024959095753729343
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.029791961424052715
+          },
+          "sampling_ms": 1.805374980904162
+        },
+        {
+          "scene_id": "000004",
+          "img_id": 488,
+          "obj_id": 26,
+          "ok": true,
+          "n_candidates_after_filter": 14,
+          "best_grasp": {
+            "score": 0.9643609101539834,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.05247865244746208,
+              -0.09588457643985748,
+              0.7483372092247009
+            ],
+            "approach_vector": [
+              -0.4610720303195811,
+              -0.2284797278190618,
+              -0.8574436406159338
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999998,
+            "smoothness_jerk_mean": 1.3078983718537353e-16,
+            "compute_ms": 0.02420798409730196
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.02837507054209709
+          },
+          "sampling_ms": 1.7668330110609531
+        },
+        {
+          "scene_id": "000005",
+          "img_id": 31,
+          "obj_id": 10,
+          "ok": true,
+          "n_candidates_after_filter": 17,
+          "best_grasp": {
+            "score": 0.963884732107551,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.04994107410311699,
+              -0.07593324035406113,
+              0.7809719443321228
+            ],
+            "approach_vector": [
+              0.4681911101178714,
+              0.22102087310273016,
+              -0.8555389284302042
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999996,
+            "smoothness_jerk_mean": 1.797811822493348e-16,
+            "compute_ms": 0.025499961338937283
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.029249931685626507
+          },
+          "sampling_ms": 1.8827080493792892
+        },
+        {
+          "scene_id": "000005",
+          "img_id": 31,
+          "obj_id": 9,
+          "ok": true,
+          "n_candidates_after_filter": 18,
+          "best_grasp": {
+            "score": 0.9647040276092447,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.0399596132338047,
+              0.046973615884780884,
+              0.742363691329956
+            ],
+            "approach_vector": [
+              -0.15371208717490076,
+              -0.4886793250284232,
+              -0.8588161104369785
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999999,
+            "smoothness_jerk_mean": 1.8941844435124024e-16,
+            "compute_ms": 0.024292035959661007
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.028083915822207928
+          },
+          "sampling_ms": 1.8308330327272415
+        },
+        {
+          "scene_id": "000005",
+          "img_id": 107,
+          "obj_id": 27,
+          "ok": true,
+          "n_candidates_after_filter": 15,
+          "best_grasp": {
+            "score": 0.9656320632714632,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.05428605154156685,
+              -0.058810293674468994,
+              0.7948471903800964
+            ],
+            "approach_vector": [
+              0.3880487389479293,
+              -0.32475096432433975,
+              -0.862528253085853
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999995,
+            "smoothness_jerk_mean": 1.71725211453671e-16,
+            "compute_ms": 0.024540931917726994
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.02787495031952858
+          },
+          "sampling_ms": 1.7702910117805004
+        },
+        {
+          "scene_id": "000005",
+          "img_id": 127,
+          "obj_id": 27,
+          "ok": true,
+          "n_candidates_after_filter": 15,
+          "best_grasp": {
+            "score": 0.965372096516197,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.06108381599187851,
+              -0.03411141782999039,
+              0.780206024646759
+            ],
+            "approach_vector": [
+              0.4000806034360868,
+              0.3126871782304206,
+              -0.8614883860647883
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999998,
+            "smoothness_jerk_mean": 1.113288186385513e-16,
+            "compute_ms": 0.025374931283295155
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.028333044610917568
+          },
+          "sampling_ms": 1.7741670599207282
+        },
+        {
+          "scene_id": "000005",
+          "img_id": 149,
+          "obj_id": 1,
+          "ok": true,
+          "n_candidates_after_filter": 16,
+          "best_grasp": {
+            "score": 0.9450713144953234,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.03093976154923439,
+              -0.0005017410148866475,
+              0.6877864599227905
+            ],
+            "approach_vector": [
+              -0.30899731550352066,
+              -0.5437605862773464,
+              -0.7802852579812938
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.09999999999999996,
+            "smoothness_jerk_mean": 1.7118405169906133e-16,
+            "compute_ms": 0.02420798409730196
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.028832932002842426
+          },
+          "sampling_ms": 1.783750019967556
+        },
+        {
+          "scene_id": "000005",
+          "img_id": 332,
+          "obj_id": 9,
+          "ok": true,
+          "n_candidates_after_filter": 20,
+          "best_grasp": {
+            "score": 0.9662289289513695,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              -0.021414456889033318,
+              -0.0005137852858752012,
+              0.720497190952301
+            ],
+            "approach_vector": [
+              -0.10538956102102033,
+              -0.4907278726346142,
+              -0.8649157158054781
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.10000000000000006,
+            "smoothness_jerk_mean": 7.311349898322317e-17,
+            "compute_ms": 0.024833017960190773
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.029125018045306206
+          },
+          "sampling_ms": 1.8019999843090773
+        },
+        {
+          "scene_id": "000005",
+          "img_id": 409,
+          "obj_id": 4,
+          "ok": true,
+          "n_candidates_after_filter": 21,
+          "best_grasp": {
+            "score": 0.965148568209505,
+            "method": "side",
+            "width_m": 0.085,
+            "position_m": [
+              0.03444888815283775,
+              -0.10659551620483398,
+              0.8378492593765259
+            ],
+            "approach_vector": [
+              0.5088678592258913,
+              0.02076052516817059,
+              -0.8605942728380199
+            ]
+          },
+          "approach_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.1,
+            "smoothness_jerk_mean": 2.230021599450128e-16,
+            "compute_ms": 0.02462498378008604
+          },
+          "diffusion_trajectory": {
+            "n_waypoints": 16,
+            "length_m": 0.25,
+            "smoothness_jerk_mean": 0.005128205128205204,
+            "gripper_open_at_start": true,
+            "gripper_closed_at_end": true,
+            "compute_ms": 0.028708018362522125
+          },
+          "sampling_ms": 1.8079999135807157
+        }
+      ],
+      "aggregate": {
+        "n_ok": 30,
+        "n_total": 30,
+        "best_grasp_score": {
+          "mean": 0.9629512927365631,
+          "median": 0.9641942572476804,
+          "std": 0.004128998835942439,
+          "min": 0.9450713144953234,
+          "max": 0.9662329268907607
+        },
+        "approach_trajectory_length_m": {
+          "mean": 0.1,
+          "median": 0.09999999999999999
+        },
+        "approach_jerk": {
+          "mean": 1.3241826222887083e-16,
+          "median": 1.3814505908648185e-16
+        },
+        "diffusion_trajectory_length_m": {
+          "mean": 0.25,
+          "median": 0.25
+        },
+        "diffusion_jerk": {
+          "mean": 0.005128205128205202,
+          "median": 0.005128205128205204
+        },
+        "sampling_ms": {
+          "mean": 1.8635485515308876,
+          "median": 1.8551874672994018,
+          "p95": 2.0325752440840006
+        },
+        "gripper_phase_consistency": {
+          "open_at_start_pct": 100.0,
+          "closed_at_end_pct": 100.0
+        }
+      }
+    }
+  }
+}
