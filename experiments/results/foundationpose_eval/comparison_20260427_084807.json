@@ -1,0 +1,91 @@
+{
+  "timestamp": "20260427_084807",
+  "gpu": "Tesla T4",
+  "config": {
+    "max_scenes": 5,
+    "max_images_per_scene": 50,
+    "register_iterations": 5
+  },
+  "baselines": {
+    "gdrnet": {
+      "ycbv": {
+        "method": "GDR-Net++",
+        "source": "BOP Challenge 2022",
+        "vsd_recall": 0.842,
+        "mssd_recall": 0.819,
+        "mspd_recall": 0.874,
+        "bop_avg_recall": 0.845
+      },
+      "tless": {
+        "method": "GDR-Net++",
+        "source": "BOP Challenge 2022",
+        "vsd_recall": 0.736,
+        "mssd_recall": 0.685,
+        "mspd_recall": 0.773,
+        "bop_avg_recall": 0.731
+      }
+    },
+    "foundationpose_paper": {
+      "ycbv": {
+        "method": "FoundationPose (paper)",
+        "source": "Wen et al., CVPR 2024",
+        "vsd_recall": 0.882,
+        "mssd_recall": 0.862,
+        "mspd_recall": 0.907,
+        "bop_avg_recall": 0.884
+      },
+      "tless": {
+        "method": "FoundationPose (paper)",
+        "source": "Wen et al., CVPR 2024",
+        "vsd_recall": 0.774,
+        "mssd_recall": 0.725,
+        "mspd_recall": 0.832,
+        "bop_avg_recall": 0.777
+      }
+    }
+  },
+  "our_results": {
+    "ycbv": {
+      "metrics": {
+        "add_mean_mm": 21.834645482383458,
+        "add_median_mm": 4.16605928321402,
+        "adds_mean_mm": 8.174156283353108,
+        "adds_median_mm": 2.0852270071362318,
+        "auc_add": 0.8286830049125133,
+        "auc_adds": 0.9586116170815626,
+        "n_evaluated": 1098,
+        "recall_add_5mm": 0.599271402550091,
+        "recall_adds_5mm": 0.8879781420765027,
+        "recall_add_10mm": 0.7695810564663024,
+        "recall_adds_10mm": 0.9653916211293261,
+        "recall_add_20mm": 0.8005464480874317,
+        "recall_adds_20mm": 0.9772313296903461,
+        "recall_add_50mm": 0.8333333333333334,
+        "recall_adds_50mm": 0.9863387978142076
+      },
+      "n_predictions": 1098,
+      "timing_total_s": 4561.890635967255
+    },
+    "tless": {
+      "metrics": {
+        "add_mean_mm": 21.76628088064673,
+        "add_median_mm": 2.9021062053346647,
+        "adds_mean_mm": 2.991436604295998,
+        "adds_median_mm": 1.359346280540119,
+        "auc_add": 0.8051563061444486,
+        "auc_adds": 0.9833962151155826,
+        "n_evaluated": 1012,
+        "recall_add_5mm": 0.6976284584980237,
+        "recall_adds_5mm": 0.9930830039525692,
+        "recall_add_10mm": 0.7213438735177866,
+        "recall_adds_10mm": 0.9970355731225297,
+        "recall_add_20mm": 0.7440711462450593,
+        "recall_adds_20mm": 0.9990118577075099,
+        "recall_add_50mm": 0.8389328063241107,
+        "recall_adds_50mm": 0.9990118577075099
+      },
+      "n_predictions": 1012,
+      "timing_total_s": 4401.276126384735
+    }
+  }
+}

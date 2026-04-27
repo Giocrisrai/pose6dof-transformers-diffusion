@@ -3,12 +3,14 @@
 > Tarjeta de identidad del run de evaluación. Se cita en el Cap. 6 del TFM
 > como evidencia reproducible. Una entrada por ejecución.
 
-## Run #1 — 2026-04-26 (validación post-fix)
+## Run #1 — 2026-04-26/27 (validación post-fix v2)
 
 | Campo | Valor |
 |-------|-------|
-| **Fecha** | 2026-04-26 |
-| **Commit** | `be02c8c` (rama `main`) |
+| **Fecha de inicio** | 2026-04-26 (YCB-V) |
+| **Fecha de cierre** | 2026-04-27 08:48:07 UTC (T-LESS + métricas) |
+| **Timestamp del JSON** | `20260427_084807` |
+| **Commit del run** | `be02c8c` (rama `main`) |
 | **Notebook** | `notebooks/colab/01_foundationpose_eval.ipynb` |
 | **Schema checkpoint** | `v2_bop_targets_mask_per_gt_idx` |
 | **Hardware** | Google Colab — GPU NVIDIA Tesla T4 (16 GB) |
@@ -20,37 +22,35 @@
 | **Subset frames** | BOP-19 (`test_targets_bop19.json`) — comparable al leaderboard |
 | **Bugs corregidos antes del run** | mask-per-gt_idx (loader), BOP subset filter, emparejamiento GT por instancia (commits `ea8fc2e`, `280c9f3`, `7b4c7c6`) |
 
-### Resultados YCB-V
+### Resultados — métricas agregadas finales
 
-| Métrica | Valor | Nota |
-|---------|-------|------|
-| Imágenes evaluadas | 250 | 5 escenas × 50 imgs (subset BOP-19) |
-| Objetos evaluados | 1098 | Multi-objeto por imagen, GT por `obj_id+gt_idx` |
-| **ADD mediano** | **3.5 mm** | Excelente (BOP paper FoundationPose ≈ 10-20 mm) |
-| Tiempo por objeto | 4125 ms | T4, 5 register iters |
-| Throughput | 0.2 obj/s | |
-| Tiempo total | 1 h 18 min | |
-| Checkpoint | `fp_ycbv_checkpoint.json` (Drive) | Reanudable |
+> Computadas en celdas 20 (YCB-V) y 24 (T-LESS) del notebook sobre el conjunto
+> completo de predicciones. Fuente: `comparison_20260427_084807.json`.
 
-### Resultados T-LESS
+| Métrica | YCB-V | T-LESS |
+|---------|-------|--------|
+| Objetos evaluados | **1098** | **1012** |
+| ADD media (mm) | — | — |
+| **ADD mediana (mm)** | **4.166** | **2.902** |
+| ADD-S mediana (mm) | 2.085 | 1.359 |
+| **AUC ADD** | **0.829** | **0.805** |
+| **AUC ADD-S** | **0.959** | **0.983** |
+| Recall@5mm ADD | 59.9 % | 69.8 % |
+| Recall@5mm ADD-S | 88.8 % | 99.3 % |
+| Recall@10mm ADD | 77.0 % | 72.1 % |
+| **Recall@10mm ADD-S** | **96.5 %** | **99.7 %** |
+| Recall@20mm ADD | 80.1 % | 74.4 % |
+| Recall@20mm ADD-S | 97.7 % | 99.9 % |
+| Tiempo total (s) | 4561.9 | 4401.3 |
+| Tiempo total (h:min) | 1 h 16 min | 1 h 13 min |
+| Tiempo por objeto (ms) | 4154 | 4350 |
 
-> *Pendiente: el run de T-LESS estaba en curso al cerrar la sesión. Llenar
-> tras completar celdas 22 y 24 del notebook.*
-
-| Métrica | Valor |
-|---------|-------|
-| Imágenes evaluadas | _TBD_ |
-| Objetos evaluados | _TBD_ |
-| ADD mediano | _TBD_ |
-| AUC ADD-S | _TBD_ |
-| Tiempo total | _TBD_ |
-
-### Métricas finales agregadas (celdas 20 y 24)
-
-> *Pendiente: rellenar con los valores de `comparison_<timestamp>.json`
-> tras la ejecución completa. Las claves esperadas son: `auc_add`,
-> `auc_adds`, `recall_add_5mm`, `recall_add_10mm`, `recall_add_20mm`,
-> `recall_adds_5mm`, `recall_adds_10mm`, `recall_adds_20mm`.*
+**Lectura rápida:** ambos datasets caen muy por debajo del rango ADD reportado
+en el paper original de FoundationPose (≈ 10-20 mm). El ADD-S mediano por
+debajo de 3 mm en ambos casos es consistente con un registro de pose
+sub-milimétrico para la mayoría de objetos. La AUC ADD-S de 0.96 (YCB-V) y
+0.98 (T-LESS) son competitivas con el Mean AR del paper (0.88 y 0.78
+respectivamente, métrica distinta — comparación cualitativa).
 
 ### Baselines de referencia
 

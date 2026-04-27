@@ -1,0 +1,20 @@
+\begin{table}[ht]
+\centering
+\caption{Comparativa FoundationPose (nuestra ejecucion en Colab) vs GDR-Net++ y FoundationPose oficial (BOP Challenge 2022 y Wen et al. CVPR 2024).}
+\label{tab:fp_gdrnet_comparison}
+\begin{tabular}{llcccc}
+\toprule
+Dataset & Metodo & ADD-S AUC & ADD AUC & Recall@10mm ADD-S & N objs \\
+\midrule
+YCB-V & FP (nuestra, ADD-based) & 0.959 & 0.829 & 96.5\% & 1098 \\
+YCB-V & GDR-Net++ (BOP 2022 AR) & --- & --- & --- & --- \\
+YCB-V & FP (paper, BOP AR) & --- & --- & --- & --- \\
+T-LESS & FP (nuestra, ADD-based) & 0.983 & 0.805 & 99.7\% & 1012 \\
+T-LESS & GDR-Net++ (BOP 2022 AR) & --- & --- & --- & --- \\
+T-LESS & FP (paper, BOP AR) & --- & --- & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% Nota: GDR-Net y FP paper reportan AR VSD/MSSD/MSPD, no ADD/ADD-S.
+% Nuestra evaluacion usa ADD/ADD-S porque el BOP toolkit VSD no esta implementado localmente.

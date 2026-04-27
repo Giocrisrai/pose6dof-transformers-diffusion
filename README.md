@@ -127,12 +127,16 @@ el Cap. 6 del TFM están versionados en este repositorio para auditoría:
 | Lockfile Colab | `requirements.colab.lock.txt` | `pip freeze` del entorno Colab que produjo los resultados |
 | Contenedor GPU equivalente | `docker/inference-gpu.Dockerfile` | torch 2.1.2+cu121, pytorch3d v0.7.8, FP commit fijo |
 
-Resumen de un golpe de vista (validado en run del 2026-04-26, schema
-`v2_bop_targets_mask_per_gt_idx`):
+Resumen de un golpe de vista (run del 2026-04-26/27, JSON
+`comparison_20260427_084807.json`, schema `v2_bop_targets_mask_per_gt_idx`):
 
-- **YCB-V** -- ADD mediano **3.5 mm** sobre 1098 objetos (5 escenas × 50
-  imgs, subset BOP-19). Detalles en RUN_CARD.
-- **T-LESS** -- pendiente de cierre del run en curso.
+| Dataset | N obj | ADD med (mm) | ADD-S med (mm) | AUC ADD-S | Recall@10mm ADD-S |
+|---------|------:|-------------:|---------------:|----------:|------------------:|
+| YCB-V   | 1098  | **4.17**     | 2.09           | **0.959** | **96.5 %**        |
+| T-LESS  | 1012  | **2.90**     | 1.36           | **0.983** | **99.7 %**        |
+
+Subset BOP-19, 5 escenas × 50 imágenes por dataset, GPU Colab T4. Detalles
+completos en `experiments/results/foundationpose_eval/RUN_CARD.md`.
 
 ## Datasets de Evaluacion
 
