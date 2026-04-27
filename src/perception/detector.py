@@ -14,12 +14,23 @@ References:
 """
 
 import numpy as np
-import cv2
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def _cv2():
+    """Importa cv2 perezosamente. Mensaje claro si falta."""
+    try:
+        import cv2 as _cv
+        return _cv
+    except ImportError as e:
+        raise ImportError(
+            "Esta función requiere opencv-python. Instala con "
+            "`pip install opencv-python` o `uv sync`."
+        ) from e
 
 
 @dataclass
@@ -128,6 +139,7 @@ class SimpleSegmentor:
             hist, edges = np.histogram(valid_depth, bins=100)
             plane_height = edges[np.argmax(hist)]
 
+        cv2 = _cv2()
         # Objects are above the plane (closer to camera = smaller depth)
         object_mask = (depth > 0) & (depth < plane_height - self.plane_distance)
 
@@ -232,6 +244,7 @@ def draw_detections(
     Returns:
         annotated image
     """
+    cv2 = _cv2()
     img_out = img.copy()
     colors = [
         (255, 0, 0), (0, 255, 0), (0, 0, 255),

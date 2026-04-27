@@ -1,0 +1,42 @@
+MIT License
+
+Copyright (c) 2026 Giocrisrai Godoy Bonillo, José Miguel Carrasco
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+================================================================================
+
+THIRD-PARTY COMPONENTS — Licencias separadas
+
+Este repositorio se distribuye bajo MIT, pero algunas dependencias externas
+(modelos pre-entrenados, datasets, herramientas de simulación) tienen
+licencias propias que el usuario final debe respetar. En particular:
+
+- FoundationPose (modelos y código upstream): NVIDIA Source Code License,
+  uso académico/no comercial. Ver
+  https://github.com/NVlabs/FoundationPose/blob/main/LICENSE
+- Datasets BOP (T-LESS, YCB-Video): Creative Commons (BY 4.0 / BY-NC-SA 4.0),
+  usables solo para investigación. Ver https://bop.felk.cvut.cz/datasets/
+- Diffusion Policy (Chi et al., 2023): MIT License.
+- CoppeliaSim Edu: licencia educativa gratuita para uso académico.
+- ROS 2 Humble: Apache License 2.0.
+- pytorch3d, nvdiffrast: BSD 3-Clause.
+
+Este aviso es informativo y no extiende ni restringe los derechos otorgados
+por la MIT License sobre el código contenido en este repositorio.

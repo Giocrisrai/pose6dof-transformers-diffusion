@@ -18,6 +18,7 @@
 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Giocrisrai/pose6dof-transformers-diffusion/blob/main/notebooks/colab/00_colab_setup.ipynb) | **Setup Colab** -- Entorno, datasets BOP, Google Drive |
 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Giocrisrai/pose6dof-transformers-diffusion/blob/main/notebooks/colab/01_foundationpose_eval.ipynb) | **FoundationPose Eval** -- Inferencia GPU en YCB-V y T-LESS |
 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Giocrisrai/pose6dof-transformers-diffusion/blob/main/notebooks/colab/02_gdrnet_eval.ipynb) | **GDR-Net++ Eval** -- Baseline comparativo + tabla FP vs GDR |
+| [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Giocrisrai/pose6dof-transformers-diffusion/blob/main/notebooks/colab/03_results_analysis.ipynb) | **Results Analysis** -- Agregación de métricas y figuras finales |
 
 ---
 
@@ -58,7 +59,7 @@ pose6dof-transformers-diffusion/
 │   │   ├── 00_colab_setup.ipynb
 │   │   └── 01_foundationpose_eval.ipynb
 │   └── 04_math_foundations.ipynb  # Demos matematicas
-├── tests/                   # pytest (24/24 passing)
+├── tests/                   # pytest (77/77 passing)
 ├── docker/                  # ROS 2 Humble + MoveIt 2
 │   ├── Dockerfile
 │   └── docker-compose.yml
@@ -82,7 +83,7 @@ uv sync
 pip install -e ".[dev,colab]"
 
 # Tests
-pytest tests/ -v  # 24/24 passing
+pytest tests/ -v  # 77/77 passing (sin GPU; los módulos que requieren cv2 lo importan perezosamente)
 
 # Descargar datasets BOP (requiere ~30 GB)
 bash scripts/download_datasets.sh
@@ -110,6 +111,29 @@ El `docker/inference-gpu.Dockerfile` congela torch 2.1.2+cu121 + pytorch3d v0.7.
 nvdiffrast v0.3.3 + FoundationPose commit fijo. El `requirements.colab.lock.txt`
 documenta las versiones validadas en Colab Free.
 
+## Evidencia experimental (respaldo del TFM)
+
+Los resultados de la evaluación de FoundationPose / GDR-Net++ que se citan en
+el Cap. 6 del TFM están versionados en este repositorio para auditoría:
+
+| Artefacto | Ruta | Contenido |
+|-----------|------|-----------|
+| Tarjeta del run | `experiments/results/foundationpose_eval/RUN_CARD.md` | Commit, fecha, GPU, MODE, fixes aplicados, métricas validadas |
+| Política de carpeta | `experiments/results/foundationpose_eval/README.md` | Schema de los JSON, qué se versiona y qué no |
+| Resultados crudos | `experiments/results/foundationpose_eval/comparison_*.json` | Métricas agregadas (ADD/ADD-S/AUC/recalls) |
+| Predicciones por frame | `experiments/results/foundationpose_eval/predictions_*.json` | Pose estimada por imagen para reproducibilidad |
+| Patch Cap. 6 | `docs/cap6_seccion_foundationpose.md` | Sección redactada lista para integrar al `.docx` |
+| Figuras Cap. 6 | `experiments/results/chapter6_figures/` | PNG y `fp_results_table.tex` generados por `experiments/generate_chapter6_figures.py` |
+| Lockfile Colab | `requirements.colab.lock.txt` | `pip freeze` del entorno Colab que produjo los resultados |
+| Contenedor GPU equivalente | `docker/inference-gpu.Dockerfile` | torch 2.1.2+cu121, pytorch3d v0.7.8, FP commit fijo |
+
+Resumen de un golpe de vista (validado en run del 2026-04-26, schema
+`v2_bop_targets_mask_per_gt_idx`):
+
+- **YCB-V** -- ADD mediano **3.5 mm** sobre 1098 objetos (5 escenas × 50
+  imgs, subset BOP-19). Detalles en RUN_CARD.
+- **T-LESS** -- pendiente de cierre del run en curso.
+
 ## Datasets de Evaluacion
 
 | Dataset | Objetos | Tipo | Uso en TFM |
@@ -136,13 +160,22 @@ documenta las versiones validadas en Colab Free.
 | Diffusion Policy training | -- | GPU acelerado |
 | Visualizacion / figuras | matplotlib local | Inline |
 
-## Licencias de Software
+## Licencia y citación
 
-- FoundationPose: NVIDIA Non-Commercial (uso academico)
+El **código de este repositorio** se distribuye bajo licencia **MIT** (ver
+[`LICENSE`](LICENSE)). Las dependencias y modelos pre-entrenados de terceros
+mantienen sus licencias propias, listadas en `LICENSE` y resumidas a
+continuación:
+
+- FoundationPose: NVIDIA Source Code License (uso académico/no comercial)
 - Diffusion Policy: MIT
 - CoppeliaSim: Educational
 - ROS 2: Apache 2.0
 - Datasets BOP: CC BY 4.0 / CC BY-NC-SA 4.0
+- pytorch3d, nvdiffrast: BSD 3-Clause
+
+Si usas este código o los resultados experimentales, cita el TFM siguiendo
+el formato definido en [`CITATION.cff`](CITATION.cff).
 
 ## Bibliografia Principal
 

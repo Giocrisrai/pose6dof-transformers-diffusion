@@ -3,12 +3,29 @@ Visualization utilities for 6-DoF pose estimation.
 
 Provides functions to overlay estimated poses on RGB images,
 visualize 3D point clouds, and plot comparative results.
+
+Nota: ``cv2`` (opencv-python) se importa de forma perezosa solo en las
+funciones que dibujan sobre imágenes. Esto permite que el resto del paquete
+``src.utils`` (métricas, lie groups, dataset loader) sea utilizable en
+entornos sin OpenCV instalado, como un Mac sin OpenCV nativo o el subset de
+tests que solo ejercita matemáticas.
 """
 
 import numpy as np
-import cv2
 import matplotlib.pyplot as plt
 from typing import Optional, Tuple, List
+
+
+def _cv2():
+    """Importa cv2 bajo demanda. Da un mensaje claro si falta."""
+    try:
+        import cv2 as _cv
+        return _cv
+    except ImportError as e:
+        raise ImportError(
+            "Esta función requiere opencv-python. Instala con "
+            "`pip install opencv-python` o `uv add opencv-python`."
+        ) from e
 
 
 def draw_pose_axes(
@@ -34,6 +51,7 @@ def draw_pose_axes(
     Returns:
         Image with axes drawn
     """
+    cv2 = _cv2()
     img_out = img.copy()
 
     # 3D axis endpoints
@@ -87,6 +105,7 @@ def draw_projected_points(
     Returns:
         Image with projected points
     """
+    cv2 = _cv2()
     img_out = img.copy()
     pts_cam = (R @ points.T).T + t
     pts_2d = (K @ pts_cam.T).T
@@ -122,6 +141,7 @@ def draw_bbox_3d(
     Returns:
         Image with 3D bbox
     """
+    cv2 = _cv2()
     img_out = img.copy()
 
     # Project corners
@@ -168,6 +188,7 @@ def plot_pose_comparison(
     Returns:
         matplotlib Figure
     """
+    cv2 = _cv2()
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
     img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)

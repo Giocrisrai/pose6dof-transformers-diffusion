@@ -14,8 +14,20 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-import cv2
 import numpy as np
+
+
+def _cv2():
+    """Importa cv2 perezosamente (solo cuando se llama a load_image/depth/mask)."""
+    try:
+        import cv2 as _cv
+        return _cv
+    except ImportError as e:
+        raise ImportError(
+            "Cargar imágenes/depth/máscaras BOP requiere opencv-python. "
+            "Instala con `pip install opencv-python` o `uv sync` para obtener "
+            "todas las dependencias declaradas en pyproject.toml."
+        ) from e
 
 
 class BOPDataset:
@@ -182,6 +194,7 @@ class BOPDataset:
             filename = f"{img_id:06d}.jpg"
             path = rgb_dir / filename
 
+        cv2 = _cv2()
         img = cv2.imread(str(path))
         if img is None:
             raise FileNotFoundError(f"RGB image not found: {path}")
@@ -197,6 +210,7 @@ class BOPDataset:
         Returns:
             (H, W) depth map in mm (uint16 or float)
         """
+        cv2 = _cv2()
         depth_dir = self.split_dir / scene_id / "depth"
         path = depth_dir / f"{img_id:06d}.png"
         depth = cv2.imread(str(path), cv2.IMREAD_UNCHANGED)
@@ -217,6 +231,7 @@ class BOPDataset:
         Returns:
             (H, W) binary mask (bool), or None if not available
         """
+        cv2 = _cv2()
         mask_type = "mask_visib" if visible_only else "mask"
         mask_dir = self.split_dir / scene_id / mask_type
         path = mask_dir / f"{img_id:06d}_{obj_idx:06d}.png"

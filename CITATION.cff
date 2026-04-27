@@ -1,0 +1,46 @@
+cff-version: 1.2.0
+message: "Si usas este código o los resultados experimentales, cita el TFM como se indica abajo."
+title: "Estimación de Pose 6-DoF mediante Transformers y Modelos de Difusión para Bin Picking Robótico"
+abstract: >-
+  Trabajo de Fin de Máster que evalúa FoundationPose (Wen et al., CVPR 2024) y
+  GDR-Net++ (Wang et al., CVPR 2021) sobre los datasets BOP YCB-Video y T-LESS,
+  e integra Diffusion Policy (Chi et al., RSS 2023) para la planificación de
+  trayectorias de agarre en bin picking robótico industrial. El repositorio
+  incluye el pipeline completo (percepción + planificación + simulación con
+  ROS 2 / CoppeliaSim), notebooks reproducibles en Google Colab y un contenedor
+  Docker GPU con versiones congeladas para reproducibilidad estricta.
+type: software
+authors:
+  - given-names: Giocrisrai
+    family-names: Godoy Bonillo
+    email: giocrisrai@gmail.com
+  - given-names: José Miguel
+    family-names: Carrasco
+    email: jmcarrascoc@gmail.com
+repository-code: "https://github.com/Giocrisrai/pose6dof-transformers-diffusion"
+url: "https://github.com/Giocrisrai/pose6dof-transformers-diffusion"
+license: MIT
+keywords:
+  - 6-DoF pose estimation
+  - FoundationPose
+  - GDR-Net
+  - Diffusion Policy
+  - bin picking
+  - robotic manipulation
+  - SE(3)
+  - BOP benchmark
+  - YCB-Video
+  - T-LESS
+preferred-citation:
+  type: thesis
+  title: "Estimación de Pose 6-DoF mediante Transformers y Modelos de Difusión para Bin Picking Robótico"
+  authors:
+    - given-names: Giocrisrai
+      family-names: Godoy Bonillo
+    - given-names: José Miguel
+      family-names: Carrasco
+  thesis-type: "Trabajo Fin de Máster"
+  institution:
+    name: "Universidad Internacional de La Rioja (UNIR)"
+  year: 2026
+  month: 7
