@@ -1,0 +1,203 @@
+{
+  "timestamp": "2026-04-27T20:24:43.689761",
+  "description": "FoundationPose vs GDR-Net++ comparison + Diffusion planning + CoppeliaSim infrastructure for TFM Chapter 6",
+  "foundationpose_own": {
+    "ycbv": {
+      "add_mean_mm": 21.834645482383458,
+      "add_median_mm": 4.16605928321402,
+      "adds_mean_mm": 8.174156283353108,
+      "adds_median_mm": 2.0852270071362318,
+      "auc_add": 0.8286830049125133,
+      "auc_adds": 0.9586116170815626,
+      "n_evaluated": 1098,
+      "recall_add_5mm": 0.599271402550091,
+      "recall_adds_5mm": 0.8879781420765027,
+      "recall_add_10mm": 0.7695810564663024,
+      "recall_adds_10mm": 0.9653916211293261,
+      "recall_add_20mm": 0.8005464480874317,
+      "recall_adds_20mm": 0.9772313296903461,
+      "recall_add_50mm": 0.8333333333333334,
+      "recall_adds_50mm": 0.9863387978142076
+    },
+    "tless": {
+      "add_mean_mm": 21.76628088064673,
+      "add_median_mm": 2.9021062053346647,
+      "adds_mean_mm": 2.991436604295998,
+      "adds_median_mm": 1.359346280540119,
+      "auc_add": 0.8051563061444486,
+      "auc_adds": 0.9833962151155826,
+      "n_evaluated": 1012,
+      "recall_add_5mm": 0.6976284584980237,
+      "recall_adds_5mm": 0.9930830039525692,
+      "recall_add_10mm": 0.7213438735177866,
+      "recall_adds_10mm": 0.9970355731225297,
+      "recall_add_20mm": 0.7440711462450593,
+      "recall_adds_20mm": 0.9990118577075099,
+      "recall_add_50mm": 0.8389328063241107,
+      "recall_adds_50mm": 0.9990118577075099
+    },
+    "_meta": {
+      "source": "experiments/results/foundationpose_eval/comparison_20260427_084807.json"
+    }
+  },
+  "foundationpose_paper": {
+    "ycbv": {
+      "AR_VSD": 0.882,
+      "AR_MSSD": 0.862,
+      "AR_MSPD": 0.907,
+      "Mean_AR": 0.884
+    },
+    "tless": {
+      "AR_VSD": 0.774,
+      "AR_MSSD": 0.725,
+      "AR_MSPD": 0.832,
+      "Mean_AR": 0.777
+    }
+  },
+  "gdrnet_leaderboard": {
+    "ycbv": {
+      "AR_VSD": 0.842,
+      "AR_MSSD": 0.819,
+      "AR_MSPD": 0.874,
+      "Mean_AR": 0.845
+    },
+    "tless": {
+      "AR_VSD": 0.736,
+      "AR_MSSD": 0.685,
+      "AR_MSPD": 0.773,
+      "Mean_AR": 0.731
+    }
+  },
+  "diffusion_planning": {
+    "ycbv_aggregate": {
+      "n_ok": 30,
+      "n_total": 30,
+      "best_grasp_score": {
+        "mean": 0.96169706519814,
+        "median": 0.9639539177318174,
+        "std": 0.004966292691234007,
+        "min": 0.948214360489347,
+        "max": 0.9662205381413966
+      },
+      "approach_trajectory_length_m": {
+        "mean": 0.10000000000000003,
+        "median": 0.1
+      },
+      "approach_jerk": {
+        "mean": 1.821206558126813e-16,
+        "median": 1.7148134599452013e-16
+      },
+      "diffusion_trajectory_length_m": {
+        "mean": 0.25,
+        "median": 0.25
+      },
+      "diffusion_jerk": {
+        "mean": 0.005128205128205259,
+        "median": 0.0051282051282052635
+      },
+      "sampling_ms": {
+        "mean": 1.8784167439055939,
+        "median": 1.8401460256427526,
+        "p95": 1.9783500116318464
+      },
+      "gripper_phase_consistency": {
+        "open_at_start_pct": 100.0,
+        "closed_at_end_pct": 100.0
+      }
+    },
+    "tless_aggregate": {
+      "n_ok": 30,
+      "n_total": 30,
+      "best_grasp_score": {
+        "mean": 0.9629512927365631,
+        "median": 0.9641942572476804,
+        "std": 0.004128998835942439,
+        "min": 0.9450713144953234,
+        "max": 0.9662329268907607
+      },
+      "approach_trajectory_length_m": {
+        "mean": 0.1,
+        "median": 0.09999999999999999
+      },
+      "approach_jerk": {
+        "mean": 1.3241826222887083e-16,
+        "median": 1.3814505908648185e-16
+      },
+      "diffusion_trajectory_length_m": {
+        "mean": 0.25,
+        "median": 0.25
+      },
+      "diffusion_jerk": {
+        "mean": 0.005128205128205202,
+        "median": 0.005128205128205204
+      },
+      "sampling_ms": {
+        "mean": 1.8635485515308876,
+        "median": 1.8551874672994018,
+        "p95": 2.0325752440840006
+      },
+      "gripper_phase_consistency": {
+        "open_at_start_pct": 100.0,
+        "closed_at_end_pct": 100.0
+      }
+    },
+    "meta": {
+      "generated_at": "2026-04-27T19:21:33",
+      "rng_seed": 42,
+      "horizon": 16,
+      "n_grasp_candidates": 64,
+      "sampler": {
+        "gripper_width_m": 0.085,
+        "standoff_distance_m": 0.1,
+        "approach_min_angle_rad": 0.0,
+        "approach_max_angle_rad": 1.0471975511965976
+      },
+      "planner": {
+        "action_dim": 7,
+        "horizon": 16,
+        "n_diffusion_steps": 100,
+        "trained": false
+      },
+      "source_run": "experiments/results/foundationpose_eval/comparison_20260427_084807.json"
+    }
+  },
+  "coppelia_smoke": {
+    "connect_ms": 149.83,
+    "server_version": 41000,
+    "scene_loaded": "pickAndPlaceDemo.ttt",
+    "discovered_handles": {
+      "/Floor": {
+        "handle": 295,
+        "alias": "Floor"
+      },
+      "/genericConveyorTypeA": {
+        "handle": 8,
+        "alias": "genericConveyorTypeA"
+      },
+      "/genericDetectionWindow": {
+        "handle": 27,
+        "alias": "genericDetectionWindow"
+      }
+    },
+    "vision_sensor": {
+      "handle": 297,
+      "resolution": [
+        640,
+        480
+      ],
+      "image_mean_intensity": 152.8868044704861,
+      "image_std": 45.72128940231936,
+      "image_max": 255
+    },
+    "stepping": {
+      "n_steps": 100,
+      "sim_time_advanced_s": 5.0,
+      "step_ms_mean": 18.117,
+      "step_ms_min": 10.844,
+      "step_ms_max": 241.608
+    },
+    "outputs": {
+      "overview_png": "experiments/results/coppelia_smoke/coppelia_overview_pickandplace.png"
+    }
+  }
+}
