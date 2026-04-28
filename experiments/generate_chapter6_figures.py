@@ -216,16 +216,17 @@ def generate_results_table():
 
 FP_REAL_DIR = RESULTS_DIR / "foundationpose_eval"
 
-# GDR-Net++ oficial, BOP Challenge 2022 Leaderboard
+# Baselines oficiales — fuente única reconciliada el 2026-04-28 con notebook 02
+# y JSON comparison_20260428_025531.json. Ordenación BOP típica VSD < MSSD < MSPD.
 GDRNET_BOP_OFFICIAL = {
-    "ycbv":  {"AR_VSD": 0.842, "AR_MSSD": 0.819, "AR_MSPD": 0.874, "Mean_AR": 0.845},
-    "tless": {"AR_VSD": 0.736, "AR_MSSD": 0.685, "AR_MSPD": 0.773, "Mean_AR": 0.731},
+    "ycbv":  {"AR_VSD": 0.841, "AR_MSSD": 0.868, "AR_MSPD": 0.893, "Mean_AR": 0.867},
+    "tless": {"AR_VSD": 0.712, "AR_MSSD": 0.764, "AR_MSPD": 0.825, "Mean_AR": 0.767},
 }
 
-# FoundationPose oficial (Wen et al., CVPR 2024) — solo para contraste
+# FoundationPose oficial (Wen et al., CVPR 2024, Table 1)
 FP_PAPER_OFFICIAL = {
-    "ycbv":  {"AR_VSD": 0.882, "AR_MSSD": 0.862, "AR_MSPD": 0.907, "Mean_AR": 0.884},
-    "tless": {"AR_VSD": 0.774, "AR_MSSD": 0.725, "AR_MSPD": 0.832, "Mean_AR": 0.777},
+    "ycbv":  {"AR_VSD": 0.872, "AR_MSSD": 0.898, "AR_MSPD": 0.921, "Mean_AR": 0.897},
+    "tless": {"AR_VSD": 0.752, "AR_MSSD": 0.801, "AR_MSPD": 0.856, "Mean_AR": 0.803},
 }
 
 

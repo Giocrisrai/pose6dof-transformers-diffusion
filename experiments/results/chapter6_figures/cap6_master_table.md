@@ -1,6 +1,6 @@
 # Tabla maestra del cap. 6 — TFM
 
-_Generada 2026-04-27 20:24 por `experiments/run_chapter6_consolidation.py`_
+_Generada 2026-04-27 23:52 por `experiments/run_chapter6_consolidation.py`_
 
 
 ## 1. FoundationPose — métricas reales (subset BOP-19)
@@ -21,8 +21,8 @@ _Fuente: `experiments/results/foundationpose_eval/comparison_20260427_084807.jso
 
 | Dataset | FP propio (ADD med) | FP paper (Mean AR) | GDR-Net++ BOP22 (Mean AR) |
 |---------|---------------------|--------------------|---------------------------|
-| YCBV | 4.17 mm | 0.884 | 0.845 |
-| TLESS | 2.90 mm | 0.777 | 0.731 |
+| YCBV | 4.17 mm | 0.897 | 0.867 |
+| TLESS | 2.90 mm | 0.803 | 0.767 |
 
 _Nota: ADD/ADD-S y Mean AR son métricas distintas; comparación cualitativa documentada en cap. 6._
 

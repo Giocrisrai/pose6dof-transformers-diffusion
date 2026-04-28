@@ -112,10 +112,10 @@ los valores oficiales de:
 
 | Dataset | Método | AR_VSD | AR_MSSD | AR_MSPD | Mean AR |
 |---------|--------|--------|---------|---------|---------|
-| YCB-V   | GDR-Net++ (BOP 2022)     | 0.842 | 0.819 | 0.874 | 0.845 |
-| YCB-V   | FoundationPose (CVPR 2024) | 0.882 | 0.862 | 0.907 | 0.884 |
-| T-LESS  | GDR-Net++ (BOP 2022)     | 0.736 | 0.685 | 0.773 | 0.731 |
-| T-LESS  | FoundationPose (CVPR 2024) | 0.774 | 0.725 | 0.832 | 0.777 |
+| YCB-V   | GDR-Net++ (BOP 2022)     | 0.841 | 0.868 | 0.893 | 0.867 |
+| YCB-V   | FoundationPose (CVPR 2024) | 0.872 | 0.898 | 0.921 | 0.897 |
+| T-LESS  | GDR-Net++ (BOP 2022)     | 0.712 | 0.764 | 0.825 | 0.767 |
+| T-LESS  | FoundationPose (CVPR 2024) | 0.752 | 0.801 | 0.856 | 0.803 |
 
 > **Tabla 6.Y**: Métricas BOP oficiales (Average Recall sobre VSD/MSSD/MSPD).
 

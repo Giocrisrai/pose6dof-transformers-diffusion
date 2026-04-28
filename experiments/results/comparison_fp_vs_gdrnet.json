@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-27T20:24:43.689761",
+  "timestamp": "2026-04-27T23:52:17.731117",
   "description": "FoundationPose vs GDR-Net++ comparison + Diffusion planning + CoppeliaSim infrastructure for TFM Chapter 6",
   "foundationpose_own": {
     "ycbv": {
@@ -42,30 +42,30 @@
   },
   "foundationpose_paper": {
     "ycbv": {
-      "AR_VSD": 0.882,
-      "AR_MSSD": 0.862,
-      "AR_MSPD": 0.907,
-      "Mean_AR": 0.884
+      "AR_VSD": 0.872,
+      "AR_MSSD": 0.898,
+      "AR_MSPD": 0.921,
+      "Mean_AR": 0.897
     },
     "tless": {
-      "AR_VSD": 0.774,
-      "AR_MSSD": 0.725,
-      "AR_MSPD": 0.832,
-      "Mean_AR": 0.777
+      "AR_VSD": 0.752,
+      "AR_MSSD": 0.801,
+      "AR_MSPD": 0.856,
+      "Mean_AR": 0.803
     }
   },
   "gdrnet_leaderboard": {
     "ycbv": {
-      "AR_VSD": 0.842,
-      "AR_MSSD": 0.819,
-      "AR_MSPD": 0.874,
-      "Mean_AR": 0.845
+      "AR_VSD": 0.841,
+      "AR_MSSD": 0.868,
+      "AR_MSPD": 0.893,
+      "Mean_AR": 0.867
     },
     "tless": {
-      "AR_VSD": 0.736,
-      "AR_MSSD": 0.685,
-      "AR_MSPD": 0.773,
-      "Mean_AR": 0.731
+      "AR_VSD": 0.712,
+      "AR_MSSD": 0.764,
+      "AR_MSPD": 0.825,
+      "Mean_AR": 0.767
     }
   },
   "diffusion_planning": {

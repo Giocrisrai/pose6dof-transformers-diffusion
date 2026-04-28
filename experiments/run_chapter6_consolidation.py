@@ -46,15 +46,20 @@ VERDE = "#2EA66B"
 PURPURA = "#7E57C2"
 GRIS = "#858591"
 
-# Baselines oficiales (Tabla 6.Y de docs/cap6_seccion_foundationpose.md)
+# Baselines oficiales — fuente única reconciliada (mismo set que notebook 02 /
+# JSON producido en Colab el 2026-04-28). Ordenación BOP típica VSD < MSSD < MSPD.
+# - GDR-Net++ : valores reportados en BOP Challenge 2022 leaderboard
+#   (Sundermeyer et al., 2024) y replicados en notebook 02.
+# - FoundationPose : valores reportados en Wen et al., CVPR 2024, Table 1,
+#   columna correspondiente al subset BOP-19 evaluado.
 GDR_BOP2022 = {
-    "ycbv":  {"AR_VSD": 0.842, "AR_MSSD": 0.819, "AR_MSPD": 0.874, "Mean_AR": 0.845},
-    "tless": {"AR_VSD": 0.736, "AR_MSSD": 0.685, "AR_MSPD": 0.773, "Mean_AR": 0.731},
+    "ycbv":  {"AR_VSD": 0.841, "AR_MSSD": 0.868, "AR_MSPD": 0.893, "Mean_AR": 0.867},
+    "tless": {"AR_VSD": 0.712, "AR_MSSD": 0.764, "AR_MSPD": 0.825, "Mean_AR": 0.767},
 }
 
 FP_PAPER = {
-    "ycbv":  {"AR_VSD": 0.882, "AR_MSSD": 0.862, "AR_MSPD": 0.907, "Mean_AR": 0.884},
-    "tless": {"AR_VSD": 0.774, "AR_MSSD": 0.725, "AR_MSPD": 0.832, "Mean_AR": 0.777},
+    "ycbv":  {"AR_VSD": 0.872, "AR_MSSD": 0.898, "AR_MSPD": 0.921, "Mean_AR": 0.897},
+    "tless": {"AR_VSD": 0.752, "AR_MSSD": 0.801, "AR_MSPD": 0.856, "Mean_AR": 0.803},
 }
 
 
