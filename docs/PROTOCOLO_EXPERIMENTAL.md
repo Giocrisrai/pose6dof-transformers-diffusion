@@ -144,15 +144,30 @@ CoppeliaSim smoke: connect 150 ms, paso 18.12 ms (mean), 100 pasos → 5 s simul
 
 ### Validación H3 (ciclo end-to-end)
 
-Agregación de timings reales (`experiments/aggregate_e2e_timings.py`):
+#### Fase 1 — Agregación de timings reales (`experiments/aggregate_e2e_timings.py`)
 
 | Dataset | n | FP median (ms) | Diffusion p95 (ms) | Sim 50 steps (ms) | **Cycle p95 (ms)** | H3 (<10s) |
 |---------|--:|--------------:|------------------:|-----------------:|-------------------:|:--------:|
 | YCB-Video | 1098 | 4178 | 2.00 | 906 | **5180** [IC 95 % 5157–5204] | ✅ margen 4820 ms |
 | T-LESS | 1012 | 4302 | 2.00 | 906 | **6049** [IC 95 % 6042–6054] | ✅ margen 3951 ms |
 
-Ambos datasets pasan H3 con margen superior a 3.9 segundos respecto al umbral
-industrial de 10 segundos por instancia.
+#### Fase 2 — Experimento E2E live (`experiments/run_e2e_live.py`)
+
+CoppeliaSim Edu V4.10 corriendo, escena `pickAndPlaceDemo.ttt` cargada con
+simulación stepped activa, Diffusion Policy con pesos entrenados localmente
+(`diffusion_policy_grasp.pth`) y sampling DDIM con 25 pasos sobre MPS,
+n = 10 instancias por dataset extraídas del checkpoint FP:
+
+| Dataset | FP p95 (ms) | Diffusion p95 (ms) | Sim p95 (ms) | **Cycle p95 (ms)** | H3 (<10s) |
+|---------|--------:|----------------:|----------:|-------------------:|:--------:|
+| YCB-Video | 4085 | 607 | 1520 | **5863** | ✅ margen 4137 ms |
+| T-LESS | 5226 | 165 | 1628 | **6805** | ✅ margen 3195 ms |
+
+Conexión CoppeliaSim: 47 ms. Sim por step (con física activa de
+pickAndPlaceDemo): 24-29 ms (vs 18 ms del smoke test sin física).
+Ambos datasets pasan H3 con margen superior a 3.19 segundos respecto al umbral
+industrial de 10 segundos por instancia, **tanto en agregación como en ejecución
+en vivo**.
 
 ## 9. Tareas abiertas para la entrega final
 
