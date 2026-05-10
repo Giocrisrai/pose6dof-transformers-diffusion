@@ -22,20 +22,24 @@
 
 ---
 
-## Demo en simulacion
+## Demo en simulacion (cinematografico)
 
-Pipeline E2E ejecutandose en vivo en CoppeliaSim Edu V4.10 (3 ciclos de
-bin picking sobre la escena pickAndPlaceDemo, n_diffusion_steps=25, MPS):
+Pipeline E2E ejecutandose en vivo en CoppeliaSim Edu V4.10 con vista cenital
+del bin picking + panel de telemetria en tiempo real (latencia FP, latencia
+Diffusion DDIM-25, latencia simulacion, total ciclo, aceptacion H3 con margen):
 
-![Demo E2E en CoppeliaSim](experiments/results/pipeline_e2e/highlights/composite_3phases.png)
+![Demo E2E v2 cinematografico](experiments/results/pipeline_e2e/highlights_v2/composite_v2_3phases.png)
 
-- **Video MP4** (455 KB): [experiments/results/pipeline_e2e/demo_e2e.mp4](experiments/results/pipeline_e2e/demo_e2e.mp4)
-- **GIF preview** (1.6 MB): [experiments/results/pipeline_e2e/demo_e2e.gif](experiments/results/pipeline_e2e/demo_e2e.gif)
-- **Highlights** (9 frames PNG): [experiments/results/pipeline_e2e/highlights/](experiments/results/pipeline_e2e/highlights/)
+- **Video MP4 v2 (cinematografico)** 1.3 MB, 24 fps, 720p: [experiments/results/pipeline_e2e/demo_v2.mp4](experiments/results/pipeline_e2e/demo_v2.mp4)
+- **GIF preview v2** 4.2 MB: [experiments/results/pipeline_e2e/demo_v2.gif](experiments/results/pipeline_e2e/demo_v2.gif)
+- **Highlights v2** 6 frames-clave: [experiments/results/pipeline_e2e/highlights_v2/](experiments/results/pipeline_e2e/highlights_v2/)
 
-Cada frame del video lleva overlay con: ciclo, dataset, obj_id, fase del
-pipeline (PERCEPCION/PLANIFICACION/EJECUCION AGARRE), latencia Diffusion DDIM,
-y traslacion 6-DoF estimada en metros.
+El video muestra 3 ciclos consecutivos de bin picking sobre objetos
+YCB-Video {obj_id=1, 6, 14}, con poses 6-DoF reales del checkpoint
+FoundationPose y trayectorias del modelo Diffusion Policy entrenado en MPS.
+El panel lateral cambia de color segun la fase activa (ambar para PERCEPCION,
+turquesa para PLANIFICACION, naranja para EJECUCION) y reporta el cumplimiento
+de H3 (cycle < 10 s) en tiempo real con margen exacto en segundos.
 
 ## Resultados E2E (n=30 instancias por dataset, en vivo con CoppeliaSim)
 
