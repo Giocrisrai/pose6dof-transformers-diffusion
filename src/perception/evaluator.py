@@ -282,7 +282,7 @@ def evaluate_method(
                 adds_err = add_s_metric(R_est, t_est, R_gt, t_gt, points)
 
                 # MSSD (uses object diameter as normalization)
-                diameter = dataset.get_object_diameter(obj_id)
+                dataset.get_object_diameter(obj_id)
                 symmetries_info = dataset.get_symmetries(obj_id)
 
                 # Build symmetry transforms

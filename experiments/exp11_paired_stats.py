@@ -176,7 +176,7 @@ def main():
         fig, axes = plt.subplots(1, 2, figsize=(14, 5))
         for i, (ds_name, r) in enumerate(out["datasets"].items()):
             ax = axes[i]
-            data = [
+            [
                 np.array([r["fp_mean_mm"]] * 1),
                 np.array([r["gdr_estimated_mean_mm"]] * 1),
             ]

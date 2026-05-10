@@ -189,7 +189,7 @@ class GraspPlannerNode(_BaseNode):
 
     def _pose_callback(self, msg):
         """Received new object pose → plan grasp."""
-        T = self._posemsg_to_matrix(msg)
+        self._posemsg_to_matrix(msg)
         # TODO: Use DiffusionGraspPlanner or GraspSampler
         # trajectory = self.planner.plan_grasp(T)
         # self._publish_trajectory(trajectory)

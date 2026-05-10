@@ -146,7 +146,7 @@ def main():
         sim_times_ms = []
 
         for i, pred in enumerate(preds):
-            t0 = time.time()
+            time.time()
 
             # FP: tiempo nominal del run real (no se re-ejecuta sin GPU)
             fp_ms = pred.get("time_s", NOMINAL_FP_MS[ds_name] / 1000.0) * 1000.0

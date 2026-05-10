@@ -406,12 +406,12 @@ def table_fp_real_latex():
                 f"{d.get('recall_adds_10mm', 0)*100:.1f}\\% & "
                 f"{d.get('n_objects', '?')} \\\\"
             )
-        gd = GDRNET_BOP_OFFICIAL[ds_key]
+        GDRNET_BOP_OFFICIAL[ds_key]
         lines.append(
             f"{ds_name} & GDR-Net++ (BOP 2022 AR) & "
             f"--- & --- & --- & --- \\\\"
         )
-        fp_p = FP_PAPER_OFFICIAL[ds_key]
+        FP_PAPER_OFFICIAL[ds_key]
         lines.append(
             f"{ds_name} & FP (paper, BOP AR) & "
             f"--- & --- & --- & --- \\\\"

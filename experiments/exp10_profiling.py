@@ -210,11 +210,13 @@ def main():
         w = 0.35
         axes[1].bar(x - w/2, means, w, label='Mean', color='#0098CD')
         axes[1].bar(x + w/2, p95s, w, label='p95', color='#FF6B35')
-        axes[1].set_xticks(x); axes[1].set_xticklabels([str(s) for s in steps])
+        axes[1].set_xticks(x)
+        axes[1].set_xticklabels([str(s) for s in steps])
         axes[1].set_xlabel('n_diffusion_steps')
         axes[1].set_ylabel('Latencia (ms)')
         axes[1].set_title(f'Latencia DDIM Diffusion Policy en {device.upper()}')
-        axes[1].legend(); axes[1].grid(True, alpha=0.3, axis='y')
+        axes[1].legend()
+        axes[1].grid(True, alpha=0.3, axis='y')
         for i, (m, p) in enumerate(zip(means, p95s)):
             axes[1].text(i - w/2, m + 5, f'{m:.0f}', ha='center', fontsize=9)
             axes[1].text(i + w/2, p + 5, f'{p:.0f}', ha='center', fontsize=9)

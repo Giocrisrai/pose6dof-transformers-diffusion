@@ -167,7 +167,7 @@ class ConditionalUNet1D(nn.Module):
         Returns:
             (B, horizon, action_dim) predicted noise
         """
-        B = x.shape[0]
+        x.shape[0]
 
         # Time embedding: (B, hidden)
         t_emb = self.time_mlp(timestep)

@@ -71,7 +71,7 @@ def main():
     first_img_id = tless.get_image_ids(scene_id)[0]
     sample = tless.load_sample(scene_id, img_id=first_img_id)
     rgb = sample["rgb"]
-    depth = sample["depth"]
+    sample["depth"]
     K = sample["cam_K"]
     gt_poses = sample["gt_poses"]
     print(f"  Scene {scene_id}, Image 0: {rgb.shape}, {len(gt_poses)} objects")
@@ -248,7 +248,7 @@ def main():
         for img_id_str in list(gt_data.keys())[:10]:  # First 10 images per scene
             gt_list = gt_data[img_id_str]
             cam = cameras.get(img_id_str, {})
-            K_scene = cam.get("cam_K", tless.default_K)
+            cam.get("cam_K", tless.default_K)
 
             for gt_obj in gt_list[:1]:  # First object per image
                 R_gt_s = gt_obj["cam_R_m2c"]

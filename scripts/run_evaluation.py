@@ -103,7 +103,7 @@ def run_comparison(datasets=None, data_root: str = "data/datasets"):
             mssd_scores = [results[m].get("MSSD", {}).get("auc", 0) * 100 for m in method_names]
             mspd_scores = [results[m].get("MSPD", {}).get("auc", 0) * 100 for m in method_names]
 
-            fig = plot_metrics_comparison(
+            plot_metrics_comparison(
                 method_names, vsd_scores, mssd_scores, mspd_scores,
                 title=f"BOP Metrics — {dataset_name.upper()}"
             )

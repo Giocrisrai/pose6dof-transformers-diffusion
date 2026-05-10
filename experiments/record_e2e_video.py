@@ -201,7 +201,7 @@ def main():
         cond = torch.tensor(cond_vec, device=device).unsqueeze(0)
 
         t0 = time.time()
-        traj = run_diffusion(planner, scheduler, cond, device, 25)
+        run_diffusion(planner, scheduler, cond, device, 25)
         diff_ms = (time.time() - t0) * 1000
 
         # Phase 3: ejecutar steps de simulacion + capturar

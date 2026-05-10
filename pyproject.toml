@@ -92,9 +92,33 @@ packages = ["src"]
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+exclude = [".venv", ".git", "__pycache__", "build", "dist", "data/datasets"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N"]
+# Reglas ignoradas con justificación:
+ignore = [
+    # Notación matemática estándar — variables como R, K, T, M, P son convencionales
+    # en SE(3)/SO(3), camera intrinsics, transformaciones rígidas, deep learning
+    "N803",  # invalid-argument-name (R, K, t, etc.)
+    "N806",  # non-lowercase-variable-in-function (mismo motivo)
+    # E402: scripts requieren sys.path.insert(0, ...) ANTES de imports del paquete
+    "E402",  # module-import-not-at-top-of-file
+    # E501: tablas, JSONs y URLs largos en código son legítimos
+    "E501",  # line-too-long
+    # N802: nombres como 'so3_log', 'se3_error' son convenciones del campo (Lie groups)
+    "N802",  # invalid-function-name
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Notebooks Jupyter convertidos pueden tener imports al medio
+"notebooks/**/*.py" = ["E402", "F401"]
+# Scripts de experimentos pueden tener imports usados condicionalmente
+"experiments/**/*.py" = ["F401", "E701"]
+# __init__.py: imports son re-exports (parte de API pública)
+"**/__init__.py" = ["F401"]
+# ros2_interface: imports condicionales (ROS 2 puede no estar disponible)
+"src/simulation/ros2_interface.py" = ["F401"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -98,7 +98,7 @@ def compute_per_instance_errors(checkpoint_path, dataset_path, split, n_model_pt
                         idx = rng.choice(len(points), n_model_pts, replace=False)
                         points = points[idx]
                     mesh_cache[obj_id] = points
-            except Exception as e:
+            except Exception:
                 mesh_cache[obj_id] = None
         if mesh_cache[obj_id] is None:
             skipped["no_model"] += 1

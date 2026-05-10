@@ -123,10 +123,10 @@ def main():
         worst = sorted_by_auc[:3]
         best = sorted_by_auc[-3:]
 
-        print(f"\n  Peores objetos (menor AUC):")
+        print("\n  Peores objetos (menor AUC):")
         for obj_id, s in worst:
             print(f"    obj_id={obj_id}: AUC={s['auc_adds_50mm']:.3f}, R@10mm={s['recall_10mm']:.1%}, n={s['n']}")
-        print(f"\n  Mejores objetos:")
+        print("\n  Mejores objetos:")
         for obj_id, s in best:
             print(f"    obj_id={obj_id}: AUC={s['auc_adds_50mm']:.3f}, R@10mm={s['recall_10mm']:.1%}, n={s['n']}")
 
@@ -145,7 +145,7 @@ def main():
         for ds_name, r in out["datasets"].items():
             objs = sorted(r["per_object"].keys(), key=lambda x: r["per_object"][x]["auc_adds_50mm"])
             aucs = [r["per_object"][o]["auc_adds_50mm"] for o in objs]
-            recalls = [r["per_object"][o]["recall_10mm"] for o in objs]
+            [r["per_object"][o]["recall_10mm"] for o in objs]
 
             fig, ax = plt.subplots(figsize=(max(10, len(objs)*0.4), 5))
             x = np.arange(len(objs))

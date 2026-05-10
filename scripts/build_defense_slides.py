@@ -72,8 +72,10 @@ def add_image(slide, path, x, y, w_cm=None, h_cm=None):
     if not Path(path).exists():
         return None
     kw = {}
-    if w_cm: kw["width"] = Cm(w_cm)
-    if h_cm: kw["height"] = Cm(h_cm)
+    if w_cm:
+        kw["width"] = Cm(w_cm)
+    if h_cm:
+        kw["height"] = Cm(h_cm)
     return slide.shapes.add_picture(str(path), Cm(x), Cm(y), **kw)
 
 
@@ -182,30 +184,54 @@ add_textbox(slide, 1.5, 2.3, 30, 0.8, "Tres hipótesis verificables con criterio
 
 # H1
 shape = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Cm(1.5), Cm(3.5), Cm(30), Cm(2.7))
-shape.fill.solid(); shape.fill.fore_color.rgb = RGBColor(0xE8, 0xF4, 0xF8); shape.line.color.rgb = COLOR_PRIMARY
-tf = shape.text_frame; tf.word_wrap = True; tf.margin_left = Cm(0.4)
+shape.fill.solid()
+shape.fill.fore_color.rgb = RGBColor(0xE8, 0xF4, 0xF8)
+shape.line.color.rgb = COLOR_PRIMARY
+tf = shape.text_frame
+tf.word_wrap = True
+tf.margin_left = Cm(0.4)
 tf.text = "H1 — Precisión de pose"
-tf.paragraphs[0].runs[0].font.size = Pt(16); tf.paragraphs[0].runs[0].font.bold = True; tf.paragraphs[0].runs[0].font.color.rgb = COLOR_PRIMARY
-p = tf.add_paragraph(); p.add_run().text = "Mejora ≥ 3 pp en Mean AR (BOP) vs GDR-Net++ baseline en T-LESS y YCB-Video, R@10mm ADD-S > 95 %"
-p.runs[0].font.size = Pt(13); p.runs[0].font.color.rgb = COLOR_DARK
+tf.paragraphs[0].runs[0].font.size = Pt(16)
+tf.paragraphs[0].runs[0].font.bold = True
+tf.paragraphs[0].runs[0].font.color.rgb = COLOR_PRIMARY
+p = tf.add_paragraph()
+p.add_run().text = "Mejora ≥ 3 pp en Mean AR (BOP) vs GDR-Net++ baseline en T-LESS y YCB-Video, R@10mm ADD-S > 95 %"
+p.runs[0].font.size = Pt(13)
+p.runs[0].font.color.rgb = COLOR_DARK
 
 # H2
 shape = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Cm(1.5), Cm(6.5), Cm(30), Cm(2.7))
-shape.fill.solid(); shape.fill.fore_color.rgb = RGBColor(0xE8, 0xF8, 0xEE); shape.line.color.rgb = COLOR_SECONDARY
-tf = shape.text_frame; tf.word_wrap = True; tf.margin_left = Cm(0.4)
+shape.fill.solid()
+shape.fill.fore_color.rgb = RGBColor(0xE8, 0xF8, 0xEE)
+shape.line.color.rgb = COLOR_SECONDARY
+tf = shape.text_frame
+tf.word_wrap = True
+tf.margin_left = Cm(0.4)
 tf.text = "H2 — Planificación multimodal"
-tf.paragraphs[0].runs[0].font.size = Pt(16); tf.paragraphs[0].runs[0].font.bold = True; tf.paragraphs[0].runs[0].font.color.rgb = COLOR_SECONDARY
-p = tf.add_paragraph(); p.add_run().text = "Diffusion Policy genera trayectorias con score medio ≥ 0.95 y latencia muestreo < 50 ms"
-p.runs[0].font.size = Pt(13); p.runs[0].font.color.rgb = COLOR_DARK
+tf.paragraphs[0].runs[0].font.size = Pt(16)
+tf.paragraphs[0].runs[0].font.bold = True
+tf.paragraphs[0].runs[0].font.color.rgb = COLOR_SECONDARY
+p = tf.add_paragraph()
+p.add_run().text = "Diffusion Policy genera trayectorias con score medio ≥ 0.95 y latencia muestreo < 50 ms"
+p.runs[0].font.size = Pt(13)
+p.runs[0].font.color.rgb = COLOR_DARK
 
 # H3
 shape = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Cm(1.5), Cm(9.5), Cm(30), Cm(2.7))
-shape.fill.solid(); shape.fill.fore_color.rgb = RGBColor(0xFD, 0xEC, 0xDA); shape.line.color.rgb = COLOR_ACCENT
-tf = shape.text_frame; tf.word_wrap = True; tf.margin_left = Cm(0.4)
+shape.fill.solid()
+shape.fill.fore_color.rgb = RGBColor(0xFD, 0xEC, 0xDA)
+shape.line.color.rgb = COLOR_ACCENT
+tf = shape.text_frame
+tf.word_wrap = True
+tf.margin_left = Cm(0.4)
 tf.text = "H3 — Viabilidad industrial sin GPU dedicada"
-tf.paragraphs[0].runs[0].font.size = Pt(16); tf.paragraphs[0].runs[0].font.bold = True; tf.paragraphs[0].runs[0].font.color.rgb = COLOR_ACCENT
-p = tf.add_paragraph(); p.add_run().text = "Cycle p95 < 10 s/instancia en arquitectura híbrida M1 Pro + Colab T4 con CoppeliaSim corriendo"
-p.runs[0].font.size = Pt(13); p.runs[0].font.color.rgb = COLOR_DARK
+tf.paragraphs[0].runs[0].font.size = Pt(16)
+tf.paragraphs[0].runs[0].font.bold = True
+tf.paragraphs[0].runs[0].font.color.rgb = COLOR_ACCENT
+p = tf.add_paragraph()
+p.add_run().text = "Cycle p95 < 10 s/instancia en arquitectura híbrida M1 Pro + Colab T4 con CoppeliaSim corriendo"
+p.runs[0].font.size = Pt(13)
+p.runs[0].font.color.rgb = COLOR_DARK
 
 add_textbox(slide, 1.5, 13, 30, 1, "Test estadístico: bootstrap no paramétrico B = 1000 con IC 95 %",
             size=12, bold=True, color=COLOR_DARK, align=PP_ALIGN.CENTER)
@@ -287,7 +313,8 @@ for j, h in enumerate(hdrs):
     cell.text = h
     cell.text_frame.paragraphs[0].runs[0].font.size = Pt(13)
     cell.text_frame.paragraphs[0].runs[0].font.bold = True
-    cell.fill.solid(); cell.fill.fore_color.rgb = COLOR_PRIMARY
+    cell.fill.solid()
+    cell.fill.fore_color.rgb = COLOR_PRIMARY
     cell.text_frame.paragraphs[0].runs[0].font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
 
 rows = [
@@ -437,9 +464,12 @@ hdrs = ["Componente", "Setup industrial típico", "Setup TFM"]
 for j, h in enumerate(hdrs):
     cell = table.cell(0, j)
     cell.text = h
-    cell.fill.solid(); cell.fill.fore_color.rgb = COLOR_PRIMARY
+    cell.fill.solid()
+    cell.fill.fore_color.rgb = COLOR_PRIMARY
     for r in cell.text_frame.paragraphs[0].runs:
-        r.font.size = Pt(13); r.font.bold = True; r.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+        r.font.size = Pt(13)
+        r.font.bold = True
+        r.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
 
 rows = [
     ["GPU principal", "NVIDIA A100 80GB (~$10k)", "Google Colab T4 (gratis)"],
@@ -449,7 +479,8 @@ rows = [
 ]
 for i, row in enumerate(rows, 1):
     for j, val in enumerate(row):
-        cell = table.cell(i, j); cell.text = val
+        cell = table.cell(i, j)
+        cell.text = val
         for r in cell.text_frame.paragraphs[0].runs:
             r.font.size = Pt(13)
             if i == 4:  # fila TOTAL

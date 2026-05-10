@@ -301,7 +301,6 @@ class CoppeliaSimBridge:
             timeout: Max wait time in seconds.
         """
         self._check_connected()
-        vel = max_velocity or self.robot_config.max_velocity
 
         for i, handle in enumerate(self._joint_handles):
             self._sim.setJointTargetPosition(handle, float(target[i]))

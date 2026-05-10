@@ -167,7 +167,7 @@ def main():
             cond = torch.tensor(cond_vec, device=device).unsqueeze(0)
 
             t0 = time.time()
-            traj = fast_diffusion_sample(planner, scheduler, cond, device, args.ddim_steps)
+            fast_diffusion_sample(planner, scheduler, cond, device, args.ddim_steps)
             diff_ms = (time.time() - t0) * 1000.0
 
             # Sim steps reales
@@ -191,7 +191,8 @@ def main():
                 print(f"  [{ds_name}] {i+1}/{len(preds)} | mean total={np.mean(per_instance['total_ms']):.0f} ms | p95={cur_p95:.0f} ms")
 
         # Stats
-        arr = lambda k: np.array(per_instance[k])
+        def arr(k):
+            return np.array(per_instance[k])
         result = {"n": len(preds)}
         for k in per_instance:
             v = arr(k)

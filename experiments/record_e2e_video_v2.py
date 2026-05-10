@@ -123,7 +123,7 @@ def position_camera(sim, cam, t_seconds, phase_idx, scene_target=None):
     M = look_at_matrix(eye, scene_target, up=(0.0, 0.0, 1.0))
     try:
         sim.setObjectMatrix(cam, -1, M)
-    except Exception as e:
+    except Exception:
         sim.setObjectPosition(cam, -1, list(eye))
 
 
@@ -399,7 +399,7 @@ def main():
         cond_vec[:len(flat)] = flat
         cond = torch.tensor(cond_vec, device=device).unsqueeze(0)
         t0 = time.time()
-        traj = run_diffusion(planner, scheduler, cond, device, 25)
+        run_diffusion(planner, scheduler, cond, device, 25)
         diff_ms = (time.time() - t0) * 1000
         print(f"  Ciclo {cycle_i+1}: obj_id={pred['obj_id']} | FP={fp_ms:.0f}ms | Diff={diff_ms:.0f}ms")
 
