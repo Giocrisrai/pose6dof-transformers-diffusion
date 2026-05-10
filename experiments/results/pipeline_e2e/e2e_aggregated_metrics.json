@@ -1,0 +1,85 @@
+{
+  "method": "Aggregated E2E timing (FP + Diffusion + CoppeliaSim)",
+  "description": "Suma de timings reales medidos en componentes validados por separado",
+  "constants": {
+    "sim_steps_per_instance": 50,
+    "sim_step_ms_source": "experiments/results/coppelia_smoke/smoke_test_result.json",
+    "sim_step_ms_value": 18.117
+  },
+  "datasets": {
+    "ycbv": {
+      "n": 1098,
+      "fp_ms": {
+        "mean": 4154.727355161434,
+        "median": 4178.364276885986,
+        "p95": 4271.809709072113,
+        "max": 4562.972545623779
+      },
+      "diffusion_ms": {
+        "mean": 1.88,
+        "median": 1.85,
+        "p95": 2.0,
+        "source": "experiments/results/diffusion_real_poses/trajectories_summary.json (n=30)"
+      },
+      "simulation_ms": {
+        "value": 905.85,
+        "step_ms": 18.117,
+        "n_steps": 50,
+        "source": "smoke test n=100 steps in CoppeliaSim Edu V4.10"
+      },
+      "cycle_total_ms": {
+        "mean": 5062.457355161434,
+        "median": 5086.094276885987,
+        "p95": 5179.659709072113,
+        "max": 5470.82254562378,
+        "p95_ci95": {
+          "lo": 5156.670630311966,
+          "hi": 5204.033168888092
+        }
+      },
+      "h3_acceptance": {
+        "criterion": "p95(cycle) < 10000 ms (10 s)",
+        "p95_ms": 5179.659709072113,
+        "passed": true,
+        "margin_ms": 4820.340290927887
+      }
+    },
+    "tless": {
+      "n": 1012,
+      "fp_ms": {
+        "mean": 4349.087081407841,
+        "median": 4301.907300949097,
+        "p95": 5141.5860295295715,
+        "max": 5339.180946350098
+      },
+      "diffusion_ms": {
+        "mean": 1.88,
+        "median": 1.85,
+        "p95": 2.0,
+        "source": "experiments/results/diffusion_real_poses/trajectories_summary.json (n=30)"
+      },
+      "simulation_ms": {
+        "value": 905.85,
+        "step_ms": 18.117,
+        "n_steps": 50,
+        "source": "smoke test n=100 steps in CoppeliaSim Edu V4.10"
+      },
+      "cycle_total_ms": {
+        "mean": 5256.817081407841,
+        "median": 5209.637300949097,
+        "p95": 6049.436029529572,
+        "max": 6247.030946350098,
+        "p95_ci95": {
+          "lo": 6041.881069278717,
+          "hi": 6054.478785133362
+        }
+      },
+      "h3_acceptance": {
+        "criterion": "p95(cycle) < 10000 ms (10 s)",
+        "p95_ms": 6049.436029529572,
+        "passed": true,
+        "margin_ms": 3950.563970470428
+      }
+    }
+  }
+}

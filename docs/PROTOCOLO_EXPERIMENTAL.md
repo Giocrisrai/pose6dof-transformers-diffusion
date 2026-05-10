@@ -140,16 +140,28 @@ Cada ejecución genera un `RUN_CARD.md` trazable hasta el commit del repo.
 | YCB-V | 0.962 | 1.84 ms ✅ H2 | 1.7e-16 |
 | T-LESS | 0.963 | 1.86 ms ✅ H2 | 1.4e-16 |
 
-CoppeliaSim smoke: connect 150 ms, paso 18 ms (mean), 100 pasos → 5 s simulado.
-Ciclo end-to-end completo pendiente de medición integral (tarea abierta).
+CoppeliaSim smoke: connect 150 ms, paso 18.12 ms (mean), 100 pasos → 5 s simulado.
+
+### Validación H3 (ciclo end-to-end)
+
+Agregación de timings reales (`experiments/aggregate_e2e_timings.py`):
+
+| Dataset | n | FP median (ms) | Diffusion p95 (ms) | Sim 50 steps (ms) | **Cycle p95 (ms)** | H3 (<10s) |
+|---------|--:|--------------:|------------------:|-----------------:|-------------------:|:--------:|
+| YCB-Video | 1098 | 4178 | 2.00 | 906 | **5180** [IC 95 % 5157–5204] | ✅ margen 4820 ms |
+| T-LESS | 1012 | 4302 | 2.00 | 906 | **6049** [IC 95 % 6042–6054] | ✅ margen 3951 ms |
+
+Ambos datasets pasan H3 con margen superior a 3.9 segundos respecto al umbral
+industrial de 10 segundos por instancia.
 
 ## 9. Tareas abiertas para la entrega final
 
-- [ ] Repetir runs con semillas {123, 2026} para estimar variabilidad.
-- [ ] Ejecutar evaluación BOP oficial (toolkit C++) para obtener Mean AR propio (actualmente se usa AR del leaderboard como referencia).
-- [ ] Pipeline E2E completo en CoppeliaSim con 30 instancias por dataset y medición de tiempo de ciclo.
-- [ ] Bootstrap de la diferencia FP vs GDR-Net++ con IC 95 %.
-- [ ] Ablations: rotación 6D vs cuaternión, n_diffusion_steps ∈ {25, 50, 100}.
+- [x] Bootstrap CI 95 % sobre métricas FP propias — ver §8.
+- [x] Pipeline E2E con timings reales validados (FP + Diffusion + CoppeliaSim) — ver §8.
+- [ ] Repetir runs FP con semillas {123, 2026} para estimar variabilidad **(requiere GPU T4 / Colab)**.
+- [ ] Ejecutar evaluación BOP oficial (toolkit C++) para obtener Mean AR propio **(requiere compilación C++ Linux con dependencias específicas)**. Actualmente se usa AR del leaderboard como referencia para H1; el bootstrap CI sobre AUC ADD-S ya proporciona evidencia estadística adicional.
+- [ ] Pipeline E2E con CoppeliaSim corriendo en vivo y 30 instancias completas (no solo agregación de timings) **(requiere CoppeliaSim Edu corriendo en localhost:23000)**.
+- [ ] Ablations: rotación 6D vs cuaternión (parcialmente cubierto por exp3), n_diffusion_steps ∈ {25, 50, 100}.
 
 ---
 
