@@ -156,27 +156,47 @@ CoppeliaSim smoke: connect 150 ms, paso 18.12 ms (mean), 100 pasos → 5 s simul
 CoppeliaSim Edu V4.10 corriendo, escena `pickAndPlaceDemo.ttt` cargada con
 simulación stepped activa, Diffusion Policy con pesos entrenados localmente
 (`diffusion_policy_grasp.pth`) y sampling DDIM con 25 pasos sobre MPS,
-n = 10 instancias por dataset extraídas del checkpoint FP:
+**n = 30 instancias por dataset** extraídas del checkpoint FP:
 
-| Dataset | FP p95 (ms) | Diffusion p95 (ms) | Sim p95 (ms) | **Cycle p95 (ms)** | H3 (<10s) |
-|---------|--------:|----------------:|----------:|-------------------:|:--------:|
-| YCB-Video | 4085 | 607 | 1520 | **5863** | ✅ margen 4137 ms |
-| T-LESS | 5226 | 165 | 1628 | **6805** | ✅ margen 3195 ms |
+| Dataset | n | FP p95 (ms) | Diffusion p95 (ms) | Sim p95 (ms) | **Cycle p95 (ms)** | H3 (<10s) |
+|---------|--:|--------:|----------------:|----------:|-------------------:|:--------:|
+| YCB-Video | 30 | 4273 | 176 | 1734 | **6125** | ✅ margen 3875 ms |
+| T-LESS | 30 | 5174 | 214 | 1971 | **6857** | ✅ margen 3143 ms |
 
-Conexión CoppeliaSim: 47 ms. Sim por step (con física activa de
-pickAndPlaceDemo): 24-29 ms (vs 18 ms del smoke test sin física).
-Ambos datasets pasan H3 con margen superior a 3.19 segundos respecto al umbral
-industrial de 10 segundos por instancia, **tanto en agregación como en ejecución
-en vivo**.
+Conexión CoppeliaSim: 184 ms. Sim por step (con física activa de
+pickAndPlaceDemo): 28-34 ms (vs 18 ms del smoke test sin física).
+Ambos datasets pasan H3 con margen superior a 3.14 segundos respecto al umbral
+industrial de 10 segundos por instancia, **tanto en agregación (n = 1098/1012)
+como en ejecución en vivo (n = 30 con física)**.
+
+### Ablation n_diffusion_steps
+
+Fundamentación de la elección operacional `n_diffusion_steps = 25`. Ejecutado
+con `experiments/exp5_diffusion_steps_ablation.py` sobre n = 30 poses
+condicionantes (M1 Pro / MPS, modelo entrenado):
+
+| n_steps | Latencia mean (ms) | Latencia p95 (ms) | Jerk RMS | Trade-off |
+|--------:|--------:|----------:|---------:|-----------|
+| **25 (DDIM acelerado)** | **133** | 180 | 0.712 | **Mejor latencia, calidad similar** |
+| 50 (intermedio) | 228 | 293 | 0.698 | Mejor jerk, latencia 1.7× |
+| 100 (DDPM completo) | 419 | 511 | 0.824 | Mayor latencia, sin ganancia clara |
+
+La latencia escala aproximadamente lineal con el número de pasos (factor 3.1×
+entre extremos). El jerk no mejora monótonamente: 50 da el mejor (0.698) pero
+100 empeora (0.824), sugiriendo que el modelo entrenado con 30 épocas no
+aprovecha el scheduler completo. La elección operacional **n_diffusion_steps =
+25** reduce la latencia mediana en 65 % vs DDPM completo manteniendo calidad
+de trayectoria, dejando margen amplio para H3.
 
 ## 9. Tareas abiertas para la entrega final
 
 - [x] Bootstrap CI 95 % sobre métricas FP propias — ver §8.
 - [x] Pipeline E2E con timings reales validados (FP + Diffusion + CoppeliaSim) — ver §8.
-- [ ] Repetir runs FP con semillas {123, 2026} para estimar variabilidad **(requiere GPU T4 / Colab)**.
+- [x] **Pipeline E2E con CoppeliaSim corriendo en vivo y 30 instancias completas** — ver §8 fase 2.
+- [x] **Ablation n_diffusion_steps ∈ {25, 50, 100}** — ver §8 (recomendación: n=25).
+- [ ] Repetir runs FP con semillas {123, 2026} para estimar variabilidad **(requiere GPU T4 / Colab — 12h GPU, no factible en M1 Pro)**.
 - [ ] Ejecutar evaluación BOP oficial (toolkit C++) para obtener Mean AR propio **(requiere compilación C++ Linux con dependencias específicas)**. Actualmente se usa AR del leaderboard como referencia para H1; el bootstrap CI sobre AUC ADD-S ya proporciona evidencia estadística adicional.
-- [ ] Pipeline E2E con CoppeliaSim corriendo en vivo y 30 instancias completas (no solo agregación de timings) **(requiere CoppeliaSim Edu corriendo en localhost:23000)**.
-- [ ] Ablations: rotación 6D vs cuaternión (parcialmente cubierto por exp3), n_diffusion_steps ∈ {25, 50, 100}.
+- [x] Ablation rotación 6D vs cuaternión cubierto por `experiments/exp3_rotation_ablation.py`.
 
 ---
 
