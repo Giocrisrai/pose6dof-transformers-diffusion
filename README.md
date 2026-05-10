@@ -2,12 +2,30 @@
 
 **Trabajo Fin de Master** | Master en Ingenieria Matematica y Computacion | UNIR 2026
 
+[![Tests](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/actions/workflows/tests.yml/badge.svg)](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/actions/workflows/tests.yml)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
+[![License](https://img.shields.io/badge/license-Academic-green.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-93%20passing-brightgreen)](tests/)
+[![Bootstrap CI](https://img.shields.io/badge/bootstrap-CI%2095%25-purple)](experiments/results/local_metrics_with_bootstrap.json)
+
 ## Autores
 
 - **Giocrisrai Godoy Bonillo** -- giocrisrai@gmail.com
 - **Jose Miguel Carrasco** -- jmcarrascoc@gmail.com
 
-**Directora:** Profesora Benitez
+**Directora:** Ivón Oristela Benítez González
+
+## Resumen ejecutivo de logros
+
+| Hipótesis | Criterio | Resultado | Estado |
+|-----------|----------|-----------|:------:|
+| H1 — Precisión pose | AUC ADD-S, Δ ≥ 3 pp vs GDR-Net++ | **0.908** [0.901, 0.916] YCB-V / **0.957** [0.954, 0.959] T-LESS | ✅ |
+| H2 — Multimodalidad | score ≥ 0.95, latencia < 50 ms | 0.96 score, sampling 1.88 ms, **MSE 0.020** entrenado MPS | ✅ |
+| H3 — Cycle E2E | p95 < 10 s/instancia | **6.12 s** YCB-V / **6.86 s** T-LESS (margen ≥ 3.14 s) | ✅ |
+
+**Robustez verificada**: T-LESS aguanta 70 % oclusión con solo −1 pp AUC ADD-S. **PBVS** converge 100 % en 50 muestras. **Cuello de botella identificado**: FoundationPose 80 % del ciclo.
+
+**Material disponible** en [`docs/entrega2/`](docs/entrega2/): TFM en docx + PDF (55 págs) + markdown + slide deck PPTX (20 slides) + FAQ defensa.
 
 ---
 

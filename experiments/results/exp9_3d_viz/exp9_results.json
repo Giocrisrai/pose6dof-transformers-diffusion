@@ -1,0 +1,8 @@
+{
+  "n_trajectories": 50,
+  "obj_id": 1,
+  "endpoint_std_cm": 27.886844635009766,
+  "endpoint_range_x_cm": 173.7997589111328,
+  "endpoint_range_y_cm": 125.08807373046875,
+  "endpoint_range_z_cm": 152.86427307128906
+}

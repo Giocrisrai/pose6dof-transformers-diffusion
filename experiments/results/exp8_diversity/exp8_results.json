@@ -1,0 +1,65 @@
+{
+  "n_scenes": 5,
+  "n_samples_per_scene": 30,
+  "diffusion_jerk_rms": {
+    "mean": 0.7660204522808393,
+    "median": 0.7065685391426086,
+    "std": 0.3638648237661279
+  },
+  "heuristic_jerk_rms": {
+    "mean": 1.0075775411180392e-16,
+    "median": 8.421236112444969e-17,
+    "std": 2.2263423998816976e-17
+  },
+  "per_scene": [
+    {
+      "scene": 0,
+      "obj_id": 1,
+      "n_trajs": 30,
+      "endpoint_dist_mean_cm": 64.08695220947266,
+      "endpoint_dist_std_cm": 30.801912307739258,
+      "endpoint_dist_max_cm": 158.97511291503906
+    },
+    {
+      "scene": 1,
+      "obj_id": 6,
+      "n_trajs": 30,
+      "endpoint_dist_mean_cm": 53.70947265625,
+      "endpoint_dist_std_cm": 30.170467376708984,
+      "endpoint_dist_max_cm": 176.2944793701172
+    },
+    {
+      "scene": 2,
+      "obj_id": 14,
+      "n_trajs": 30,
+      "endpoint_dist_mean_cm": 56.16334533691406,
+      "endpoint_dist_std_cm": 27.04071044921875,
+      "endpoint_dist_max_cm": 139.18418884277344
+    },
+    {
+      "scene": 3,
+      "obj_id": 19,
+      "n_trajs": 30,
+      "endpoint_dist_mean_cm": 59.6163330078125,
+      "endpoint_dist_std_cm": 32.34535217285156,
+      "endpoint_dist_max_cm": 191.02366638183594
+    },
+    {
+      "scene": 4,
+      "obj_id": 20,
+      "n_trajs": 30,
+      "endpoint_dist_mean_cm": 59.58495330810547,
+      "endpoint_dist_std_cm": 31.582778930664062,
+      "endpoint_dist_max_cm": 150.50204467773438
+    }
+  ],
+  "best_n_modes_silhouette": 2,
+  "silhouette_scores": {
+    "2": 0.476227730512619,
+    "3": 0.3249868154525757,
+    "4": 0.2884410321712494,
+    "5": 0.24943862855434418,
+    "6": 0.27890071272850037,
+    "8": 0.26230162382125854
+  }
+}
