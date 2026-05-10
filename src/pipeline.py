@@ -14,12 +14,12 @@ Usage:
     result = pipeline.run(rgb, depth, K)
 """
 
-import numpy as np
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
-from pathlib import Path
 import logging
 import time
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -268,6 +268,7 @@ class BinPickingPipeline:
             dict with predictions in BOP format
         """
         from collections import defaultdict
+
         from src.utils.dataset_loader import BOPDataset
 
         dataset = BOPDataset(dataset_root, split)

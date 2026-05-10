@@ -161,7 +161,7 @@ def main() -> int:
     with out_json.open("w") as f:
         json.dump(summary, f, indent=2)
     print(f"[OK]   {out_json.relative_to(REPO_ROOT)}")
-    print(f"\n=== RESUMEN ===")
+    print("\n=== RESUMEN ===")
     print(f"  Conexión:          {summary['connect_ms']} ms")
     print(f"  Escena:            {summary['scene_loaded']}")
     print(f"  Step latency:      {summary['stepping']['step_ms_mean']} ms (mean)")

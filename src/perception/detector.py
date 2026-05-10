@@ -13,10 +13,11 @@ References:
     - Ge et al. (2021) "YOLOX: Exceeding YOLO Series in 2021"
 """
 
-import numpy as np
-from typing import Dict, List, Optional, Tuple
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
+from typing import List, Optional
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 

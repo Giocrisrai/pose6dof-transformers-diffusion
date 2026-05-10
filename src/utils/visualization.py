@@ -11,9 +11,10 @@ entornos sin OpenCV instalado, como un Mac sin OpenCV nativo o el subset de
 tests que solo ejercita matemáticas.
 """
 
-import numpy as np
+from typing import List, Optional, Tuple
+
 import matplotlib.pyplot as plt
-from typing import Optional, Tuple, List
+import numpy as np
 
 
 def _cv2():

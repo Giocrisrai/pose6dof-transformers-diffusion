@@ -6,16 +6,20 @@ comparison tables and visualizations.
 """
 
 import json
-import numpy as np
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 import logging
+from pathlib import Path
+from typing import Dict, List, Optional
 
-from src.utils.metrics import (
-    add_metric, add_s_metric, mssd, mspd,
-    compute_recall, compute_auc,
-)
+import numpy as np
+
 from src.utils.dataset_loader import BOPDataset
+from src.utils.metrics import (
+    add_metric,
+    add_s_metric,
+    compute_auc,
+    mspd,
+    mssd,
+)
 
 logger = logging.getLogger(__name__)
 

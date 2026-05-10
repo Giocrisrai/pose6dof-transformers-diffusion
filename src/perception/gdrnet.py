@@ -12,10 +12,11 @@ GitHub: https://github.com/shanice-l/gdrnpp_bop2022
 License: Apache 2.0
 """
 
-import numpy as np
-from pathlib import Path
-from typing import Dict, List, Optional
 import logging
+from pathlib import Path
+from typing import Dict, List
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 

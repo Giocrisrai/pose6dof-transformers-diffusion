@@ -282,7 +282,7 @@ def make_master_table(fp_real: dict, diffusion: dict, coppelia: dict) -> Path:
             ycbv_a = diffusion["datasets"]["ycbv"]["aggregate"]
             tless_a = diffusion["datasets"]["tless"]["aggregate"]
             lines.append(f"| {label} | {fn(ycbv_a)} | {fn(tless_a)} |")
-        lines.append(f"\n_Fuente: `experiments/results/diffusion_real_poses/trajectories_summary.json`_\n")
+        lines.append("\n_Fuente: `experiments/results/diffusion_real_poses/trajectories_summary.json`_\n")
 
     if coppelia:
         lines.append("\n## 4. Infraestructura CoppeliaSim (smoke test)\n")

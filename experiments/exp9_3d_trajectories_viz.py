@@ -10,9 +10,11 @@ Genera figura 3D mostrando:
 Salida: experiments/results/exp9_3d_viz/fig_trajectories_3d.png
 """
 from __future__ import annotations
+
 import json
 import sys
 from pathlib import Path
+
 import numpy as np
 
 REPO = Path(__file__).resolve().parents[1]
@@ -21,7 +23,8 @@ OUT = REPO / "experiments/results/exp9_3d_viz"
 OUT.mkdir(parents=True, exist_ok=True)
 
 import torch
-from src.planning.diffusion_policy import SimpleDDPMScheduler, ConditionalUNet1D
+
+from src.planning.diffusion_policy import ConditionalUNet1D, SimpleDDPMScheduler
 
 
 def ddim_sample(planner, scheduler, cond, device, n_steps=25):
@@ -93,7 +96,6 @@ def main():
 
     # Plot 3D con multiples vistas
     import matplotlib.pyplot as plt
-    from mpl_toolkits.mplot3d import Axes3D
 
     fig = plt.figure(figsize=(18, 6))
 

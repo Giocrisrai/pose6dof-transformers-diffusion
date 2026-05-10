@@ -12,10 +12,12 @@ Salidas:
     experiments/results/custom_scenes/scene_<dataset>.ttt
 """
 from __future__ import annotations
+
 import argparse
 import sys
 import time
 from pathlib import Path
+
 import numpy as np
 
 REPO = Path(__file__).resolve().parents[1]
@@ -50,7 +52,7 @@ def main():
 
     # Crear escena nueva
     sim.closeScene()
-    print(f"  Escena vacia creada")
+    print("  Escena vacia creada")
 
     # Crear plano (suelo)
     floor = sim.createPrimitiveShape(
@@ -94,7 +96,7 @@ def main():
 
     if not models_dir.exists():
         print(f"  [WARN] models dir no existe: {models_dir}")
-        print(f"         Continuando sin objetos importados (escena vacia se guardara)")
+        print("         Continuando sin objetos importados (escena vacia se guardara)")
     else:
         ply_files = sorted(models_dir.glob("obj_*.ply"))[:args.n_objects]
         print(f"  Encontrados {len(ply_files)} archivos .ply")

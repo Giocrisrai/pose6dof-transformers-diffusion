@@ -132,7 +132,7 @@ def print_status(status: dict):
     print(f"  camera.json: {'OK' if status['camera_json'] else 'MISSING'}")
 
     if status["splits"]:
-        print(f"\n  Splits:")
+        print("\n  Splits:")
         for split_name, split in status["splits"].items():
             n = split["n_scenes"]
             imgs = split["total_images"]
@@ -146,14 +146,14 @@ def print_status(status: dict):
             if rgb < n:
                 print(f"      WARNING: {n - rgb} scenes missing RGB images")
     else:
-        print(f"\n  No test/train splits found (images not downloaded yet)")
+        print("\n  No test/train splits found (images not downloaded yet)")
 
     if status["issues"]:
-        print(f"\n  Issues:")
+        print("\n  Issues:")
         for issue in status["issues"]:
             print(f"    - {issue}")
     else:
-        print(f"\n  Status: ALL OK")
+        print("\n  Status: ALL OK")
 
 
 def main():

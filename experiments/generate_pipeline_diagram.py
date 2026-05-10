@@ -8,11 +8,12 @@ Marca SE(3)/SO(3) como interfaz matematica entre componentes.
 
 Salida: experiments/results/pipeline_e2e/fig_pipeline_arquitectura.png
 """
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
-from pathlib import Path
 import os
+from pathlib import Path
+
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 REPO = Path(__file__).resolve().parents[1]
 OUT = REPO / "experiments/results/pipeline_e2e/fig_pipeline_arquitectura.png"

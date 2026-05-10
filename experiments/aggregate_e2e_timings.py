@@ -12,8 +12,10 @@ sobreestimación al ser timings reales medidos.
 Salida: experiments/results/pipeline_e2e/e2e_aggregated_metrics.json
 """
 from __future__ import annotations
+
 import json
 from pathlib import Path
+
 import numpy as np
 
 REPO = Path(__file__).resolve().parents[1]

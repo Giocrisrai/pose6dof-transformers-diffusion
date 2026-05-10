@@ -5,10 +5,10 @@
 #   - coppeliasim_bridge: ZMQ Remote API interface
 #   - ros2_interface: ROS 2 node wrappers (requires rclpy)
 
-from .visual_servoing import PBVSController, IBVSController, HybridServoController
-from .coppeliasim_bridge import CoppeliaSimBridge, CameraConfig, RobotConfig
+from .coppeliasim_bridge import CameraConfig, CoppeliaSimBridge, RobotConfig
+from .visual_servoing import HybridServoController, IBVSController, PBVSController
 
 try:
-    from .ros2_interface import PoseEstimationNode, GraspPlannerNode
+    from .ros2_interface import GraspPlannerNode, PoseEstimationNode
 except ImportError:
     pass  # ROS 2 only available inside Docker container

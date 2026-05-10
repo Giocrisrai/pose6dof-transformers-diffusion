@@ -21,9 +21,9 @@ Note:
     (docker/Dockerfile) where ROS 2 is available.
 """
 
-import numpy as np
-from typing import Dict, List, Optional, Tuple
 import logging
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -31,11 +31,11 @@ logger = logging.getLogger(__name__)
 _ROS2_AVAILABLE = False
 try:
     import rclpy
-    from rclpy.node import Node
-    from sensor_msgs.msg import Image, CameraInfo
     from geometry_msgs.msg import PoseStamped, TransformStamped
-    from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+    from rclpy.node import Node
+    from sensor_msgs.msg import CameraInfo, Image
     from std_msgs.msg import Bool
+    from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
     _ROS2_AVAILABLE = True
 except ImportError:
     logger.info("ROS 2 not available — using stub implementations")

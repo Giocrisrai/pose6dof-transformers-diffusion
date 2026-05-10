@@ -14,6 +14,7 @@ Salidas:
     experiments/results/pipeline_e2e/demo_v2.gif
 """
 from __future__ import annotations
+
 import argparse
 import json
 import math
@@ -22,6 +23,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+
 import numpy as np
 
 REPO = Path(__file__).resolve().parents[1]
@@ -332,7 +334,6 @@ def run_diffusion(planner, scheduler, cond, device, n_steps=25):
 
 
 def main():
-    import cv2
     parser = argparse.ArgumentParser()
     parser.add_argument("--n-cycles", type=int, default=3)
     parser.add_argument("--fps", type=int, default=24)
@@ -370,7 +371,8 @@ def main():
 
     print("\n[2/4] Diffusion Policy...")
     import torch
-    from src.planning.diffusion_policy import SimpleDDPMScheduler, ConditionalUNet1D
+
+    from src.planning.diffusion_policy import ConditionalUNet1D, SimpleDDPMScheduler
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     planner = ConditionalUNet1D(action_dim=7, horizon=16, cond_dim=64, hidden_dim=128).to(device)
     weights = REPO / "data/models/diffusion_policy_grasp.pth"

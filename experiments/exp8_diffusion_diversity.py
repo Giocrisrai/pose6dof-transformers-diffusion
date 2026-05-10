@@ -17,10 +17,11 @@ Salidas:
     experiments/results/exp8_diversity/fig_jerk_comparison.png
 """
 from __future__ import annotations
+
 import json
 import sys
-import time
 from pathlib import Path
+
 import numpy as np
 
 REPO = Path(__file__).resolve().parents[1]
@@ -29,7 +30,8 @@ OUT = REPO / "experiments/results/exp8_diversity"
 OUT.mkdir(parents=True, exist_ok=True)
 
 import torch
-from src.planning.diffusion_policy import SimpleDDPMScheduler, ConditionalUNet1D
+
+from src.planning.diffusion_policy import ConditionalUNet1D, SimpleDDPMScheduler
 
 
 def load_planner(device):
@@ -230,7 +232,7 @@ def main():
     print(f"[OK] {out_json}")
 
     # Imprimir resumen
-    print(f"\n=== RESUMEN ===")
+    print("\n=== RESUMEN ===")
     print(f"  Diffusion jerk RMS mean: {summary['diffusion_jerk_rms']['mean']:.4f}")
     print(f"  Heuristico jerk RMS mean: {summary['heuristic_jerk_rms']['mean']:.4f}")
     print(f"  Distancia endpoint media: {np.mean([s['endpoint_dist_mean_cm'] for s in per_scene_results]):.2f} cm")

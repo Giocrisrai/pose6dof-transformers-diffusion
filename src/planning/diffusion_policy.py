@@ -13,11 +13,12 @@ GitHub: https://github.com/real-stanford/diffusion_policy
 License: MIT
 """
 
+import logging
+from typing import Tuple
+
 import numpy as np
 import torch
 import torch.nn as nn
-from typing import Dict, List, Optional, Tuple
-import logging
 
 logger = logging.getLogger(__name__)
 

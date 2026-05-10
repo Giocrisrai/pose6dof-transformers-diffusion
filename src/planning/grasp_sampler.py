@@ -14,10 +14,11 @@ References:
     - Mahler et al. (2017) "Dex-Net 2.0", RSS
 """
 
-import numpy as np
-from typing import Dict, List, Optional, Tuple
-from dataclasses import dataclass, field
 import logging
+from dataclasses import dataclass
+from typing import List, Optional
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 

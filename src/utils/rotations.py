@@ -10,10 +10,9 @@ References:
     - Huynh (2009) "Metrics for 3D Rotations: Comparison and Analysis"
 """
 
+
 import numpy as np
 import torch
-from typing import Union
-
 
 # ============================================================
 # Quaternion operations (w, x, y, z convention)

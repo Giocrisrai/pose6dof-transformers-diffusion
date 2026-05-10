@@ -12,8 +12,9 @@ References:
       and Pose Estimation of Seen and Unseen Rigid Objects"
 """
 
+from typing import List, Optional
+
 import numpy as np
-from typing import List, Optional, Tuple
 
 
 def add_metric(

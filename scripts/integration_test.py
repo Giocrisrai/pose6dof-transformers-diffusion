@@ -11,7 +11,6 @@ Usage:
 
 import json
 import sys
-import time
 from pathlib import Path
 
 import cv2
@@ -24,24 +23,32 @@ import numpy as np
 # Add repo root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from src.planning.grasp_sampler import GraspSampler
 from src.utils.dataset_loader import BOPDataset
 from src.utils.lie_groups import (
-    so3_exp, so3_log, se3_exp, se3_log,
-    pose_from_Rt, pose_to_Rt, geodesic_distance_SO3, geodesic_distance_SE3,
-)
-from src.utils.rotations import (
-    matrix_to_quat, quat_to_matrix, matrix_to_6d, sixd_to_matrix,
-    matrix_to_axisangle,
+    geodesic_distance_SE3,
+    pose_from_Rt,
+    so3_exp,
 )
 from src.utils.metrics import (
-    add_metric, add_s_metric, mssd, mspd,
-    compute_recall, compute_auc,
+    add_metric,
+    add_s_metric,
+    compute_auc,
+    compute_recall,
+    mspd,
+    mssd,
+)
+from src.utils.rotations import (
+    matrix_to_6d,
+    matrix_to_axisangle,
+    matrix_to_quat,
+    quat_to_matrix,
+    sixd_to_matrix,
 )
 from src.utils.visualization import (
-    draw_pose_axes, draw_projected_points, plot_metrics_comparison,
+    draw_pose_axes,
+    draw_projected_points,
 )
-from src.perception.detector import GTDetector, Detection
-from src.planning.grasp_sampler import GraspSampler
 
 
 def main():

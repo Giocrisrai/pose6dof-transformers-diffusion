@@ -23,19 +23,22 @@ import time
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.utils.lie_groups import (
-    so3_exp, pose_from_Rt, pose_to_Rt,
-    geodesic_distance_SO3, geodesic_distance_SE3,
-)
-from src.utils.dataset_loader import BOPDataset
-from src.planning.grasp_sampler import GraspSampler, GraspCandidate
 from src.planning.diffusion_policy import DiffusionGraspPlanner
+from src.planning.grasp_sampler import GraspCandidate, GraspSampler
+from src.utils.dataset_loader import BOPDataset
+from src.utils.lie_groups import (
+    geodesic_distance_SE3,
+    pose_from_Rt,
+    pose_to_Rt,
+    so3_exp,
+)
 
 OUTPUT_DIR = Path("experiments/results/exp4_grasp_comparison")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -148,7 +151,7 @@ def evaluate_diffusion_policy(object_poses, obj_diameters):
         )
     except Exception as e:
         print(f"  WARNING: Diffusion planner init failed: {e}")
-        print(f"  Using heuristic fallback with noise augmentation")
+        print("  Using heuristic fallback with noise augmentation")
         # Fallback: use heuristic with added stochasticity (simulates diffusion)
         sampler = GraspSampler(gripper_width=0.08, standoff_distance=0.10)
         results = {"successes": 0, "total": 0, "scores": [], "times": [], "diversities": []}

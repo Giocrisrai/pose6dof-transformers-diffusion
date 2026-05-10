@@ -6,11 +6,12 @@ Estructura: 22 slides (15 min defensa + 5 min preguntas).
 Salida: docs/entrega2/TFM_Defensa_Slides.pptx
 """
 from pathlib import Path
+
 from pptx import Presentation
-from pptx.util import Inches, Pt, Cm
-from pptx.enum.shapes import MSO_SHAPE
 from pptx.dml.color import RGBColor
+from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN
+from pptx.util import Cm, Inches, Pt
 
 REPO = Path(__file__).resolve().parents[1]
 OUT = REPO / "docs/entrega2/TFM_Defensa_Slides.pptx"
@@ -277,6 +278,7 @@ add_textbox(slide, 1.5, 2.5, 30, 1, "Métricas FP propias (recomputadas localmen
 
 # Tabla con resultados
 from pptx.util import Pt
+
 table = slide.shapes.add_table(rows=4, cols=4, left=Cm(1.5), top=Cm(4),
                                 width=Cm(30), height=Cm(5)).table
 hdrs = ["Dataset", "AUC ADD-S [IC 95 %]", "Recall@10mm ADD-S", "Δ vs GDR-Net++"]

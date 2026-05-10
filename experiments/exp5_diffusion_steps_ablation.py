@@ -9,10 +9,12 @@ Salida:
     experiments/results/exp5_diffusion_steps/latency_vs_steps.png
 """
 from __future__ import annotations
+
 import json
 import sys
 import time
 from pathlib import Path
+
 import numpy as np
 
 REPO = Path(__file__).resolve().parents[1]
@@ -22,7 +24,8 @@ OUTPUT = REPO / "experiments/results/exp5_diffusion_steps"
 OUTPUT.mkdir(parents=True, exist_ok=True)
 
 import torch
-from src.planning.diffusion_policy import SimpleDDPMScheduler, ConditionalUNet1D
+
+from src.planning.diffusion_policy import ConditionalUNet1D, SimpleDDPMScheduler
 
 
 def load_planner(device):
@@ -73,7 +76,7 @@ def main():
 
     planner = load_planner(device)
     scheduler = SimpleDDPMScheduler(num_timesteps=100)
-    print(f"[exp5] modelo cargado: data/models/diffusion_policy_grasp.pth")
+    print("[exp5] modelo cargado: data/models/diffusion_policy_grasp.pth")
 
     # Cargar 30 poses reales del checkpoint (mismo subset que H2)
     ckpt = REPO / "experiments/checkpoints/fp_ycbv_checkpoint.json"

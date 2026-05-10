@@ -16,9 +16,11 @@ Salidas:
     experiments/results/exp6_robustness/fig_robustness_noise.png
 """
 from __future__ import annotations
+
 import json
 import sys
 from pathlib import Path
+
 import numpy as np
 
 REPO = Path(__file__).resolve().parents[1]
@@ -27,7 +29,7 @@ OUT = REPO / "experiments/results/exp6_robustness"
 OUT.mkdir(parents=True, exist_ok=True)
 
 from src.utils.dataset_loader import BOPDataset
-from src.utils.metrics import add_metric, add_s_metric
+from src.utils.metrics import add_s_metric
 
 DATASETS = {
     "ycbv": {
@@ -157,10 +159,10 @@ def main():
     for ds_name, ds_info in DATASETS.items():
         print(f"\n=== {ds_name.upper()} ===")
         if not ds_info["checkpoint"].exists():
-            print(f"  [skip] sin checkpoint")
+            print("  [skip] sin checkpoint")
             continue
         if not ds_info["path"].exists():
-            print(f"  [skip] sin dataset")
+            print("  [skip] sin dataset")
             continue
 
         samples = load_predictions_with_gt(ds_name, ds_info, n_max=300)

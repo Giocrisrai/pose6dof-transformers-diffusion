@@ -18,11 +18,11 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.utils.dataset_loader import BOPDataset, verify_dataset
-from src.perception.evaluator import compare_methods, load_predictions, evaluate_method
-from src.utils.visualization import plot_metrics_comparison
 import matplotlib.pyplot as plt
-import numpy as np
+
+from src.perception.evaluator import compare_methods, evaluate_method, load_predictions
+from src.utils.dataset_loader import BOPDataset, verify_dataset
+from src.utils.visualization import plot_metrics_comparison
 
 
 def get_device():
@@ -52,7 +52,7 @@ def run_single_evaluation(method: str, dataset_name: str, data_root: str = "data
     pred_path = f"experiments/results/{method}_{dataset_name}.json"
     if not Path(pred_path).exists():
         print(f"\n⚠️  Predictions not found: {pred_path}")
-        print(f"   Run the Colab notebook first to generate predictions.")
+        print("   Run the Colab notebook first to generate predictions.")
         print(f"   Then save results to: {pred_path}")
         return None
 

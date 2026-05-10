@@ -9,11 +9,13 @@ Mejoras vs run_pipeline_e2e.py:
 Salida: experiments/results/pipeline_e2e/e2e_live_metrics.json
 """
 from __future__ import annotations
+
 import argparse
 import json
 import sys
 import time
 from pathlib import Path
+
 import numpy as np
 
 REPO = Path(__file__).resolve().parents[1]
@@ -102,7 +104,7 @@ def main():
         sim.startSimulation()
         # Test 1 step
         sim.step()
-        print(f"  Stepping OK")
+        print("  Stepping OK")
     except Exception as e:
         print(f"  [warn] setup sim: {e}")
         return
@@ -110,7 +112,8 @@ def main():
     # 2. Diffusion Policy
     print("\n[2/4] Cargando Diffusion Policy entrenado...")
     import torch
-    from src.planning.diffusion_policy import SimpleDDPMScheduler, ConditionalUNet1D
+
+    from src.planning.diffusion_policy import ConditionalUNet1D, SimpleDDPMScheduler
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     planner = ConditionalUNet1D(action_dim=7, horizon=16, cond_dim=64, hidden_dim=128).to(device)
     weights_path = REPO / "data/models/diffusion_policy_grasp.pth"
@@ -127,7 +130,7 @@ def main():
             planner.load_state_dict(ckpt)
         print(f"  Pesos: {weights_path.name} ({weights_path.stat().st_size/1024/1024:.1f} MB)")
     else:
-        print(f"  [warn] Sin pesos entrenados, usando random init")
+        print("  [warn] Sin pesos entrenados, usando random init")
     planner.eval()
     scheduler = SimpleDDPMScheduler(num_timesteps=100)
 
@@ -213,7 +216,7 @@ def main():
     # 4. Detener sim
     try:
         sim.stopSimulation()
-    except:
+    except Exception:
         pass
 
     out = OUTPUT / "e2e_live_metrics.json"

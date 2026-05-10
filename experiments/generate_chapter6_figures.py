@@ -33,9 +33,9 @@ import sys
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -171,7 +171,7 @@ def generate_results_table():
         lines.append(f"| Pipeline E2E (T-LESS) | ADD Recall@10mm | {ms.get('add_recall_at_10mm', 0)*100:.1f}% |")
         lines.append(f"| Pipeline E2E (T-LESS) | ADD-S Recall@10mm | {ms.get('adds_recall_at_10mm', 0)*100:.1f}% |")
         lines.append(f"| Pipeline E2E (T-LESS) | ADD AUC@50mm | {ms.get('add_auc_50mm', 0):.4f} |")
-    except:
+    except Exception:
         pass
 
     # Exp 3
@@ -184,7 +184,7 @@ def generate_results_table():
         if "6D_continuous" in grad:
             lines.append(f"| Gradiente 6D | Norma media | {grad['6D_continuous']['mean']:.4f} |")
             lines.append(f"| Gradiente Quat | Norma media | {grad['quaternion']['mean']:.4f} |")
-    except:
+    except Exception:
         pass
 
     # Exp 4
@@ -196,7 +196,7 @@ def generate_results_table():
             r = exp4[key]
             lines.append(f"| Grasp {method} | Éxito | {r['success_rate']:.1f}% |")
             lines.append(f"| Grasp {method} | Tiempo | {r['avg_time_ms']:.1f}ms |")
-    except:
+    except Exception:
         pass
 
     table = "\n".join(lines)
@@ -280,7 +280,7 @@ def fig_fp_real_vs_gdrnet():
     data = load_fp_real_results()
     if data is None:
         print(f"  [SKIP] No hay resultados reales de FP en {FP_REAL_DIR}")
-        print(f"         Copia los JSON desde Drive: TFM/experiments/foundationpose_eval/")
+        print("         Copia los JSON desde Drive: TFM/experiments/foundationpose_eval/")
         return
 
     ycbv = data.get("ycbv", {})

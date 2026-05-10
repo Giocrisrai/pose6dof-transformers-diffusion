@@ -6,19 +6,20 @@ to validate the entire data flow before running real inference on Colab.
 """
 
 import sys
-import numpy as np
-import cv2
 from pathlib import Path
+
+import cv2
+import numpy as np
 
 # Add project root
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from src.planning.grasp_sampler import GraspSampler
 from src.utils.dataset_loader import BOPDataset
-from src.utils.lie_groups import so3_exp, so3_log, geodesic_distance_SO3, pose_from_Rt
-from src.utils.rotations import matrix_to_quat, matrix_to_6d, sixd_to_matrix
-from src.utils.metrics import add_metric, add_s_metric, mssd, mspd, compute_recall
-from src.utils.visualization import draw_pose_axes, draw_projected_points
-from src.planning.grasp_sampler import GraspSampler, GraspCandidate
+from src.utils.lie_groups import geodesic_distance_SO3, pose_from_Rt, so3_exp, so3_log
+from src.utils.metrics import add_metric, add_s_metric, mspd, mssd
+from src.utils.rotations import matrix_to_6d, matrix_to_quat, sixd_to_matrix
+from src.utils.visualization import draw_pose_axes
 
 
 def test_dataset(name, root, scene_id, img_id=0):
@@ -62,7 +63,7 @@ def test_dataset(name, root, scene_id, img_id=0):
     R_from_6d = sixd_to_matrix(rep6d)
     omega = so3_log(R_gt)
 
-    print(f"\n  [2] Rotation representations:")
+    print("\n  [2] Rotation representations:")
     print(f"      Quaternion: [{q[0]:.4f}, {q[1]:.4f}, {q[2]:.4f}, {q[3]:.4f}]")
     print(f"      6D repr:    [{rep6d[0]:.4f}, ..., {rep6d[5]:.4f}]")
     print(f"      Axis-angle: norm={np.linalg.norm(omega):.4f} rad ({np.degrees(np.linalg.norm(omega)):.1f} deg)")
@@ -77,7 +78,7 @@ def test_dataset(name, root, scene_id, img_id=0):
 
     angular_err = geodesic_distance_SO3(R_gt, R_pred)
     trans_err = np.linalg.norm(t_gt - t_pred)
-    print(f"\n  [3] Noisy prediction:")
+    print("\n  [3] Noisy prediction:")
     print(f"      Angular error:  {np.degrees(angular_err):.2f} deg")
     print(f"      Translation error: {trans_err:.2f} mm")
 
@@ -99,7 +100,7 @@ def test_dataset(name, root, scene_id, img_id=0):
 
             diameter = ds.get_object_diameter(obj_id)
 
-            print(f"\n  [4] BOP Metrics (noisy pred vs GT):")
+            print("\n  [4] BOP Metrics (noisy pred vs GT):")
             print(f"      ADD:  {add_err:.2f} mm")
             print(f"      ADD-S: {adds_err:.2f} mm")
             print(f"      MSSD: {mssd_err:.2f} mm")

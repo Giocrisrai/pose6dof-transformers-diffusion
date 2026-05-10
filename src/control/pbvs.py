@@ -14,8 +14,10 @@ Referencias:
 - Li et al. (2025). Enhancing PBVS through Transformer-Based RL.
 """
 from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Optional, Tuple
+
 import numpy as np
 
 

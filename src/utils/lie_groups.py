@@ -10,9 +10,9 @@ References:
     - Lynch & Park (2017) "Modern Robotics", Ch. 3
 """
 
-import numpy as np
 from typing import Tuple
 
+import numpy as np
 
 # ============================================================
 # SO(3) — Special Orthogonal Group (rotaciones 3D)

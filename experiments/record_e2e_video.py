@@ -10,6 +10,7 @@ Salidas:
     experiments/results/pipeline_e2e/demo_e2e.gif (preview)
 """
 from __future__ import annotations
+
 import argparse
 import json
 import shutil
@@ -17,6 +18,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+
 import numpy as np
 
 REPO = Path(__file__).resolve().parents[1]
@@ -165,7 +167,8 @@ def main():
     # 2. Cargar Diffusion Policy
     print("\n[2/4] Cargando Diffusion Policy...")
     import torch
-    from src.planning.diffusion_policy import SimpleDDPMScheduler, ConditionalUNet1D
+
+    from src.planning.diffusion_policy import ConditionalUNet1D, SimpleDDPMScheduler
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     planner = ConditionalUNet1D(action_dim=7, horizon=16, cond_dim=64, hidden_dim=128).to(device)
     weights = REPO / "data/models/diffusion_policy_grasp.pth"
@@ -249,14 +252,14 @@ def main():
     cmd_gif = [
         "ffmpeg", "-y",
         "-i", str(mp4_path),
-        "-vf", f"fps=10,scale=480:-1:flags=lanczos",
+        "-vf", "fps=10,scale=480:-1:flags=lanczos",
         "-loop", "0",
         str(gif_path),
     ]
     subprocess.run(cmd_gif, check=True, capture_output=True)
     print(f"  GIF: {gif_path} ({gif_path.stat().st_size/1024:.0f} KB)")
 
-    print(f"\n[OK] Video evidencia generado")
+    print("\n[OK] Video evidencia generado")
 
 
 if __name__ == "__main__":

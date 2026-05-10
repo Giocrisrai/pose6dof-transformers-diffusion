@@ -20,6 +20,7 @@ import sys
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -27,15 +28,19 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.utils.lie_groups import so3_exp, so3_log, geodesic_distance_SO3
-from src.utils.rotations import (
-    matrix_to_quat, quat_to_matrix,
-    matrix_to_6d, sixd_to_matrix,
-    matrix_to_axisangle, axisangle_to_matrix,
-    euler_to_matrix, matrix_to_euler,
-    sixd_to_matrix_torch, matrix_to_6d_torch,
-)
 from src.utils.dataset_loader import BOPDataset
+from src.utils.lie_groups import geodesic_distance_SO3, so3_exp, so3_log
+from src.utils.rotations import (
+    axisangle_to_matrix,
+    euler_to_matrix,
+    matrix_to_6d,
+    matrix_to_axisangle,
+    matrix_to_euler,
+    matrix_to_quat,
+    quat_to_matrix,
+    sixd_to_matrix,
+    sixd_to_matrix_torch,
+)
 
 OUTPUT_DIR = Path("experiments/results/exp3_rotation_ablation")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

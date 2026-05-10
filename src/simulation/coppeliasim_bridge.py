@@ -14,11 +14,12 @@ References:
     - UR5e URDF: https://github.com/UniversalRobots/Universal_Robots_ROS2_Description
 """
 
-import numpy as np
-from typing import Dict, List, Optional, Tuple
-from dataclasses import dataclass
 import logging
 import time
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Tuple
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -422,7 +423,7 @@ class CoppeliaSimBridge:
             angle = np.random.uniform(0, 2 * np.pi)
             axis = np.random.randn(3)
             axis = axis / np.linalg.norm(axis)
-            from src.utils.lie_groups import so3_exp, pose_from_Rt
+            from src.utils.lie_groups import pose_from_Rt, so3_exp
             R = so3_exp(axis * angle)
             T = pose_from_Rt(R, pos)
             self.set_object_pose(name, T)

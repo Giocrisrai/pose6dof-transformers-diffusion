@@ -10,17 +10,19 @@ Salidas:
     experiments/results/chapter6_figures/fig_bootstrap_ci.png
 """
 from __future__ import annotations
+
 import argparse
 import json
 import sys
 from pathlib import Path
+
 import numpy as np
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from src.utils.dataset_loader import BOPDataset
-from src.utils.metrics import add_metric, add_s_metric, compute_recall, compute_auc
+from src.utils.metrics import add_metric, add_s_metric
 
 DATASETS = {
     "ycbv": {
@@ -173,7 +175,7 @@ def main():
         print(f"\n=== {ds_name.upper()} ===")
         print(f"  checkpoint: {info['checkpoint'].name}")
         if not info["checkpoint"].exists():
-            print(f"  [skip] checkpoint no existe")
+            print("  [skip] checkpoint no existe")
             continue
         if not info["path"].exists():
             print(f"  [skip] dataset path no existe: {info['path']}")
@@ -206,7 +208,7 @@ def main():
         results["auc_adds_50mm"] = auc_metric(adds_e, 50.0)
 
         # Bootstrap CI sobre AUC ADD-S y Recall@10mm ADD-S
-        print(f"  computing bootstrap CI...")
+        print("  computing bootstrap CI...")
         point, lo, hi = bootstrap_ci(
             adds_e, B=args.bootstrap_iters,
             statistic=lambda x: float(np.trapezoid(

@@ -12,9 +12,8 @@ Para reproducibilidad publica, los archivos deben tener acceso "cualquiera con
 el enlace" o estar mirroreados en un release de GitHub.
 """
 from __future__ import annotations
+
 import argparse
-import hashlib
-import os
 import subprocess
 import sys
 from pathlib import Path

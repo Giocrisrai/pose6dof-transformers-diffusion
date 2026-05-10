@@ -15,9 +15,11 @@ Tests:
 Salida: experiments/results/exp11_paired_stats/exp11_results.json + figura
 """
 from __future__ import annotations
+
 import json
 import sys
 from pathlib import Path
+
 import numpy as np
 
 REPO = Path(__file__).resolve().parents[1]

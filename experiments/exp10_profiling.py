@@ -10,10 +10,12 @@ Mide tiempo por componente y por sub-operacion del pipeline:
 Salida: experiments/results/exp10_profiling/exp10_results.json + figura
 """
 from __future__ import annotations
+
 import json
 import sys
 import time
 from pathlib import Path
+
 import numpy as np
 
 REPO = Path(__file__).resolve().parents[1]
@@ -22,7 +24,8 @@ OUT = REPO / "experiments/results/exp10_profiling"
 OUT.mkdir(parents=True, exist_ok=True)
 
 import torch
-from src.planning.diffusion_policy import SimpleDDPMScheduler, ConditionalUNet1D
+
+from src.planning.diffusion_policy import ConditionalUNet1D, SimpleDDPMScheduler
 
 
 def profile_diffusion(planner, scheduler, cond, device, n_steps=25, n_warmup=5, n_iters=20):
@@ -170,7 +173,7 @@ def main():
         "Diff_fraction_pct": diff_25 / total_estimated * 100,
         "Sim_fraction_pct": sim_50_steps / total_estimated * 100,
     }
-    print(f"\n=== CUELLO DE BOTELLA ===")
+    print("\n=== CUELLO DE BOTELLA ===")
     print(f"  FoundationPose: {bottleneck['FP_fraction_pct']:.1f}% del ciclo (DOMINANTE)")
     print(f"  Diffusion DDIM-25: {bottleneck['Diff_fraction_pct']:.1f}% del ciclo")
     print(f"  CoppeliaSim 50 steps: {bottleneck['Sim_fraction_pct']:.1f}% del ciclo")

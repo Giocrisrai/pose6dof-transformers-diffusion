@@ -17,10 +17,11 @@ Note:
     The wrapper supports both model-based (CAD) and model-free (few-shot) modes.
 """
 
-import numpy as np
-from pathlib import Path
-from typing import Optional, Dict, Tuple, List
 import logging
+from pathlib import Path
+from typing import Dict
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 

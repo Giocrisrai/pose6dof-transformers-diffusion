@@ -7,7 +7,6 @@
 """
 import json
 import os
-import sys
 from pathlib import Path
 
 REPO = Path('/Users/giocrisraigodoy/Documents/MATLAB/TFM/repo_tfm')

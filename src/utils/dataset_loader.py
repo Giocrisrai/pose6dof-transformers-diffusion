@@ -9,10 +9,8 @@ References:
 """
 
 import json
-import os
-from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import numpy as np
 
@@ -391,7 +389,7 @@ def verify_dataset(dataset_root: str, split: str = "test") -> Dict:
         for e in results["errors"][:5]:
             print(f"    - {e}")
     else:
-        print(f"  Status:       ✓ ALL OK")
+        print("  Status:       ✓ ALL OK")
     print()
 
     return results

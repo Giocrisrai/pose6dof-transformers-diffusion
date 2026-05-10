@@ -9,11 +9,13 @@ Mide el ciclo total por instancia para validar H3 (< 10 s/instancia).
 Salida: experiments/results/pipeline_e2e/e2e_metrics.json
 """
 from __future__ import annotations
+
 import argparse
 import json
 import sys
 import time
 from pathlib import Path
+
 import numpy as np
 
 REPO = Path(__file__).resolve().parents[1]
@@ -104,7 +106,8 @@ def main():
     # 2. Cargar Diffusion Policy entrenada
     print("\n[2/3] Cargando Diffusion Policy...")
     import torch
-    from src.planning.diffusion_policy import SimpleDDPMScheduler, ConditionalUNet1D
+
+    from src.planning.diffusion_policy import ConditionalUNet1D, SimpleDDPMScheduler
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     planner = ConditionalUNet1D(action_dim=7, horizon=16, cond_dim=64, hidden_dim=128)
     weights_path = REPO / "data/models/diffusion_policy_grasp.pth"
@@ -117,7 +120,7 @@ def main():
             planner.load_state_dict(ckpt)
         print(f"  Pesos cargados: {weights_path.name}")
     else:
-        print(f"  [warn] No hay pesos entrenados — usando random init")
+        print("  [warn] No hay pesos entrenados — usando random init")
     planner.eval()
     scheduler = SimpleDDPMScheduler(num_timesteps=100)
 

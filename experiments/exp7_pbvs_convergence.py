@@ -17,9 +17,11 @@ Salidas:
     experiments/results/exp7_pbvs/fig_pbvs_convergence.png
 """
 from __future__ import annotations
+
 import json
 import sys
 from pathlib import Path
+
 import numpy as np
 
 REPO = Path(__file__).resolve().parents[1]

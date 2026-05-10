@@ -10,14 +10,16 @@ References:
     - Corke (2017) "Robotics, Vision and Control" Ch. 15-16
 """
 
-import numpy as np
-from typing import Tuple, Optional
 import logging
+from typing import Optional, Tuple
+
+import numpy as np
 
 from src.utils.lie_groups import (
-    so3_exp, so3_log, se3_log,
-    pose_from_Rt, pose_to_Rt,
-    se3_inverse, se3_compose,
+    pose_to_Rt,
+    se3_compose,
+    se3_inverse,
+    se3_log,
 )
 
 logger = logging.getLogger(__name__)
