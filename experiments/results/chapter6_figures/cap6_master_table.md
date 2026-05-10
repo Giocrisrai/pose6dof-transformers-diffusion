@@ -1,6 +1,6 @@
 # Tabla maestra del cap. 6 — TFM
 
-_Generada 2026-04-27 23:52 por `experiments/run_chapter6_consolidation.py`_
+_Generada 2026-05-10 12:43 por `experiments/run_chapter6_consolidation.py`_
 
 
 ## 1. FoundationPose — métricas reales (subset BOP-19)

@@ -25,11 +25,17 @@ env/
 .DS_Store
 Thumbs.db
 
-# Data - archivos grandes (usar Git LFS si es necesario)
-data/models/*.pth
-data/models/*.pt
+# Data - archivos grandes (usar scripts/download_drive_assets.py para reproducir)
+# Pesos FoundationPose y GDR-Net pesados: descargables desde Drive
+data/models/foundationpose/**/*.pth
+data/models/gdrnet/**/*.pth
 data/models/*.onnx
 data/models/*.bin
+# Permitir explícitamente: configs YAML de los pesos y modelos pequeños entrenados (< 10 MB)
+!data/models/foundationpose/**/config.yml
+!data/models/gdrnet/**/config.yml
+!data/models/diffusion_policy_grasp.pth
+# Datasets BOP: descargables desde HuggingFace (notebooks/colab/00_setup)
 data/datasets/
 *.hdf5
 *.h5

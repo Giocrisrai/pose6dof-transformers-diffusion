@@ -27,6 +27,9 @@ La reproducibilidad de las **versiones exactas** está garantizada por:
 2. **`requirements.colab.lock.txt`** — snapshot de versiones validadas en Colab Free,
    regenerable automáticamente desde el notebook (última celda).
 3. **`pyproject.toml` + `uv.lock`** — gestor determinista de dependencias Python del proyecto.
+4. **`scripts/download_drive_assets.py`** — descarga reproducible de pesos y checkpoints
+   desde Drive (FoundationPose scorer/refiner, predicciones FP YCB-V/T-LESS). Ejecutar
+   `python scripts/download_drive_assets.py --list` para ver el manifest.
 
 ---
 
@@ -205,9 +208,34 @@ Si otra persona retoma este TFM (o el propio autor tras una pausa):
 1. **Clonar el repo**: `git clone ...`.
 2. **Leer**: `README.md` → este `REPRODUCIBILITY.md` → `PLANNING.md` → `docs/`.
 3. **Setup local Mac M1**: `uv sync --all-extras`, `pytest tests/`.
-4. **Primer run GPU**: Opción A (Colab Free) con el notebook, `MODE='smoke'`.
-5. **Análisis local**: descargar JSON, `python experiments/generate_chapter6_figures.py`.
-6. **Escalar**: si quiere runs completos → Opción B (Kaggle) o C (Dockerfile en Vast.ai).
+4. **Descargar assets desde Drive**: `python scripts/download_drive_assets.py --what all`
+   (se descargan pesos FP scorer/refiner ~256 MB y checkpoints de predicciones).
+5. **Primer run GPU**: Opción A (Colab Free) con el notebook, `MODE='smoke'`.
+6. **Análisis local sin GPU**: con los checkpoints ya descargados,
+   `notebooks/colab/03_results_analysis.ipynb` recomputa métricas BOP y genera figuras.
+7. **Escalar**: si quiere runs completos → Opción B (Kaggle) o C (Dockerfile en Vast.ai).
+
+---
+
+## Manifest de assets en Drive
+
+Los siguientes binarios pesados se descargan desde Google Drive con el script
+`scripts/download_drive_assets.py`. No se commitean al repositorio (exceden
+límites razonables de git). Sus IDs son fijos y reproducibles:
+
+| Asset | Tamaño | Destino | Uso |
+|-------|-------:|---------|-----|
+| FoundationPose scorer | 181 MB | `data/models/foundationpose/2024-01-11-20-02-45/model_best.pth` | inferencia FP |
+| FoundationPose refiner | 65 MB | `data/models/foundationpose/2023-10-28-18-33-37/model_best.pth` | refinamiento iterativo FP |
+| FP checkpoint YCB-V | 0.4 MB | `experiments/checkpoints/fp_ycbv_checkpoint.json` | 1098 predicciones FP YCB-V |
+| FP checkpoint T-LESS | 0.4 MB | `experiments/checkpoints/fp_tless_checkpoint.json` | 1012 predicciones FP T-LESS |
+
+**Configs YAML** de los pesos FP sí están commiteados (~700 B cada uno) en
+`data/models/foundationpose/<run_id>/config.yml`.
+
+**Modelo Diffusion Policy entrenado en local** (`data/models/diffusion_policy_grasp.pth`,
+4.2 MB, 30 épocas en MPS) sí está commiteado al ser pequeño y autoreproducible
+(notebook `06_diffusion_policy_training.ipynb`).
 
 ---
 

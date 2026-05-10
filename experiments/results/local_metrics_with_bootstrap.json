@@ -1,0 +1,105 @@
+{
+  "method": "FoundationPose",
+  "run_reference": "checkpoints/fp_*_checkpoint.json (Drive 2026-04-27)",
+  "bootstrap_iters": 1000,
+  "seed": 42,
+  "datasets": {
+    "ycbv": {
+      "n_evaluated": 1098,
+      "skipped": {
+        "no_gt": 0,
+        "no_model": 0,
+        "gt_idx_oob": 0,
+        "wrong_obj": 0
+      },
+      "add_mean_mm": 21.7843733577144,
+      "add_median_mm": 4.195158537652663,
+      "adds_mean_mm": 9.195251192274965,
+      "adds_median_mm": 3.1922814348463113,
+      "recall_add_5mm": 0.5965391621129326,
+      "recall_adds_5mm": 0.8642987249544627,
+      "recall_add_10mm": 0.7695810564663024,
+      "recall_adds_10mm": 0.9581056466302368,
+      "recall_add_20mm": 0.8005464480874317,
+      "recall_adds_20mm": 0.9772313296903461,
+      "auc_add_50mm": 0.7386570624275542,
+      "auc_adds_50mm": 0.9084193483100588,
+      "auc_adds_50mm_ci95": {
+        "point": 0.9084193483100588,
+        "lo": 0.9005466780740006,
+        "hi": 0.9157201569428343
+      },
+      "recall_adds_10mm_ci95": {
+        "point": 0.9581056466302368,
+        "lo": 0.9462659380692168,
+        "hi": 0.9690346083788707
+      }
+    },
+    "tless": {
+      "n_evaluated": 1012,
+      "skipped": {
+        "no_gt": 0,
+        "no_model": 0,
+        "gt_idx_oob": 0,
+        "wrong_obj": 0
+      },
+      "add_mean_mm": 21.75323842211919,
+      "add_median_mm": 2.900623809633043,
+      "adds_mean_mm": 3.5261944132765293,
+      "adds_median_mm": 1.8645409813856904,
+      "recall_add_5mm": 0.6956521739130435,
+      "recall_adds_5mm": 0.9891304347826086,
+      "recall_add_10mm": 0.7213438735177866,
+      "recall_adds_10mm": 0.9970355731225297,
+      "recall_add_20mm": 0.7450592885375494,
+      "recall_adds_20mm": 0.9990118577075099,
+      "auc_add_50mm": 0.7364504731105522,
+      "auc_adds_50mm": 0.9570756976883458,
+      "auc_adds_50mm_ci95": {
+        "point": 0.9570756976883458,
+        "lo": 0.9543504461612166,
+        "hi": 0.9589279654250011
+      },
+      "recall_adds_10mm_ci95": {
+        "point": 0.9970355731225297,
+        "lo": 0.9930830039525692,
+        "hi": 1.0
+      }
+    }
+  },
+  "reference_leaderboard": {
+    "foundationpose_paper": {
+      "ycbv": {
+        "Mean_AR": 0.897,
+        "VSD": 0.872,
+        "MSSD": 0.898,
+        "MSPD": 0.921
+      },
+      "tless": {
+        "Mean_AR": 0.803,
+        "VSD": 0.752,
+        "MSSD": 0.801,
+        "MSPD": 0.856
+      }
+    },
+    "gdrnet_plus_plus_bop2022": {
+      "ycbv": {
+        "Mean_AR": 0.867,
+        "VSD": 0.841,
+        "MSSD": 0.868,
+        "MSPD": 0.893
+      },
+      "tless": {
+        "Mean_AR": 0.767,
+        "VSD": 0.712,
+        "MSSD": 0.764,
+        "MSPD": 0.825
+      }
+    },
+    "delta_mean_ar_pp": {
+      "ycbv": 3.0,
+      "tless": 3.6
+    },
+    "note": "\u0394 Mean AR de FoundationPose vs GDR-Net++ tomado de tablas oficiales BOP. Bootstrap CI se aplica solo sobre las metricas ADD-S propias del run."
+  }
+}
