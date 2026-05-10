@@ -60,7 +60,7 @@ Keywords: 6-DoF pose estimation, robotic bin picking, FoundationPose, Diffusion 
 
 [4. Desarrollo específico de la contribución [7](#desarrollo-específico-de-la-contribución)](#desarrollo-específico-de-la-contribución)
 
-[4.1. Tipo 1. Desarrollo práctico [7](#tipo-2.-investigación-con-desarrollo-práctico)](#tipo-2.-investigación-con-desarrollo-práctico)
+[4.1. Tipo 2. Investigación con desarrollo práctico [7](#tipo-2.-investigación-con-desarrollo-práctico)](#tipo-2.-investigación-con-desarrollo-práctico)
 
 [4.1.1. Identificación de requisitos [7](#identificación-de-requisitos)](#identificación-de-requisitos)
 
