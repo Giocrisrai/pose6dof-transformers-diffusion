@@ -71,3 +71,7 @@ build/
 
 # CoppeliaSim
 *.ttt.bak
+
+# Frames raw del video E2E (regenerables con experiments/record_e2e_video.py)
+# Solo se versionan los productos finales: demo_e2e.mp4, demo_e2e.gif, highlights/
+experiments/results/pipeline_e2e/demo_frames/

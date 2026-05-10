@@ -22,6 +22,31 @@
 
 ---
 
+## Demo en simulacion
+
+Pipeline E2E ejecutandose en vivo en CoppeliaSim Edu V4.10 (3 ciclos de
+bin picking sobre la escena pickAndPlaceDemo, n_diffusion_steps=25, MPS):
+
+![Demo E2E en CoppeliaSim](experiments/results/pipeline_e2e/highlights/composite_3phases.png)
+
+- **Video MP4** (455 KB): [experiments/results/pipeline_e2e/demo_e2e.mp4](experiments/results/pipeline_e2e/demo_e2e.mp4)
+- **GIF preview** (1.6 MB): [experiments/results/pipeline_e2e/demo_e2e.gif](experiments/results/pipeline_e2e/demo_e2e.gif)
+- **Highlights** (9 frames PNG): [experiments/results/pipeline_e2e/highlights/](experiments/results/pipeline_e2e/highlights/)
+
+Cada frame del video lleva overlay con: ciclo, dataset, obj_id, fase del
+pipeline (PERCEPCION/PLANIFICACION/EJECUCION AGARRE), latencia Diffusion DDIM,
+y traslacion 6-DoF estimada en metros.
+
+## Resultados E2E (n=30 instancias por dataset, en vivo con CoppeliaSim)
+
+| Dataset | FP p95 | Diffusion p95 | Sim p95 | **Cycle p95** | H3 (<10s) |
+|---------|-------:|------------:|--------:|--------------:|:---------:|
+| YCB-Video | 4273 ms | 176 ms | 1734 ms | **6125 ms** | margen 3.88 s |
+| T-LESS | 5174 ms | 214 ms | 1971 ms | **6857 ms** | margen 3.14 s |
+
+Reproducir: `python experiments/run_e2e_live.py --n-instances 30 --ddim-steps 25`
+(requiere CoppeliaSim corriendo en localhost:23000).
+
 ## Descripcion
 
 Pipeline de percepcion y planificacion robotica para bin picking industrial que integra:
