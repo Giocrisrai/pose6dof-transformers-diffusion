@@ -13,10 +13,11 @@ Salida:
     experiments/results/exp12_per_object/fig_per_object_tless.png
 """
 from __future__ import annotations
+
 import json
 import sys
-from pathlib import Path
 from collections import defaultdict
+from pathlib import Path
 
 import numpy as np
 

@@ -182,6 +182,7 @@ def load_diffusion_planner(
 ):
     """Carga el modelo Diffusion Policy entrenado y devuelve (planner, scheduler, device)."""
     import torch
+
     from src.planning.diffusion_policy import ConditionalUNet1D, SimpleDDPMScheduler
 
     if device is None:

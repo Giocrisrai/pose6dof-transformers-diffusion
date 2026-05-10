@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-05-10T17:12:08.766282",
+  "timestamp": "2026-05-10T17:19:14",
   "description": "FoundationPose vs GDR-Net++ comparison + Diffusion planning + CoppeliaSim infrastructure for TFM Chapter 6",
   "foundationpose_own": {
     "ycbv": {
@@ -7,8 +7,6 @@
       "add_median_mm": 4.16605928321402,
       "adds_mean_mm": 8.174156283353108,
       "adds_median_mm": 2.0852270071362318,
-      "auc_add": 0.8286830049125133,
-      "auc_adds": 0.9586116170815626,
       "n_evaluated": 1098,
       "recall_add_5mm": 0.599271402550091,
       "recall_adds_5mm": 0.8879781420765027,
@@ -17,15 +15,21 @@
       "recall_add_20mm": 0.8005464480874317,
       "recall_adds_20mm": 0.9772313296903461,
       "recall_add_50mm": 0.8333333333333334,
-      "recall_adds_50mm": 0.9863387978142076
+      "recall_adds_50mm": 0.9863387978142076,
+      "auc_adds_50mm_normalized": 0.9084193483100588,
+      "auc_adds_50mm_normalized_ci95": {
+        "point": 0.9084193483100588,
+        "lo": 0.9005466780740006,
+        "hi": 0.9157201569428343
+      },
+      "auc_adds_legacy_unnormalized": 0.9586116170815626,
+      "auc_add_legacy_unnormalized": 0.8286830049125133
     },
     "tless": {
       "add_mean_mm": 21.76628088064673,
       "add_median_mm": 2.9021062053346647,
       "adds_mean_mm": 2.991436604295998,
       "adds_median_mm": 1.359346280540119,
-      "auc_add": 0.8051563061444486,
-      "auc_adds": 0.9833962151155826,
       "n_evaluated": 1012,
       "recall_add_5mm": 0.6976284584980237,
       "recall_adds_5mm": 0.9930830039525692,
@@ -34,7 +38,15 @@
       "recall_add_20mm": 0.7440711462450593,
       "recall_adds_20mm": 0.9990118577075099,
       "recall_add_50mm": 0.8389328063241107,
-      "recall_adds_50mm": 0.9990118577075099
+      "recall_adds_50mm": 0.9990118577075099,
+      "auc_adds_50mm_normalized": 0.9570756976883458,
+      "auc_adds_50mm_normalized_ci95": {
+        "point": 0.9570756976883458,
+        "lo": 0.9543504461612166,
+        "hi": 0.9589279654250011
+      },
+      "auc_adds_legacy_unnormalized": 0.9833962151155826,
+      "auc_add_legacy_unnormalized": 0.8051563061444486
     },
     "_meta": {
       "source": "experiments/results/foundationpose_eval/comparison_20260427_084807.json"
@@ -199,5 +211,6 @@
     "outputs": {
       "overview_png": "experiments/results/coppelia_smoke/coppelia_overview_pickandplace.png"
     }
-  }
+  },
+  "_note_metrics_definition": "Las cifras AUC ADD-S/AUC ADD reportadas como 'auc_adds_50mm_normalized' y 'auc_add_legacy_unnormalized' usan distintas definiciones. El doc TFM y el bootstrap CI 95% (local_metrics_with_bootstrap.json) emplean la AUC normalizada @50mm = trapezoid(recall(t)) / 50, definicion canonica BOP. Los valores legacy corresponden al calculo del notebook 02 original (no normalizados) y se mantienen como referencia historica del run del 2026-04-27."
 }

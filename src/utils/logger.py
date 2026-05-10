@@ -20,7 +20,6 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-
 COLORS = {
     'DEBUG': '\033[36m',      # cyan
     'INFO': '\033[32m',       # green

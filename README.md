@@ -5,7 +5,7 @@
 [![Tests](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/actions/workflows/tests.yml/badge.svg)](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/actions/workflows/tests.yml)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
 [![License](https://img.shields.io/badge/license-Academic-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-93%20passing-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/tests-110%20passing-brightgreen)](tests/)
 [![Bootstrap CI](https://img.shields.io/badge/bootstrap-CI%2095%25-purple)](experiments/results/local_metrics_with_bootstrap.json)
 
 ## Autores
@@ -25,7 +25,7 @@
 
 **Robustez verificada**: T-LESS aguanta 70 % oclusión con solo −1 pp AUC ADD-S. **PBVS** converge 100 % en 50 muestras. **Cuello de botella identificado**: FoundationPose 80 % del ciclo.
 
-**Material disponible** en [`docs/entrega2/`](docs/entrega2/): TFM en docx + PDF (55 págs) + markdown + slide deck PPTX (20 slides) + FAQ defensa.
+**Material disponible** en [`docs/entrega2/`](docs/entrega2/): TFM en docx + PDF (62 págs) + markdown + slide deck PPTX (20 slides) + FAQ defensa.
 
 ---
 
