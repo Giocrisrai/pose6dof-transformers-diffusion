@@ -40,43 +40,43 @@ Keywords: 6-DoF pose estimation, robotic bin picking, FoundationPose, Diffusion 
 
 Índice de contenidos
 
-[1. Introducción](#_Toc150762217)
+[1. Introducción [1](#_Toc150762217)](#_Toc150762217)
 
-[1.1. Justificación](#_Toc150762218)
+[1.1. Justificación [1](#_Toc150762218)](#_Toc150762218)
 
-[1.2. Planteamiento del problema](#_Toc150762219)
+[1.2. Planteamiento del problema [2](#_Toc150762219)](#_Toc150762219)
 
-[1.3. Estructura del trabajo](#_Toc150762220)
+[1.3. Estructura del trabajo [3](#_Toc150762220)](#_Toc150762220)
 
-[2. Contexto y estado del arte](#_Toc150762221)
+[2. Contexto y estado del arte [4](#_Toc150762221)](#_Toc150762221)
 
-[3. Objetivos concretos y metodología de trabajo](#_Toc150762222)
+[3. Objetivos concretos y metodología de trabajo [5](#_Toc150762222)](#_Toc150762222)
 
-[3.1. Objetivo general](#_Toc150762223)
+[3.1. Objetivo general [5](#_Toc150762223)](#_Toc150762223)
 
-[3.2. Objetivos específicos](#_Toc150762224)
+[3.2. Objetivos específicos [5](#_Toc150762224)](#_Toc150762224)
 
-[3.3. Metodología del trabajo](#_Toc150762225)
+[3.3. Metodología del trabajo [6](#_Toc150762225)](#_Toc150762225)
 
-[4. Desarrollo específico de la contribución](#desarrollo-específico-de-la-contribución)
+[4. Desarrollo específico de la contribución [7](#desarrollo-específico-de-la-contribución)](#desarrollo-específico-de-la-contribución)
 
-[4.1. Tipo 1. Desarrollo práctico](#tipo-2.-investigación-con-desarrollo-práctico)
+[4.1. Tipo 1. Desarrollo práctico [7](#tipo-2.-investigación-con-desarrollo-práctico)](#tipo-2.-investigación-con-desarrollo-práctico)
 
-[4.1.1. Identificación de requisitos](#identificación-de-requisitos)
+[4.1.1. Identificación de requisitos [7](#identificación-de-requisitos)](#identificación-de-requisitos)
 
-[4.1.2. Descripción del sistema software o físico desarrollado](#descripción-del-sistema-software-o-físico-desarrollado)
+[4.1.2. Descripción del sistema software o físico desarrollado [8](#descripción-del-sistema-software-o-físico-desarrollado)](#descripción-del-sistema-software-o-físico-desarrollado)
 
-[4.1.3. Evaluación](#evaluación)
+[4.1.3. Evaluación [8](#evaluación)](#evaluación)
 
-[5. Conclusiones y trabajo futuro](#conclusiones-y-trabajo-futuro)
+[5. Conclusiones y trabajo futuro [10](#conclusiones-y-trabajo-futuro)](#conclusiones-y-trabajo-futuro)
 
-[5.1. Conclusiones](#conclusiones)
+[5.1. Conclusiones [10](#conclusiones)](#conclusiones)
 
-[5.2. Trabajo futuro](#trabajo-futuro)
+[5.2. Trabajo futuro [10](#trabajo-futuro)](#trabajo-futuro)
 
-[Referencias bibliográficas](#referencias-bibliográficas)
+[Referencias bibliográficas [11](#section)](#section)
 
-[Anexo A. Repositorio de código y reproducibilidad](#repositorio-de-código-y-reproducibilidad)
+[Anexo A. Repositorio de código y reproducibilidad [12](#repositorio-de-código-y-reproducibilidad)](#repositorio-de-código-y-reproducibilidad)
 
 Índice de figuras
 
@@ -84,30 +84,41 @@ Keywords: 6-DoF pose estimation, robotic bin picking, FoundationPose, Diffusion 
 
 Para reproducir los resultados de este TFM, ejecutar la siguiente secuencia (las dependencias se instalan vía uv sync con el lockfile congelado).
 
-\# 1. Clonar repo y descargar assets desde Drive\
-git clone https://github.com/Giocrisrai/pose6dof-transformers-diffusion.git\
-cd pose6dof-transformers-diffusion\
-uv sync\
-python scripts/download_drive_assets.py \--what all\
-\
-\# 2. Ejecutar evaluacion FP local con bootstrap CI 95%\
-python experiments/recompute_metrics_with_bootstrap.py \--bootstrap-iters 1000\
-\
-\# 3. Entrenar Diffusion Policy en MPS (M1 Pro, \~5 min)\
-jupyter nbconvert \--to notebook \--execute notebooks/06_diffusion_policy_training_LOCAL.ipynb\
-\
-\# 4. Ablation n_diffusion_steps {25, 50, 100}\
-python experiments/exp5_diffusion_steps_ablation.py\
-\
-\# 5. Pipeline E2E live con CoppeliaSim corriendo\
-open -a CoppeliaSim_Edu \# lanzar CoppeliaSim Edu V4.10\
-python experiments/run_e2e_live.py \--n-instances 30 \--ddim-steps 25 \--sim-steps 50\
-\
-\# 6. Grabar video evidencia\
-python experiments/record_e2e_video_v2.py \--n-cycles 4 \--fps 24\
-\
-\# 7. Consolidar figuras y resultados Cap 6\
-python experiments/run_chapter6_consolidation.py
+> \# 1. Clonar repo y descargar assets desde Drive
+>
+> git clone https://github.com/Giocrisrai/pose6dof-transformers-diffusion.git
+>
+> cd pose6dof-transformers-diffusion
+>
+> uv sync
+>
+> python scripts/download_drive_assets.py \--what all
+>
+> \# 2. Ejecutar evaluacion FP local con bootstrap CI 95%
+>
+> python experiments/recompute_metrics_with_bootstrap.py \--bootstrap-iters 1000
+>
+> \# 3. Entrenar Diffusion Policy en MPS (M1 Pro, \~5 min)
+>
+> jupyter nbconvert \--to notebook \--execute notebooks/06_diffusion_policy_training_LOCAL.ipynb
+>
+> \# 4. Ablation n_diffusion_steps {25, 50, 100}
+>
+> python experiments/exp5_diffusion_steps_ablation.py
+>
+> \# 5. Pipeline E2E live con CoppeliaSim corriendo
+>
+> open -a CoppeliaSim_Edu \# lanzar CoppeliaSim Edu V4.10
+>
+> python experiments/run_e2e_live.py \--n-instances 30 \--ddim-steps 25 \--sim-steps 50
+>
+> \# 6. Grabar video evidencia
+>
+> python experiments/record_e2e_video_v2.py \--n-cycles 4 \--fps 24
+>
+> \# 7. Consolidar figuras y resultados Cap 6
+>
+> python experiments/run_chapter6_consolidation.py
 
 ### Estructura del repositorio
 
@@ -119,7 +130,7 @@ Cada número reportado en la memoria es trazable hasta un commit específico del
 
 Índice de tablas
 
-[Tabla 1. *Organización del trabajo en grupo.*](#_Toc150762245)
+[Tabla 1. *Organización del trabajo en grupo.* [IX](#_Toc150762245)](#_Toc150762245)
 
 **\**
 
@@ -174,7 +185,7 @@ Distribución y estructura de la memoria
 | Conclusiones                                | Giocrisrai y José Miguel            |
 +---------------------------------------------+-------------------------------------+
 
-: []{#_Toc150762245 .anchor}1. *Organización del trabajo en grupo.*
+: []{#_Toc150762245 .anchor}Tabla 1. *Organización del trabajo en grupo.*
 
 Fuente: Elaboración propia.
 
@@ -336,16 +347,6 @@ La ejecución final del agarre requiere un sistema de control visual (*visual se
 
 En el dominio específico de la manipulación robótica autónoma, Ribeiro et al. (2021) presentan en Robotics and Autonomous Systems un sistema CNN en tiempo real que combina detección de agarre (entrenado en el Cornell Dataset) con visual servo control, logrando más del 90% de precisión con un robot Kinova Gen3 en escenas *cluttered*. NVIDIA Isaac Manipulator (Murali et al., 2024) demuestra la viabilidad industrial del *pick-and-place* automatizado con FoundationPose como componente de percepción, alcanzando aproximadamente 8 segundos por ciclo de picking en un sistema real con piezas metálicas especulares, lo que valida el *pipeline* propuesto en este trabajo final de maestría. Xue et al. (2025) proponen un *framework* de *visual servoing* basado en *Transformers* para robots humanoides, utilizando un Distance Estimation *Transformer* que fusiona imágenes de múltiples cámaras con ángulos articulares para tareas de alineación de micro-objetos, logrando errores de 0.8-1.3 mm con tasas de éxito del 93-100%.
 
-## Síntesis comparativa y análisis crítico
-
-Más allá de la descripción individual de cada método, resulta imprescindible una comparación estructurada que permita valorar las fortalezas y limitaciones relativas de las propuestas dominantes. La Tabla 2 sintetiza los métodos más representativos de las cinco categorías anteriores, indicando para cada uno el tipo de arquitectura, los *datasets* de evaluación principales, la métrica reportada por sus autores y la limitación más relevante para el escenario de *bin picking* industrial.
-
-Tabla 2. *Síntesis comparativa de métodos del estado del arte para estimación de pose 6-DoF y planificación de agarre.*
-
-Fuente: elaboración propia a partir de las referencias citadas; los valores numéricos corresponden a los reportados por los autores en sus respectivas publicaciones para *splits* estándar de BOP, YCB-Video o LineMOD.
-
-El análisis crítico de la Tabla 2 permite extraer cuatro lecciones que orientan las decisiones de diseño del presente TFM. Primero, FoundationPose lidera con ≈ 12 puntos AR~BOP~ de ventaja sobre GDR-Net++ y ≈ 18 puntos sobre MegaPose, justificando su elección como columna vertebral de percepción; sin embargo, su licencia *NVIDIA Non-Commercial* y su elevado coste de memoria suponen riesgos que se mitigan con la estrategia híbrida local-remota descrita en el Capítulo 3. Segundo, ningún método de pose presente en la tabla aborda la fase de planificación de agarre, lo que evidencia un límite estructural compartido por toda la familia ---incluido FoundationPose---: resuelven *dónde* está el objeto, no *cómo* agarrarlo. Tercero, Diffusion Policy es la única propuesta que captura la multimodalidad inherente al agarre, pero opera de forma agnóstica a la pose: ignora la geometría SE(3) y depende de demostraciones supervisadas, lo que limita su aplicabilidad directa a *bin picking* industrial. Cuarto, métodos clásicos como GDR-Net++ siguen siendo el *baseline* obligado por su accesibilidad (código abierto, Apache 2.0, requisitos modestos), lo que justifica su elección como referencia de comparación cuantitativa para H1.1 (vid. Capítulo 3).
-
 ## Conclusiones del estado del arte y brecha de investigación
 
 La revisión sistemática de las 30 publicaciones analizadas permite identificar cuatro tendencias fundamentales que sustentan las decisiones de diseño del presente TFM. En primer lugar, las arquitecturas *Transformer* han emergido como el paradigma dominante para estimación de pose 6-DoF, superando consistentemente a los métodos de regresión directa y de correspondencias, gracias a su capacidad de modelar relaciones de largo alcance entre modalidades heterogéneas (2D y 3D). En segundo lugar, los modelos de difusión ofrecen una formulación matemáticamente rigurosa para la planificación de trayectorias robóticas, capturando naturalmente la multimodalidad inherente al problema de agarre. En tercer lugar, los datos sintéticos con *domain randomization* han demostrado ser suficientes para entrenar modelos de pose transferibles al mundo real, eliminando la dependencia de costosas anotaciones manuales. En cuarto lugar, la integración de *visual servoing* con *deep learning* mejora la robustez del sistema ante perturbaciones y errores de estimación.
@@ -488,9 +489,9 @@ Hardware y reproducibilidad. Los experimentos de FoundationPose y Diffusion Poli
 
 Como evidencia complementaria a las hipótesis principales, se ha realizado un análisis de robustez del módulo de percepción FoundationPose simulando degradaciones realistas del entorno industrial: oclusión parcial del objeto y ruido aditivo sobre la traslación estimada. Sobre 300 instancias por dataset extraídas del checkpoint del run de referencia, se ha computado la métrica AUC ADD-S a 50 mm para cuatro niveles de oclusión {0 %, 30 %, 50 %, 70 %} y cuatro niveles de ruido sigma {0, 2, 5, 10} mm, con bootstrap no paramétrico B = 200 en cada punto.
 
-![Figura 3. Curva de degradación AUC ADD-S frente al nivel de oclusión simulada (0--70 %) con IC 95 % por bootstrap (B = 200, n = 300 por dataset).](./tfm_media/media/image6.png){width="5.905511811023622in" height="3.249320866141732in"}
+![Figura 1. Curva de degradación AUC ADD-S frente al nivel de oclusión simulada (0--70 %) con IC 95 % por bootstrap (B = 200, n = 300 por dataset).](./tfm_media/media/image2.png){width="5.905511811023622in" height="3.249320866141732in"}
 
-![Figura 4. Curva de degradación AUC ADD-S frente al ruido sintético en traslación (sigma 0--10 mm) con IC 95 % por bootstrap.](./tfm_media/media/image7.png){width="5.905511811023622in" height="3.249320866141732in"}
+![Figura 2. Curva de degradación AUC ADD-S frente al ruido sintético en traslación (sigma 0--10 mm) con IC 95 % por bootstrap.](./tfm_media/media/image3.png){width="5.905511811023622in" height="3.249320866141732in"}
 
 Los resultados muestran que el pipeline es notablemente robusto: en T-LESS, una oclusión severa del 70 % de los puntos del modelo CAD provoca solo una degradación de 1.0 punto porcentual en AUC ADD-S (de 0.954 a 0.944), lo que refleja que el matching cross-attention de FoundationPose explota eficazmente la información residual del objeto. En YCB-Video la degradación es mayor (de 0.908 a 0.882, −2.6 pp) pero igualmente acotada. La robustez ante ruido sensor es asimétrica: la métrica se mantiene estable hasta sigma = 5 mm y degrada significativamente con sigma = 10 mm (entorno a −9 pp). Estos resultados respaldan la viabilidad industrial del pipeline en escenarios con condiciones imperfectas de captura.
 
@@ -500,9 +501,9 @@ Validación de H3 (viabilidad del ciclo *end-to-end*). La validación se realiz�
 
 ## Evidencia visual del pipeline en simulación
 
-Como evidencia complementaria del funcionamiento del *pipeline* integrado, se ha grabado un video del sistema ejecutándose en CoppeliaSim Edu V4.10 sobre la escena pickAndPlaceDemo. El video captura tres ciclos consecutivos de *bin picking* utilizando poses 6-DoF reales extraídas del checkpoint de FoundationPose (objetos del *dataset* YCB-Video con identificadores obj_id ∈ {1, 6, 14}), trayectorias de agarre generadas por la red Diffusion Policy entrenada localmente sobre Apple M1 Pro / MPS, y la simulación física stepped del manipulador. Cada *frame* incluye superpuestos los metadatos relevantes: ciclo actual, identificador de objeto, fase del *pipeline* (PERCEPCION / PLANIFICACION / EJECUCION AGARRE), latencia del muestreo Diffusion DDIM-25 y traslación 6-DoF estimada en metros. La Figura 1 muestra una composición horizontal de tres *frames*-clave del primer ciclo, ilustrando el avance temporal de la pieza transportada en el conveyor de la escena.
+Como evidencia complementaria del funcionamiento del pipeline integrado, se ha grabado un video del sistema ejecutándose en CoppeliaSim Edu V4.10 sobre la escena pickAndPlaceDemo. El video captura tres ciclos consecutivos de bin picking utilizando poses 6-DoF reales extraídas del checkpoint de FoundationPose (objetos del dataset YCB-Video con identificadores obj_id ∈ {1, 6, 14}), trayectorias de agarre generadas por la red Diffusion Policy entrenada localmente sobre Apple M1 Pro / MPS, y la simulación física stepped del manipulador. Cada frame incluye superpuestos los metadatos relevantes: ciclo actual, identificador de objeto, fase del pipeline (PERCEPCION / PLANIFICACION / EJECUCION AGARRE), latencia del muestreo Diffusion DDIM-25 y traslación 6-DoF estimada en metros. La Figura 3 muestra una composición horizontal de tres frames-clave del primer ciclo, ilustrando el avance temporal de la pieza transportada en el conveyor de la escena.
 
-![Figura 1. Tres frames del pipeline E2E ejecutado en CoppeliaSim Edu V4.10 (vista cenital del bin picking + panel de telemetría con latencias en tiempo real, fase actual y aceptación de H3). Cada columna corresponde a un ciclo distinto sobre objetos YCB-V {obj_id=1, 6, 14}.](./tfm_media/media/image4.png){width="6.102362204724409in" height="1.1441929133858268in"}
+![Figura 3. Tres frames del pipeline E2E ejecutado en CoppeliaSim Edu V4.10 (vista cenital del bin picking + panel de telemetría con latencias en tiempo real, fase actual y aceptación de H3). Cada columna corresponde a un ciclo distinto sobre objetos YCB-V {obj_id=1, 6, 14}.](./tfm_media/media/image4.png){width="6.102362204724409in" height="1.1441929133858268in"}
 
 Fuente: experiments/results/pipeline_e2e/demo_v2.mp4 --- video MP4 cinematografico (1.3 MB, 24 fps, 720p) y GIF (4.2 MB) generados por experiments/record_e2e_video_v2.py.
 
@@ -550,9 +551,9 @@ La evaluación del sistema se realiza en tres niveles: (a) Precisión de pose: m
 
 ### Arquitectura del pipeline integrado
 
-La Figura 2 muestra el diagrama de arquitectura del pipeline TFM. Los bloques principales corresponden a los tres componentes funcionales del sistema: percepción (FoundationPose con Transformer cross-attention), planificación (Diffusion Policy con SDE inversa) y ejecución (CoppeliaSim Edu V4.10 con el robot Ragnar). El bloque central destacado en color rosado representa la interfaz matemática SE(3) / SO(3), que actúa como pegamento semántico entre los dos paradigmas: la pose 6-DoF estimada (R en SO(3), t en R\^3) se proyecta como vector de condicionamiento de 64 dimensiones para la red ConditionalUNet1D que muestrea las trayectorias de difusión.
+La Figura 4 muestra el diagrama de arquitectura del pipeline TFM. Los bloques principales corresponden a los tres componentes funcionales del sistema: percepción (FoundationPose con Transformer cross-attention), planificación (Diffusion Policy con SDE inversa) y ejecución (CoppeliaSim Edu V4.10 con el robot Ragnar). El bloque central destacado en color rosado representa la interfaz matemática SE(3) / SO(3), que actúa como pegamento semántico entre los dos paradigmas: la pose 6-DoF estimada (R en SO(3), t en R\^3) se proyecta como vector de condicionamiento de 64 dimensiones para la red ConditionalUNet1D que muestrea las trayectorias de difusión.
 
-![Figura 2. Diagrama de arquitectura del pipeline TFM con marco matemático unificado SE(3)/SO(3) + SDEs.](./tfm_media/media/image5.png){width="6.102362204724409in" height="3.5113188976377954in"}
+![Figura 4. Diagrama de arquitectura del pipeline TFM con marco matemático unificado SE(3)/SO(3) + SDEs.](./tfm_media/media/image5.png){width="6.102362204724409in" height="3.5113188976377954in"}
 
 Fuente: Elaboración propia (experiments/generate_pipeline_diagram.py).
 
@@ -560,30 +561,51 @@ Fuente: Elaboración propia (experiments/generate_pipeline_diagram.py).
 
 El siguiente pseudocódigo formaliza el ciclo end-to-end ejecutado para cada instancia de bin picking. Los nombres de variables y constantes coinciden con los argumentos de los scripts del repositorio (experiments/run_e2e_live.py).
 
-Algorithm 1. Pipeline E2E FoundationPose + Diffusion Policy + CoppeliaSim\
-Input: RGB-D image I, CAD model M_obj, dataset D in {T-LESS, YCB-V}\
-Output: success: Bool, cycle_time_ms: Float, trajectory: R\^{16x7}\
-Hyperparams: ddim_steps=25, sim_steps=50, bootstrap_B=1000, seed=42\
-1: T_pred ← FoundationPose(I, M_obj) // T_pred in SE(3), median 4154 ms\
-2: R, t ← decompose(T_pred) // R in SO(3), t in R\^3\
-3: cond ← project_64d(\[flat(R) \|\| flat(t)\]) // 12 → 64-dim conditioning\
-4: x_T ← sample N(0, I) // ruido inicial, x in R\^{16x7}\
-5: for k = 25, 24, ..., 1 do // DDIM sampling\
-6: eps_pred ← UNet1D(x_k, k, cond) // forward noise prediction\
-7: x\_{k-1} ← DDIM_step(x_k, eps_pred, alpha_bar)\
-8: end for\
-9: trajectory ← x_0 // 16 acciones de 7 grados\
-10: for s = 1, ..., 50 do // CoppeliaSim stepped\
-11: sim.step() // 18-29 ms/step con Ragnar\
-12: end for\
-13: cycle_time ← FP_time + diffusion_time + sim_time\
-14: return (cycle_time \< 10000 ms, cycle_time, trajectory)
+> Algorithm 1. Pipeline E2E FoundationPose + Diffusion Policy + CoppeliaSim
+>
+> ──────────────────────────────────────────────────────────────────────
+>
+> Input: RGB-D image I, CAD model M_obj, dataset D ∈ {T-LESS, YCB-V}
+>
+> Output: success: Bool, cycle_time_ms: Float, trajectory: ℝ\^{16×7}
+>
+> Hyperparams: ddim_steps = 25, sim_steps = 50, bootstrap_B = 1000, seed = 42
+>
+> ──────────────────────────────────────────────────────────────────────
+>
+> 1: T_pred ← FoundationPose(I, M_obj) // T_pred ∈ SE(3), median 4154 ms
+>
+> 2: R, t ← decompose(T_pred) // R ∈ SO(3), t ∈ ℝ³
+>
+> 3: cond ← project_64d( \[flat(R) ‖ flat(t)\] ) // 12 → 64-dim conditioning
+>
+> 4: x_T ← sample N(0, I) // ruido inicial, x ∈ ℝ\^{16×7}
+>
+> 5: for k = 25, 24, ..., 1 do // DDIM sampling
+>
+> 6: ε_pred ← UNet1D(x_k, k, cond) // forward noise prediction
+>
+> 7: x\_{k-1} ← DDIM_step(x_k, ε_pred, ᾱ) // 1 paso reverse-diffusion
+>
+> 8: end for
+>
+> 9: trajectory ← x_0 // 16 acciones × 7 DoF
+>
+> 10: for s = 1, ..., 50 do // CoppeliaSim stepped
+>
+> 11: sim.step() // 18-29 ms/step con Ragnar
+>
+> 12: end for
+>
+> 13: cycle_time ← FP_time + diffusion_time + sim_time
+>
+> 14: return (cycle_time \< 10 000 ms, cycle_time, trajectory)
 
 ### Hiperparámetros del pipeline integrado
 
-La Tabla 5 enumera todos los hiperparámetros operacionales del pipeline. Los valores se derivan de la ablation realizada (n_diffusion_steps, ver Tabla 3) y de los lockfiles de dependencias (requirements.colab.lock.txt) que garantizan reproducibilidad bit-exacta.
+La Tabla 3 enumera todos los hiperparámetros operacionales del pipeline. Los valores se derivan de la ablation realizada (n_diffusion_steps, ver Tabla 2) y de los lockfiles de dependencias (requirements.colab.lock.txt) que garantizan reproducibilidad bit-exacta.
 
-Tabla 5. Hiperparámetros del pipeline integrado FoundationPose + Diffusion Policy + CoppeliaSim.
+Tabla 4. Hiperparámetros del pipeline integrado FoundationPose + Diffusion Policy + CoppeliaSim.
 
   -------------------------------------------------------------------------------------------------------------------
   **Componente**     **Hiperparámetro**           **Valor**                      **Justificación**
@@ -606,7 +628,7 @@ Tabla 5. Hiperparámetros del pipeline integrado FoundationPose + Diffusion Poli
 
   Diffusion Policy   n_timesteps DDPM             100                            Scheduler completo
 
-  Diffusion Policy   n_steps DDIM (operacional)   25                             Ablation Tabla 3 (mejor trade-off)
+  Diffusion Policy   n_steps DDIM (operacional)   25                             Ablation Tabla 2 (mejor trade-off)
 
   Diffusion Policy   epochs entrenamiento         30                             Convergencia MPS local
 
@@ -635,7 +657,7 @@ La implementación del pipeline se organiza en tres capas independientes y testa
 
 La integración entre capas respeta el principio de responsabilidad única: la capa de percepción no conoce nada sobre planificación o simulación, la capa de planificación recibe poses 6-DoF abstractas como condicionamiento, y la capa de simulación opera sobre trayectorias 7-DoF agnósticas al método que las generó. Esta separación permitió implementar tests unitarios independientes (tests/) y facilita la sustitución de componentes en futuras extensiones del trabajo (por ejemplo, reemplazar FoundationPose por GenFlow o sustituir Diffusion Policy por una política deterministsa).
 
-Decisiones técnicas relevantes incluyen: (a) elección de DDIM-25 frente a DDPM-100 fundamentada en la ablation de la Tabla 3 (reducción de 65 % de latencia con calidad de trayectoria comparable); (b) uso de pesos congelados de FoundationPose (no fine-tuning) por la licencia NC y porque los datasets BOP están dentro del dominio de entrenamiento original; (c) entrenamiento desde cero de Diffusion Policy en MPS sobre 2 000 trayectorias heurísticas sintéticas, dado que las demostraciones humanas reales del paper original no están disponibles para bin picking industrial; (d) cargada explícita de la escena pickAndPlaceDemo.ttt antes de cada experimento y reset de estado de simulación entre instancias para garantizar independencia estadística.
+Decisiones técnicas relevantes incluyen: (a) elección de DDIM-25 frente a DDPM-100 fundamentada en la ablation de la Tabla 2 (reducción de 65 % de latencia con calidad de trayectoria comparable); (b) uso de pesos congelados de FoundationPose (no fine-tuning) por la licencia NC y porque los datasets BOP están dentro del dominio de entrenamiento original; (c) entrenamiento desde cero de Diffusion Policy en MPS sobre 2 000 trayectorias heurísticas sintéticas, dado que las demostraciones humanas reales del paper original no están disponibles para bin picking industrial; (d) cargada explícita de la escena pickAndPlaceDemo.ttt antes de cada experimento y reset de estado de simulación entre instancias para garantizar independencia estadística.
 
 ### Visual servoing PBVS --- controlador en SE(3)
 
@@ -643,7 +665,7 @@ Para completar el bucle de control y dar respuesta al objetivo OE4 (visual servo
 
 La validación experimental se realizó sobre 50 poses reales del checkpoint FoundationPose YCB-V usando como T_target la pose ground-truth correspondiente. El controlador alcanzó convergencia en el 100 % de las muestras (50/50), con una mediana de 34 iteraciones (1.7 segundos a dt = 50 ms) y un percentil 95 de 89 iteraciones (4.45 segundos), todos por debajo del umbral industrial de 10 segundos. Los criterios de convergencia fueron 2 mm en error lineal y 0.6 grados en error angular.
 
-![Figura 5. Convergencia del controlador PBVS sobre 50 poses reales de FoundationPose: curvas de error lineal (escala log) e histograma de tiempos de convergencia.](./tfm_media/media/image8.png){width="6.102362204724409in" height="2.1455905511811024in"}
+![Figura 5. Convergencia del controlador PBVS sobre 50 poses reales de FoundationPose: curvas de error lineal (escala log) e histograma de tiempos de convergencia.](./tfm_media/media/image6.png){width="6.102362204724409in" height="2.1455905511811024in"}
 
 Esta implementación cierra el lazo de control sobre el pipeline percepción → planificación → ejecución y demuestra que el aporte matemático de SE(3) no se queda en el plano teórico sino que opera funcionalmente con poses reales.
 
@@ -653,7 +675,7 @@ La principal ventaja teórica de Diffusion Policy frente a planificadores determ
 
 La métrica de diversidad utilizada es la distancia euclídea media entre los puntos finales (endpoints) de las trayectorias generadas para una misma pose objetivo, junto con un análisis K-means sobre los endpoints agregados con scoring por silhouette para identificar el número efectivo de modos.
 
-![Figura 6. Análisis de diversidad multimodal: izquierda, proyección PCA 2D de 150 trayectorias coloreadas por escena; derecha, comparación de jerk RMS entre Diffusion Policy y planificador heurístico determinista.](./tfm_media/media/image9.png){width="6.102362204724409in" height="2.1422922134733158in"}
+![Figura 6. Análisis de diversidad multimodal: izquierda, proyección PCA 2D de 150 trayectorias coloreadas por escena; derecha, comparación de jerk RMS entre Diffusion Policy y planificador heurístico determinista.](./tfm_media/media/image7.png){width="6.102362204724409in" height="2.1422922134733158in"}
 
 Resultados. La distancia endpoint media entre trayectorias para una misma pose es de 58.6 cm (rango 53.7-64.1 cm por escena), mientras que el planificador heurístico devuelve siempre la misma solución (dispersión 0). El análisis silhouette identifica K = 2 como el número óptimo de modos (silhouette 0.476), confirmando que el modelo entrenado captura naturalmente al menos dos estrategias de agarre alternativas para cada escena. El jerk RMS medio de Diffusion Policy es 0.766 (suavidad finita pero variable entre muestras) frente a 0.000 del heurístico (lineal por construcción, perfectamente suave). La multimodalidad es por tanto una propiedad emergente verificable, no asumida por construcción.
 
@@ -661,7 +683,7 @@ Resultados. La distancia endpoint media entre trayectorias para una misma pose e
 
 Como complemento al análisis cuantitativo, la Figura 7 muestra la visualización 3D de 50 trayectorias muestreadas por Diffusion Policy para una misma pose objetivo (obj_id=1 del dataset YCB-Video). Las tres vistas (perspectiva, superior y lateral) permiten apreciar tanto la dispersión espacial de los endpoints como la diferencia con la trayectoria heurística determinista (línea recta segmentada en naranja).
 
-![Figura 7. Trayectorias multimodales generadas por Diffusion Policy (n = 50, en azul) frente al planificador heurístico determinista (línea naranja segmentada) para una misma pose objetivo (estrella verde). Tres vistas: perspectiva 3D, superior y lateral.](./tfm_media/media/image10.png){width="6.102362204724409in" height="2.1484481627296588in"}
+![Figura 7. Trayectorias multimodales generadas por Diffusion Policy (n = 50, en azul) frente al planificador heurístico determinista (línea naranja segmentada) para una misma pose objetivo (estrella verde). Tres vistas: perspectiva 3D, superior y lateral.](./tfm_media/media/image8.png){width="6.102362204724409in" height="2.1484481627296588in"}
 
 La dispersión std del endpoint es de 27.9 cm, con rangos de 35-45 cm en cada eje. Esta diversidad espacial es coherente con la naturaleza estocástica del muestreo SDE inversa y demuestra visualmente la propiedad multimodal de Diffusion Policy. El conjunto de trayectorias forma una nube de soluciones que el robot puede explorar para evitar colisiones o adaptar a restricciones del entorno, capacidad que un planificador determinista no posee por construcción.
 
@@ -669,7 +691,7 @@ La dispersión std del endpoint es de 27.9 cm, con rangos de 35-45 cm en cada ej
 
 Para identificar el cuello de botella del pipeline integrado y orientar futuras optimizaciones, se ha realizado un profiling fino que mide el tiempo de cada componente y desglosa la latencia DDIM en operaciones forward del modelo y overhead de scheduling. El análisis se ejecuta sobre Apple M1 Pro con torch 2.11 y MPS como backend de cómputo.
 
-![Figura 8. Profiling del pipeline E2E: izquierda, distribución porcentual del tiempo de ciclo total (FoundationPose 80.2 %, CoppeliaSim 17.5 %, Diffusion DDIM-25 2.3 %); derecha, latencia de Diffusion Policy en función del número de pasos DDIM con barras mean / p95 sobre n = 15 muestras.](./tfm_media/media/image11.png){width="6.102362204724409in" height="2.2965594925634294in"}
+![Figura 8. Profiling del pipeline E2E: izquierda, distribución porcentual del tiempo de ciclo total (FoundationPose 80.2 %, CoppeliaSim 17.5 %, Diffusion DDIM-25 2.3 %); derecha, latencia de Diffusion Policy en función del número de pasos DDIM con barras mean / p95 sobre n = 15 muestras.](./tfm_media/media/image9.png){width="6.102362204724409in" height="2.2965594925634294in"}
 
 Hallazgos clave. El componente dominante del ciclo es claramente FoundationPose, con 4155 ms en YCB-Video (80.2 % del ciclo) y 4349 ms en T-LESS. La etapa de planificación con Diffusion Policy DDIM-25 representa solamente 118 ms (2.3 % del ciclo), prácticamente despreciable a nivel sistémico. La simulación física de CoppeliaSim consume 906 ms para 50 pasos (17.5 %). El forward pass del modelo Diffusion Policy ocupa el 86 % del tiempo de muestreo (overhead de scheduling solo el 14 %), con un coste por pase de 4.0-4.7 ms en MPS independiente del número total de pasos.
 
@@ -677,35 +699,35 @@ Implicaciones para optimización futura. Cualquier esfuerzo de optimización deb
 
 ### Resumen consolidado de la evidencia experimental
 
-La Tabla 6 consolida los diez experimentos realizados en este TFM, sus hallazgos principales y el impacto sobre las hipótesis o conclusiones del trabajo. Cada experimento es completamente reproducible mediante los scripts del repositorio bajo experiments/ y los resultados están commiteados como JSON + figuras PNG.
+La Tabla 4 consolida los diez experimentos realizados en este TFM, sus hallazgos principales y el impacto sobre las hipótesis o conclusiones del trabajo. Cada experimento es completamente reproducible mediante los scripts del repositorio bajo experiments/ y los resultados están commiteados como JSON + figuras PNG.
 
-Tabla 6. Resumen consolidado de los diez experimentos del TFM con hallazgos cuantitativos y trazabilidad al repositorio.
+Tabla 5. Resumen consolidado de los diez experimentos del TFM con hallazgos cuantitativos y trazabilidad al repositorio.
 
 Fuente: Elaboración propia. Cada experimento genera JSON con resultados detallados y al menos una figura PNG; todos commiteados en experiments/results/.
 
-  ----------------------------------------------------------------------------------------------------------------------------------------------------------
-  **Exp**        **Foco**                           **Hallazgo principal**                     **Impacto**             **Script**
-  -------------- ---------------------------------- ------------------------------------------ ----------------------- -------------------------------------
-  1              Eval FoundationPose YCB-V/T-LESS   AUC ADD-S 0.908/0.957 \[IC 95 %\]          H1 aceptada             recompute_metrics_with_bootstrap.py
+  ------------------------------------------------------------------------------------------------------------------------------------------------------
+  **Exp**    **Foco**                           **Hallazgo principal**                     **Impacto**             **Script**
+  ---------- ---------------------------------- ------------------------------------------ ----------------------- -------------------------------------
+  1          Eval FoundationPose YCB-V/T-LESS   AUC ADD-S 0.908/0.957 \[IC 95 %\]          H1 aceptada             recompute_metrics_with_bootstrap.py
 
-  2              E2E live n=30 con CoppeliaSim      Cycle p95 6.12/6.86 s                      H3 aceptada             run_e2e_live.py
+  2          E2E live n=30 con CoppeliaSim      Cycle p95 6.12/6.86 s                      H3 aceptada             run_e2e_live.py
 
-  3              Ablation representación rotación   Continua 6D \> cuaternión                  Justifica diseño        exp3_rotation_ablation.py
+  3          Ablation representación rotación   Continua 6D \> cuaternión                  Justifica diseño        exp3_rotation_ablation.py
 
-  4              Comparación grasp planners         Diffusion ≈ heurístico en sintético        Caracterización L2      exp4_grasp_comparison.py
+  4          Comparación grasp planners         Diffusion ≈ heurístico en sintético        Caracterización L2      exp4_grasp_comparison.py
 
-  5              Ablation n_diffusion_steps         DDIM-25 mejor trade-off (-65 % latencia)   Decisión operacional    exp5_diffusion_steps_ablation.py
+  5          Ablation n_diffusion_steps         DDIM-25 mejor trade-off (-65 % latencia)   Decisión operacional    exp5_diffusion_steps_ablation.py
 
-  6              Robustez (oclusión + ruido)        T-LESS estable a 70 % oclusión (−1 pp)     Refuerza H1             exp6_robustness_analysis.py
+  6          Robustez (oclusión + ruido)        T-LESS estable a 70 % oclusión (−1 pp)     Refuerza H1             exp6_robustness_analysis.py
 
-  7              Convergencia PBVS                  100 % en 50 muestras (mediana 1.7 s)       Cierra OE4              exp7_pbvs_convergence.py
+  7          Convergencia PBVS                  100 % en 50 muestras (mediana 1.7 s)       Cierra OE4              exp7_pbvs_convergence.py
 
-  8              Diversidad multimodal              Endpoint 58.6 cm, K=2 modos                Verifica H2 emergente   exp8_diffusion_diversity.py
+  8          Diversidad multimodal              Endpoint 58.6 cm, K=2 modos                Verifica H2 emergente   exp8_diffusion_diversity.py
 
-  9              Visualización 3D trayectorias      Std endpoint 27.9 cm en 50 muestras        Evidencia visual        exp9_3d_trajectories_viz.py
+  9          Visualización 3D trayectorias      Std endpoint 27.9 cm en 50 muestras        Evidencia visual        exp9_3d_trajectories_viz.py
 
-  10             Profiling pipeline                 FP 80.2 %, Diff 2.3 %, Sim 17.5 %          Identifica bottleneck   exp10_profiling.py
-  ----------------------------------------------------------------------------------------------------------------------------------------------------------
+  10         Profiling pipeline                 FP 80.2 %, Diff 2.3 %, Sim 17.5 %          Identifica bottleneck   exp10_profiling.py
+  ------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Conclusiones y trabajo futuro
 
@@ -743,7 +765,7 @@ La integración FoundationPose + Diffusion Policy se valida no solo mediante mé
 
 Para fundamentar el aporte de democratización, se contrasta el coste del entorno de cómputo utilizado en este TFM con el coste típico de los setups que producen los resultados publicados por los grupos industriales de NVIDIA o Stanford.
 
-Tabla 4. Comparativa de costes de hardware para reproducir el estado del arte en pose estimation 6-DoF + planificación.
+Tabla 6. Comparativa de costes de hardware para reproducir el estado del arte en pose estimation 6-DoF + planificación.
 
 Fuente: Elaboración propia. Precios consultados a fecha 2026-05-10.
 
@@ -771,7 +793,7 @@ El trabajo no aborda mejorar las métricas absolutas reportadas por Wen et al. (
 
 El trabajo no participa en la edición oficial del BOP Challenge 2024. Se reproduce localmente parte del benchmark sobre el subset BOP-19 con métricas complementarias documentadas.
 
-El trabajo no compara su rendimiento con la mejora del 46.9 % reportada por Chi et al. (2023, Tabla 4) sobre el estado del arte previo en RoboMimic. El entrenamiento del modelo Diffusion Policy en local se realiza sobre datos sintéticos heurísticos y constituye una demostración de viabilidad del entrenamiento end-to-end en hardware accesible, no un resultado comparativo con el paper original.
+El trabajo no compara su rendimiento con la mejora del 46.9 % reportada por Chi et al. (2023, Tabla 5) sobre el estado del arte previo en RoboMimic. El entrenamiento del modelo Diffusion Policy en local se realiza sobre datos sintéticos heurísticos y constituye una demostración de viabilidad del entrenamiento end-to-end en hardware accesible, no un resultado comparativo con el paper original.
 
 El trabajo no propone una arquitectura nueva de red neuronal: integra arquitecturas existentes y publicadas (FoundationPose y Diffusion Policy) sin modificaciones internas en su diseño.
 
@@ -794,6 +816,8 @@ La delimitación entre aporte original e integración de trabajos previos enmarc
 
   Coste total entorno         \~15 000--150 000 USD         \~1 920 USD                                 ---
   ----------------------------------------------------------------------------------------------------------------------------
+
+#  {#section .Título-1-sin-numerar}
 
 # Referencias bibliográficas {#referencias-bibliográficas .Título-1-sin-numerar}
 
