@@ -234,6 +234,8 @@ def make_panel(cycle, n_cycles, obj_id, dataset, phase, phase_progress, total_pr
         y += 22
 
     section("ESCENA", accent)
+    kv("Robot", "Ragnar (delta)")
+    kv("Vista", "Cenital - conveyor")
     kv("Dataset", dataset.upper())
     kv("Object ID", str(obj_id))
     kv("Cycle", f"{cycle}/{n_cycles}")
@@ -342,9 +344,9 @@ def main():
     FRAMES_DIR.mkdir(parents=True, exist_ok=True)
 
     PHASES = [
-        ("PERCEPCION 6-DoF",       40),
-        ("PLANIFICACION DIFFUSION", 30),
-        ("EJECUCION AGARRE",       60),
+        ("PERCEPCION 6-DoF",        50),
+        ("PLANIFICACION DIFFUSION", 40),
+        ("EJECUCION AGARRE",       110),  # mas tiempo para ver el conveyor mover piezas
     ]
     STEPS_PER_CYCLE = sum(s for _, s in PHASES)
     TOTAL_STEPS = args.n_cycles * STEPS_PER_CYCLE
