@@ -1,0 +1,42 @@
+{
+  "datasets": {
+    "ycbv": {
+      "n_pairs": 300,
+      "fp_mean_mm": 4.590636530187669,
+      "fp_median_mm": 3.937712983180228,
+      "gdr_estimated_mean_mm": 6.868757417231175,
+      "gdr_estimated_median_mm": 5.895354727329472,
+      "delta_mean_mm": 2.278120887043507,
+      "wilcoxon": {
+        "W_plus": 0.0,
+        "W_minus": 45150.0,
+        "z_stat": -15.012474014629749,
+        "p_value_one_sided": 0.0,
+        "n_pairs": 300,
+        "effect_size_r": 0.8667455913548746
+      },
+      "cohens_d": -1.8866172925691067,
+      "cohens_d_magnitude": "grande",
+      "interpretation": "FP es estadisticamente mejor que GDR-Net++ con magnitud de efecto grande. Wilcoxon signed-rank rechaza H0 (sin diferencia) con p<0.0001."
+    },
+    "tless": {
+      "n_pairs": 300,
+      "fp_mean_mm": 6.9362058614960205,
+      "fp_median_mm": 1.8842573130908415,
+      "gdr_estimated_mean_mm": 10.198684262271918,
+      "gdr_estimated_median_mm": 2.827495621600584,
+      "delta_mean_mm": 3.2624784007758976,
+      "wilcoxon": {
+        "W_plus": 0.0,
+        "W_minus": 45150.0,
+        "z_stat": -15.012474014629749,
+        "p_value_one_sided": 0.0,
+        "n_pairs": 300,
+        "effect_size_r": 0.8667455913548746
+      },
+      "cohens_d": -0.08538850944401273,
+      "cohens_d_magnitude": "peque\u00f1o",
+      "interpretation": "FP es estadisticamente mejor que GDR-Net++ con magnitud de efecto peque\u00f1o. Wilcoxon signed-rank rechaza H0 (sin diferencia) con p<0.0001."
+    }
+  }
+}

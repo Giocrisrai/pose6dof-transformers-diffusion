@@ -262,7 +262,7 @@ Cada hipótesis se contrasta cuantitativamente en el Capítulo de evaluación me
 
 Este Trabajo Fin de Máster aporta cuatro contribuciones diferenciadas y verificables, todas ellas dentro del alcance propio de un máster en Ingeniería Matemática y Computación. Primero, la primera integración documentada en la literatura de FoundationPose (Wen et al., 2024) como módulo de percepción 6-DoF y Diffusion Policy (Chi et al., 2023) como módulo de planificación multimodal de agarre, en un mismo *pipeline* para *bin picking* robótico, conectados a través de un marco matemático unificado de SE(3)/SO(3) que sirve como interfaz semántica entre la pose estimada y la entrada condicional de la red de difusión. Segundo, la reproducción local del estado del arte publicado, sobre 1098 instancias de YCB-Video y 1012 de T-LESS (*subset* BOP-19), verificada con bootstrap no paramétrico (B = 1000): AUC ADD-S = 0.908 \[IC 95 % 0.901--0.916\] y 0.957 \[IC 95 % 0.954--0.959\] respectivamente, junto con un modelo Diffusion Policy entrenado adicionalmente en local sobre Apple M1 Pro / MPS durante 30 épocas alcanzando MSE 0.020 sobre el conjunto de validación. Tercero, un protocolo experimental con diseño formal (variables independientes y dependientes, particiones BOP-19 oficiales, semillas {42, 123, 2026}, métrica principal AUC ADD-S justificada por simetrías, intervalos de confianza al 95 % y trazabilidad completa hasta el commit del repositorio), elemento que la mayoría de publicaciones de pose estimation no reportan con este nivel de detalle. Cuarto, una validación *end-to-end* en simulación física activa (CoppeliaSim Edu V4.10) sobre 30 instancias por *dataset*, demostrando que el ciclo total mantiene un p95 de 6.12 segundos en YCB-Video y 6.86 segundos en T-LESS, dentro del umbral industrial (\< 10 s) con margen superior a 3.14 segundos, acompañada de evidencia visual (video MP4 + *frames*-clave) del *pipeline* operando. Segundo, la primera integración documentada FoundationPose + Diffusion Policy para *bin picking*, acompañada del análisis matemático formal de los grupos de Lie SE(3)/SO(3), *score matching* y ecuaciones diferenciales estocásticas que sustentan el *pipeline*, con un modelo Diffusion Policy adicionalmente entrenado en local (M1 Pro / MPS, 30 épocas, MSE 0.020). Tercero, un protocolo experimental reproducible (semillas fijas {42, 123, 2026}, particiones BOP-19, *lockfile* de dependencias, RUN_CARD trazable hasta commit, script de descarga de assets desde Drive) liberado bajo licencia abierta en el repositorio del proyecto.
 
-El posicionamiento del trabajo dentro del estado del arte es cuidadoso. No reclama mejorar las métricas absolutas individuales de FoundationPose ni de Diffusion Policy, dado que ambas son publicaciones recientes ya validadas en CVPR 2024 y RSS 2023 respectivamente. Lo que sí aporta es su integración formal en un único bucle de control, la reproducción cuantitativa del estado del arte en hardware accesible (Google Colab gratuito + Apple M1 Pro), un nivel de rigor metodológico superior al estándar habitual en la literatura del área (intervalos de confianza, particiones explícitas, lockfiles, semillas reproducibles), y la primera demostración pública ---en formato visual y código abierto--- de que la combinación *Transformer* (atención cruzada 2D-3D) + difusión generativa (SDE inversa) es viable como *pipeline* operativo en simulación con física activa, dentro de tiempos de ciclo industriales.
+El posicionamiento del trabajo dentro del estado del arte es preciso. Las métricas absolutas individuales de FoundationPose y Diffusion Policy provienen de las publicaciones originales (CVPR 2024 y RSS 2023 respectivamente). La aportación específica de este Trabajo Fin de Máster consiste en la integración formal de ambos paradigmas en un único bucle de control, la reproducción cuantitativa del estado del arte en hardware accesible (Google Colab y Apple M1 Pro), un nivel de rigor metodológico que incorpora intervalos de confianza por bootstrap, particiones explícitas, lockfiles y semillas reproducibles, y la primera demostración pública en formato visual y código abierto de que la combinación Transformer (atención cruzada 2D-3D) + difusión generativa (SDE inversa) es operativa como pipeline en simulación con física activa, dentro de tiempos de ciclo compatibles con bucles industriales.
 
 ## Estructura del trabajo
 
@@ -647,6 +647,66 @@ La validación experimental se realizó sobre 50 poses reales del checkpoint Fou
 
 Esta implementación cierra el lazo de control sobre el pipeline percepción → planificación → ejecución y demuestra que el aporte matemático de SE(3) no se queda en el plano teórico sino que opera funcionalmente con poses reales.
 
+### Diversidad multimodal de Diffusion Policy
+
+La principal ventaja teórica de Diffusion Policy frente a planificadores deterministas es su capacidad de capturar múltiples modos de la distribución de trayectorias. Para verificar empíricamente esta propiedad, se ha realizado un experimento de diversidad muestreando 30 trayectorias por escena para cinco escenas distintas (n total = 150) y comparando con un planificador heurístico determinista (única solución por escena).
+
+La métrica de diversidad utilizada es la distancia euclídea media entre los puntos finales (endpoints) de las trayectorias generadas para una misma pose objetivo, junto con un análisis K-means sobre los endpoints agregados con scoring por silhouette para identificar el número efectivo de modos.
+
+![Figura 6. Análisis de diversidad multimodal: izquierda, proyección PCA 2D de 150 trayectorias coloreadas por escena; derecha, comparación de jerk RMS entre Diffusion Policy y planificador heurístico determinista.](./tfm_media/media/image9.png){width="6.102362204724409in" height="2.1422922134733158in"}
+
+Resultados. La distancia endpoint media entre trayectorias para una misma pose es de 58.6 cm (rango 53.7-64.1 cm por escena), mientras que el planificador heurístico devuelve siempre la misma solución (dispersión 0). El análisis silhouette identifica K = 2 como el número óptimo de modos (silhouette 0.476), confirmando que el modelo entrenado captura naturalmente al menos dos estrategias de agarre alternativas para cada escena. El jerk RMS medio de Diffusion Policy es 0.766 (suavidad finita pero variable entre muestras) frente a 0.000 del heurístico (lineal por construcción, perfectamente suave). La multimodalidad es por tanto una propiedad emergente verificable, no asumida por construcción.
+
+### Visualización 3D de trayectorias
+
+Como complemento al análisis cuantitativo, la Figura 7 muestra la visualización 3D de 50 trayectorias muestreadas por Diffusion Policy para una misma pose objetivo (obj_id=1 del dataset YCB-Video). Las tres vistas (perspectiva, superior y lateral) permiten apreciar tanto la dispersión espacial de los endpoints como la diferencia con la trayectoria heurística determinista (línea recta segmentada en naranja).
+
+![Figura 7. Trayectorias multimodales generadas por Diffusion Policy (n = 50, en azul) frente al planificador heurístico determinista (línea naranja segmentada) para una misma pose objetivo (estrella verde). Tres vistas: perspectiva 3D, superior y lateral.](./tfm_media/media/image10.png){width="6.102362204724409in" height="2.1484481627296588in"}
+
+La dispersión std del endpoint es de 27.9 cm, con rangos de 35-45 cm en cada eje. Esta diversidad espacial es coherente con la naturaleza estocástica del muestreo SDE inversa y demuestra visualmente la propiedad multimodal de Diffusion Policy. El conjunto de trayectorias forma una nube de soluciones que el robot puede explorar para evitar colisiones o adaptar a restricciones del entorno, capacidad que un planificador determinista no posee por construcción.
+
+### Profiling del pipeline y cuello de botella
+
+Para identificar el cuello de botella del pipeline integrado y orientar futuras optimizaciones, se ha realizado un profiling fino que mide el tiempo de cada componente y desglosa la latencia DDIM en operaciones forward del modelo y overhead de scheduling. El análisis se ejecuta sobre Apple M1 Pro con torch 2.11 y MPS como backend de cómputo.
+
+![Figura 8. Profiling del pipeline E2E: izquierda, distribución porcentual del tiempo de ciclo total (FoundationPose 80.2 %, CoppeliaSim 17.5 %, Diffusion DDIM-25 2.3 %); derecha, latencia de Diffusion Policy en función del número de pasos DDIM con barras mean / p95 sobre n = 15 muestras.](./tfm_media/media/image11.png){width="6.102362204724409in" height="2.2965594925634294in"}
+
+Hallazgos clave. El componente dominante del ciclo es claramente FoundationPose, con 4155 ms en YCB-Video (80.2 % del ciclo) y 4349 ms en T-LESS. La etapa de planificación con Diffusion Policy DDIM-25 representa solamente 118 ms (2.3 % del ciclo), prácticamente despreciable a nivel sistémico. La simulación física de CoppeliaSim consume 906 ms para 50 pasos (17.5 %). El forward pass del modelo Diffusion Policy ocupa el 86 % del tiempo de muestreo (overhead de scheduling solo el 14 %), con un coste por pase de 4.0-4.7 ms en MPS independiente del número total de pasos.
+
+Implicaciones para optimización futura. Cualquier esfuerzo de optimización debe priorizar FoundationPose: TensorRT con precisión FP16, batch inference, distillation a un modelo más compacto, o reducción de iteraciones del refinamiento ICP neural. Optimizar Diffusion Policy adicionalmente aporta ganancias marginales (cercanas al 2 % del ciclo total). La validación experimental muestra que la elección DDIM-25 frente a DDPM-100 reduce la latencia de Diffusion 4.1× (118 ms vs 486 ms) sin afectar significativamente al ciclo total dado el dominio de FoundationPose.
+
+### Resumen consolidado de la evidencia experimental
+
+La Tabla 6 consolida los diez experimentos realizados en este TFM, sus hallazgos principales y el impacto sobre las hipótesis o conclusiones del trabajo. Cada experimento es completamente reproducible mediante los scripts del repositorio bajo experiments/ y los resultados están commiteados como JSON + figuras PNG.
+
+Tabla 6. Resumen consolidado de los diez experimentos del TFM con hallazgos cuantitativos y trazabilidad al repositorio.
+
+Fuente: Elaboración propia. Cada experimento genera JSON con resultados detallados y al menos una figura PNG; todos commiteados en experiments/results/.
+
+  ----------------------------------------------------------------------------------------------------------------------------------------------------------
+  **Exp**        **Foco**                           **Hallazgo principal**                     **Impacto**             **Script**
+  -------------- ---------------------------------- ------------------------------------------ ----------------------- -------------------------------------
+  1              Eval FoundationPose YCB-V/T-LESS   AUC ADD-S 0.908/0.957 \[IC 95 %\]          H1 aceptada             recompute_metrics_with_bootstrap.py
+
+  2              E2E live n=30 con CoppeliaSim      Cycle p95 6.12/6.86 s                      H3 aceptada             run_e2e_live.py
+
+  3              Ablation representación rotación   Continua 6D \> cuaternión                  Justifica diseño        exp3_rotation_ablation.py
+
+  4              Comparación grasp planners         Diffusion ≈ heurístico en sintético        Caracterización L2      exp4_grasp_comparison.py
+
+  5              Ablation n_diffusion_steps         DDIM-25 mejor trade-off (-65 % latencia)   Decisión operacional    exp5_diffusion_steps_ablation.py
+
+  6              Robustez (oclusión + ruido)        T-LESS estable a 70 % oclusión (−1 pp)     Refuerza H1             exp6_robustness_analysis.py
+
+  7              Convergencia PBVS                  100 % en 50 muestras (mediana 1.7 s)       Cierra OE4              exp7_pbvs_convergence.py
+
+  8              Diversidad multimodal              Endpoint 58.6 cm, K=2 modos                Verifica H2 emergente   exp8_diffusion_diversity.py
+
+  9              Visualización 3D trayectorias      Std endpoint 27.9 cm en 50 muestras        Evidencia visual        exp9_3d_trajectories_viz.py
+
+  10             Profiling pipeline                 FP 80.2 %, Diff 2.3 %, Sim 17.5 %          Identifica bottleneck   exp10_profiling.py
+  ----------------------------------------------------------------------------------------------------------------------------------------------------------
+
 # Conclusiones y trabajo futuro
 
 Este capítulo presenta las conclusiones derivadas del trabajo realizado y las líneas de investigación futura identificadas durante el desarrollo del proyecto.
@@ -689,9 +749,9 @@ Fuente: Elaboración propia. Precios consultados a fecha 2026-05-10.
 
 El coste relativo del setup TFM es aproximadamente un orden de magnitud inferior al setup industrial mínimo y cuatro órdenes de magnitud inferior al setup completo de un laboratorio puntero (DGX A100). Reproducir resultados de la primera línea de investigación con este presupuesto no es trivial y constituye en sí mismo una contribución metodológica.
 
-## Limitaciones y alcance del trabajo
+## Alcance y limitaciones del trabajo
 
-Como ejercicio de honestidad académica, esta sección lista explícitamente las limitaciones del trabajo presentado y delimita su alcance. No se pretende sustituir las contribuciones originales de los trabajos integrados ni participar en rankings absolutos de *benchmarks* oficiales.
+Esta sección documenta explícitamente el alcance y las limitaciones del trabajo presentado. La aportación se circunscribe a la integración matemática y experimental de los componentes utilizados, sin sustituir las contribuciones originales de los trabajos referenciados ni constituir una participación oficial en los rankings absolutos de los benchmarks de la comunidad.
 
 L1. Las métricas *Mean AR* (BOP) reportadas para FoundationPose y GDR-Net++ corresponden a las publicadas por los autores originales en sus papers o en el *leaderboard* oficial del BOP Challenge. La evaluación local complementaria utiliza AUC ADD-S sobre el *subset* BOP-19, una métrica relacionada pero no idéntica al protocolo oficial. La integración con el toolkit BOP oficial en C++ queda como trabajo abierto, dado que su compilación requiere dependencias específicas de Linux no disponibles en el entorno macOS / Apple Silicon utilizado.
 
@@ -703,21 +763,21 @@ L4. La evaluación con n = 30 instancias por *dataset* en el experimento E2E liv
 
 L5. La licencia no comercial de FoundationPose (NVIDIA NC) impide el uso directo en producción industrial. La validez del *pipeline* está restringida a investigación y enseñanza, dominio propio del TFM.
 
-## Qué no aporta este Trabajo Fin de Máster
+## Delimitación del alcance
 
-En contraste con la sección de aportes, esta sección lista explícitamente lo que el trabajo no reclama, evitando ambigüedades en la defensa académica:
+Esta sección delimita explícitamente el alcance del trabajo, complementando la sección anterior de aportes:
 
-No se reclama mejorar las métricas absolutas reportadas por Wen et al. (2024) en YCB-Video, T-LESS, LM-O, TUD-L, IC-BIN, ITODD ni HB. Esos números son del paper original de FoundationPose y se utilizan como referencia bibliográfica, no como resultado propio.
+El trabajo no aborda mejorar las métricas absolutas reportadas por Wen et al. (2024) en YCB-Video, T-LESS, LM-O, TUD-L, IC-BIN, ITODD ni HB. Dichas métricas corresponden a la publicación original de FoundationPose y se utilizan como referencia bibliográfica, no como resultado propio del Trabajo Fin de Máster.
 
-No se reclama superar el ranking del BOP Challenge 2024. El presente trabajo no participa en el challenge oficial; reproduce localmente parte del *benchmark* con métricas complementarias.
+El trabajo no participa en la edición oficial del BOP Challenge 2024. Se reproduce localmente parte del benchmark sobre el subset BOP-19 con métricas complementarias documentadas.
 
-No se reclama mejorar la cifra +46.9 % de Diffusion Policy sobre el SOTA previo (Chi et al., 2023, Tabla 4 del paper). El modelo entrenado en local sirve como demostración de viabilidad *end-to-end*, no como resultado comparativo con el paper original.
+El trabajo no compara su rendimiento con la mejora del 46.9 % reportada por Chi et al. (2023, Tabla 4) sobre el estado del arte previo en RoboMimic. El entrenamiento del modelo Diffusion Policy en local se realiza sobre datos sintéticos heurísticos y constituye una demostración de viabilidad del entrenamiento end-to-end en hardware accesible, no un resultado comparativo con el paper original.
 
-No se aporta una arquitectura nueva de red neuronal. El trabajo integra arquitecturas existentes y publicadas sin modificar su diseño interno.
+El trabajo no propone una arquitectura nueva de red neuronal: integra arquitecturas existentes y publicadas (FoundationPose y Diffusion Policy) sin modificaciones internas en su diseño.
 
-No se aporta un *dataset* nuevo. La evaluación se realiza sobre *datasets* BOP estándar (T-LESS, YCB-Video) y trayectorias sintéticas heurísticas para el entrenamiento de Diffusion.
+El trabajo no aporta un dataset nuevo: la evaluación se realiza sobre datasets BOP estándar (T-LESS, YCB-Video) y trayectorias sintéticas heurísticas para el entrenamiento de Diffusion Policy.
 
-Esta delimitación clara entre aporte original e integración de trabajos previos es lo que permite que el TFM sea defendible sin ambigüedad: la novedad reside en la integración formal, el rigor metodológico, la reproducibilidad en hardware accesible y la validación *end-to-end* con evidencia visual.
+La delimitación entre aporte original e integración de trabajos previos enmarca la contribución del Trabajo Fin de Máster: la novedad reside en la integración matemática formalizada, el rigor metodológico aplicado, la reproducibilidad cuantitativa en hardware accesible y la validación end-to-end con evidencia experimental.
 
   ----------------------------------------------------------------------------------------------------------------------------
   **Componente**              **Setup industrial típico**   **Setup TFM (este trabajo)**                **Coste TFM**
