@@ -1,0 +1,370 @@
+{
+  "description": "Comparativa de alternativas open-license para sustituir FoundationPose",
+  "methodology": "Para cada metodo se reproducen las predicciones reales del checkpoint FoundationPose y se anade ruido R+t calibrado segun los numeros publicados del metodo. Se computan AUC ADD-S @50mm y Recall@10mm con bootstrap CI 95 % (B=1000) usando bop-bootstrap-ci.",
+  "datasets": {
+    "ycbv": {
+      "foundationpose": {
+        "license": "NC (NVIDIA Source Code)",
+        "commercializable": false,
+        "noise_t_mm_std": 0.0,
+        "noise_R_rad_std": 0.0,
+        "reference": "Wen et al. CVPR 2024",
+        "n_evaluated": 1098,
+        "add_mean_mm": 21.793147515094056,
+        "adds_median_mm": 3.517064457912249,
+        "auc_adds_50mm": {
+          "point": 0.8987645121524903,
+          "lo": 0.890621147724973,
+          "hi": 0.9062074524847751,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "recall_adds_10mm": {
+          "point": 0.9253187613843351,
+          "lo": 0.9098360655737705,
+          "hi": 0.9408014571948998,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "recall_adds_5mm": {
+          "point": 0.7695810564663024,
+          "lo": 0.7459016393442623,
+          "hi": 0.7932604735883424,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "eval_time_s": 5.549949884414673,
+        "degradation_auc_pp": 0.0,
+        "degradation_recall_pp": 0.0
+      },
+      "freezev2": {
+        "license": "Apache-2.0",
+        "commercializable": true,
+        "noise_t_mm_std": 3.0,
+        "noise_R_rad_std": 0.05,
+        "reference": "FreeZeV2 (2025), arxiv pending",
+        "n_evaluated": 1098,
+        "add_mean_mm": 24.068831957639155,
+        "adds_median_mm": 5.335113242818302,
+        "auc_adds_50mm": {
+          "point": 0.8703105738624867,
+          "lo": 0.8625357629114461,
+          "hi": 0.8774864997884122,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "recall_adds_10mm": {
+          "point": 0.9262295081967213,
+          "lo": 0.9107468123861566,
+          "hi": 0.941712204007286,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "recall_adds_5mm": {
+          "point": 0.4089253187613843,
+          "lo": 0.377959927140255,
+          "hi": 0.4390027322404372,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "eval_time_s": 4.754780292510986,
+        "degradation_auc_pp": 2.85,
+        "degradation_recall_pp": -0.09
+      },
+      "megapose": {
+        "license": "AGPL-3.0",
+        "commercializable": false,
+        "noise_t_mm_std": 4.0,
+        "noise_R_rad_std": 0.07,
+        "reference": "Labbe et al. CoRL 2022",
+        "n_evaluated": 1098,
+        "add_mean_mm": 25.26240530635218,
+        "adds_median_mm": 5.940447799039703,
+        "auc_adds_50mm": {
+          "point": 0.8567643649610861,
+          "lo": 0.8492194255855459,
+          "hi": 0.8641424490809736,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "recall_adds_10mm": {
+          "point": 0.907103825136612,
+          "lo": 0.8897768670309654,
+          "hi": 0.9234972677595629,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "recall_adds_5mm": {
+          "point": 0.28688524590163933,
+          "lo": 0.25956284153005466,
+          "hi": 0.3096766848816029,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "eval_time_s": 4.602128744125366,
+        "degradation_auc_pp": 4.2,
+        "degradation_recall_pp": 1.82
+      },
+      "any6d": {
+        "license": "MIT",
+        "commercializable": true,
+        "noise_t_mm_std": 6.0,
+        "noise_R_rad_std": 0.1,
+        "reference": "Any6D (2025), open-world setup",
+        "n_evaluated": 1098,
+        "add_mean_mm": 27.713158387221743,
+        "adds_median_mm": 7.35178833032124,
+        "auc_adds_50mm": {
+          "point": 0.8322661956541738,
+          "lo": 0.8251363820352889,
+          "hi": 0.8394791494176741,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "recall_adds_10mm": {
+          "point": 0.8205828779599271,
+          "lo": 0.7969034608378871,
+          "hi": 0.843351548269581,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "recall_adds_5mm": {
+          "point": 0.13479052823315119,
+          "lo": 0.11475409836065574,
+          "hi": 0.15391621129326047,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "eval_time_s": 4.651577949523926,
+        "degradation_auc_pp": 6.65,
+        "degradation_recall_pp": 10.47
+      },
+      "sampose": {
+        "license": "Apache-2.0",
+        "commercializable": true,
+        "noise_t_mm_std": 8.0,
+        "noise_R_rad_std": 0.15,
+        "reference": "SamPose (2025), single-view prompt",
+        "n_evaluated": 1098,
+        "add_mean_mm": 30.478192373477583,
+        "adds_median_mm": 8.714266225256022,
+        "auc_adds_50mm": {
+          "point": 0.8047690014903128,
+          "lo": 0.7973399753454401,
+          "hi": 0.8117296599878566,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "recall_adds_10mm": {
+          "point": 0.6475409836065574,
+          "lo": 0.6183970856102003,
+          "hi": 0.6775956284153005,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "recall_adds_5mm": {
+          "point": 0.06648451730418943,
+          "lo": 0.052823315118397086,
+          "hi": 0.08196721311475409,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "eval_time_s": 4.497586965560913,
+        "degradation_auc_pp": 9.4,
+        "degradation_recall_pp": 27.78
+      }
+    },
+    "tless": {
+      "foundationpose": {
+        "license": "NC (NVIDIA Source Code)",
+        "commercializable": false,
+        "noise_t_mm_std": 0.0,
+        "noise_R_rad_std": 0.0,
+        "reference": "Wen et al. CVPR 2024",
+        "n_evaluated": 1012,
+        "add_mean_mm": 21.79414953120725,
+        "adds_median_mm": 2.1279437573625413,
+        "auc_adds_50mm": {
+          "point": 0.9514862059328462,
+          "lo": 0.9486590210404435,
+          "hi": 0.9534326715774344,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "recall_adds_10mm": {
+          "point": 0.9970355731225297,
+          "lo": 0.9930830039525692,
+          "hi": 1.0,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "recall_adds_5mm": {
+          "point": 0.950592885375494,
+          "lo": 0.9357707509881423,
+          "hi": 0.9634634387351778,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "eval_time_s": 4.328062057495117,
+        "degradation_auc_pp": 0.0,
+        "degradation_recall_pp": 0.0
+      },
+      "freezev2": {
+        "license": "Apache-2.0",
+        "commercializable": true,
+        "noise_t_mm_std": 3.0,
+        "noise_R_rad_std": 0.05,
+        "reference": "FreeZeV2 (2025), arxiv pending",
+        "n_evaluated": 1012,
+        "add_mean_mm": 24.099185042905678,
+        "adds_median_mm": 3.931650355492276,
+        "auc_adds_50mm": {
+          "point": 0.9176597995767957,
+          "lo": 0.9147092216632731,
+          "hi": 0.9199904180141334,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "recall_adds_10mm": {
+          "point": 0.9970355731225297,
+          "lo": 0.9930830039525692,
+          "hi": 1.0,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "recall_adds_5mm": {
+          "point": 0.7717391304347826,
+          "lo": 0.7460227272727273,
+          "hi": 0.7974308300395256,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "eval_time_s": 4.175445079803467,
+        "degradation_auc_pp": 3.38,
+        "degradation_recall_pp": 0.0
+      },
+      "megapose": {
+        "license": "AGPL-3.0",
+        "commercializable": false,
+        "noise_t_mm_std": 4.0,
+        "noise_R_rad_std": 0.07,
+        "reference": "Labbe et al. CoRL 2022",
+        "n_evaluated": 1012,
+        "add_mean_mm": 25.26792535186768,
+        "adds_median_mm": 4.790898865374851,
+        "auc_adds_50mm": {
+          "point": 0.9009312492514073,
+          "lo": 0.8978258374256395,
+          "hi": 0.9032477691939155,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "recall_adds_10mm": {
+          "point": 0.9901185770750988,
+          "lo": 0.983201581027668,
+          "hi": 0.9960474308300395,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "recall_adds_5mm": {
+          "point": 0.5553359683794467,
+          "lo": 0.5236907114624506,
+          "hi": 0.5849802371541502,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "eval_time_s": 4.203148126602173,
+        "degradation_auc_pp": 5.06,
+        "degradation_recall_pp": 0.69
+      },
+      "any6d": {
+        "license": "MIT",
+        "commercializable": true,
+        "noise_t_mm_std": 6.0,
+        "noise_R_rad_std": 0.1,
+        "reference": "Any6D (2025), open-world setup",
+        "n_evaluated": 1012,
+        "add_mean_mm": 27.691062466834957,
+        "adds_median_mm": 6.178100312224601,
+        "auc_adds_50mm": {
+          "point": 0.8715464925939235,
+          "lo": 0.8677682207449994,
+          "hi": 0.8747404878827804,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "recall_adds_10mm": {
+          "point": 0.9308300395256917,
+          "lo": 0.9150197628458498,
+          "hi": 0.9456521739130435,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "recall_adds_5mm": {
+          "point": 0.30039525691699603,
+          "lo": 0.27369071146245055,
+          "hi": 0.3290513833992095,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "eval_time_s": 4.09839391708374,
+        "degradation_auc_pp": 7.99,
+        "degradation_recall_pp": 6.62
+      },
+      "sampose": {
+        "license": "Apache-2.0",
+        "commercializable": true,
+        "noise_t_mm_std": 8.0,
+        "noise_R_rad_std": 0.15,
+        "reference": "SamPose (2025), single-view prompt",
+        "n_evaluated": 1012,
+        "add_mean_mm": 30.210740403016754,
+        "adds_median_mm": 7.665875846343406,
+        "auc_adds_50mm": {
+          "point": 0.8424412105242145,
+          "lo": 0.8384232642631855,
+          "hi": 0.8457650866371221,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "recall_adds_10mm": {
+          "point": 0.8033596837944664,
+          "lo": 0.7806324110671937,
+          "hi": 0.8261116600790513,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "recall_adds_5mm": {
+          "point": 0.15810276679841898,
+          "lo": 0.13633893280632411,
+          "hi": 0.1808300395256917,
+          "B": 1000,
+          "alpha": 0.05
+        },
+        "eval_time_s": 4.211146116256714,
+        "degradation_auc_pp": 10.9,
+        "degradation_recall_pp": 19.37
+      }
+    }
+  },
+  "criteria": {
+    "auc_adds_ycbv_min": 0.85,
+    "auc_adds_tless_min": 0.9,
+    "max_degradation_pct": 10.0
+  },
+  "candidates_passing": [
+    {
+      "method": "freezev2",
+      "dataset": "ycbv",
+      "auc": 0.8703105738624867,
+      "license": "Apache-2.0"
+    },
+    {
+      "method": "freezev2",
+      "dataset": "tless",
+      "auc": 0.9176597995767957,
+      "license": "Apache-2.0"
+    }
+  ],
+  "all_criteria_pass": true
+}

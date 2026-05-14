@@ -206,7 +206,7 @@ sobre escenas multi-objeto). Bootstrap CI sobre ello.
 |---|---|---|---|
 | 1 | Bootstrap-CI toolkit | ✅ **Éxito → mergeada** ([detalle](exploraciones/01_bootstrap_ci_toolkit.md)) | 1 |
 | 2 | Distillation 1-NFE | ✅ **Éxito → mergeada** ([detalle](exploraciones/02_distillation_2nfe.md)) | 1 |
-| 3 | Open-license pipeline | 📋 Planificada | 0 |
+| 3 | Open-license pipeline | ✅ **Éxito → mergeada** ([detalle](exploraciones/03_open_license_pipeline.md)) | 1 |
 | 4 | VLA-lite CLIP | 📋 Planificada | 0 |
 
 ---
