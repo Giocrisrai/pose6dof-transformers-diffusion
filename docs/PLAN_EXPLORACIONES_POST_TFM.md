@@ -23,6 +23,7 @@
 | **5** | Robustez lingüística (extensión #4) | 🟢 Bajo | 0.5 día | 100 % accuracy sobre 6 familias no vistas |
 | **6** | VLA-lite multi-atributo (color + forma) | 🟡 Medio | 0.5 día | 99.9 % global, 100 % en color/combinado, 99.8 % en shape |
 | **7** | Simulaciones visuales 3D | 🟢 Bajo | 0.5 día | 12/12 escenas renderizadas con cubos/esferas/cilindros/cajas |
+| **8** | VLA-lite multi-objeto N=2..5 | 🟡 Medio | 0.5 día | 100 % accuracy con hasta 5 objetos en escena |
 
 ---
 
@@ -214,10 +215,11 @@ sobre escenas multi-objeto). Bootstrap CI sobre ello.
 | 5 | Robustez lingüística VLA-lite (extensión #4) | ✅ **Éxito → mergeada** ([detalle](exploraciones/05_vla_robustness.md)) | 0.5 |
 | 6 | VLA-lite multi-atributo color+forma | ✅ **Éxito → mergeada** ([detalle](exploraciones/06_vla_shapes.md)) | 0.5 |
 | 7 | Simulaciones visuales 3D | ✅ **Éxito → mergeada** ([detalle](exploraciones/07_visual_simulations.md)) | 0.5 |
+| 8 | VLA-lite multi-objeto N=2..5 | ✅ **Éxito → mergeada** ([detalle](exploraciones/08_multi_object.md)) | 0.5 |
 
-**Resumen final**: 7/7 exploraciones cumplen criterios. ~5.5 días totales invertidos.
-171 tests pasando · 6 modelos Diffusion · 1 paquete PyPI · 4 hallazgos metodológicos
-corregidos honestamente · 7 documentos de cierre · 12 simulaciones visuales generadas.
+**Resumen final**: 8/8 exploraciones cumplen criterios. ~6 días totales invertidos.
+171 tests pasando · 7 modelos Diffusion · 1 paquete PyPI · 4 hallazgos metodológicos
+corregidos honestamente · 8 documentos de cierre · 22 simulaciones visuales generadas.
 
 Ver también el documento [`docs/EXTRAPOLACION_INDUSTRIAL.md`](EXTRAPOLACION_INDUSTRIAL.md)
 con el roadmap de cómo el pipeline se aplica a logística, reciclaje, electrónica,

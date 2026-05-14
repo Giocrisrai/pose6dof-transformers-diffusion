@@ -1,0 +1,158 @@
+{
+  "scenes": [
+    {
+      "id": 1,
+      "text": "pick the red sphere",
+      "n_obj": 2,
+      "target_idx": 1,
+      "chosen_idx": 1,
+      "gate_probs": [
+        1.971516576304566e-05,
+        0.9999803304672241
+      ],
+      "correct": true,
+      "distance_cm": 4.37402197585409
+    },
+    {
+      "id": 2,
+      "text": "grab the blue cylinder",
+      "n_obj": 3,
+      "target_idx": 1,
+      "chosen_idx": 1,
+      "gate_probs": [
+        1.4335532760867409e-09,
+        1.0,
+        1.0413450102220168e-09
+      ],
+      "correct": true,
+      "distance_cm": 1.4047963809329231
+    },
+    {
+      "id": 3,
+      "text": "select the green box",
+      "n_obj": 3,
+      "target_idx": 2,
+      "chosen_idx": 2,
+      "gate_probs": [
+        2.5760977223399095e-05,
+        3.253280374337919e-05,
+        0.9999417066574097
+      ],
+      "correct": true,
+      "distance_cm": 8.225546600488311
+    },
+    {
+      "id": 4,
+      "text": "take the red cube",
+      "n_obj": 4,
+      "target_idx": 1,
+      "chosen_idx": 1,
+      "gate_probs": [
+        2.8044059945386834e-05,
+        0.9999719858169556,
+        1.892912271372893e-09,
+        8.809208917881506e-10
+      ],
+      "correct": true,
+      "distance_cm": 7.573461052940288
+    },
+    {
+      "id": 5,
+      "text": "fetch the green sphere",
+      "n_obj": 4,
+      "target_idx": 2,
+      "chosen_idx": 2,
+      "gate_probs": [
+        2.1882522460714426e-09,
+        1.6168677507977236e-09,
+        1.0,
+        1.893145862297274e-09
+      ],
+      "correct": true,
+      "distance_cm": 2.6782842977547494
+    },
+    {
+      "id": 6,
+      "text": "pick the blue sphere",
+      "n_obj": 5,
+      "target_idx": 3,
+      "chosen_idx": 3,
+      "gate_probs": [
+        8.563511566528348e-10,
+        2.5503537472104654e-05,
+        1.882773714712016e-09,
+        0.9999744892120361,
+        1.116102432696664e-09
+      ],
+      "correct": true,
+      "distance_cm": 2.4675237614242302
+    },
+    {
+      "id": 7,
+      "text": "grab the red cylinder",
+      "n_obj": 5,
+      "target_idx": 2,
+      "chosen_idx": 2,
+      "gate_probs": [
+        8.205726098609034e-10,
+        3.240059109899107e-09,
+        1.0,
+        1.6728765039886184e-09,
+        1.9343551205253107e-09
+      ],
+      "correct": true,
+      "distance_cm": 6.269418407384178
+    },
+    {
+      "id": 8,
+      "text": "select the green cube",
+      "n_obj": 5,
+      "target_idx": 2,
+      "chosen_idx": 2,
+      "gate_probs": [
+        2.228238704660157e-09,
+        2.7571287475325335e-09,
+        1.0,
+        7.172891169915374e-10,
+        2.2647621555904607e-09
+      ],
+      "correct": true,
+      "distance_cm": 2.8884584856104754
+    },
+    {
+      "id": 9,
+      "text": "the round green one",
+      "n_obj": 4,
+      "target_idx": 2,
+      "chosen_idx": 2,
+      "gate_probs": [
+        2.4046619728324004e-05,
+        0.0012885855976492167,
+        0.998685896396637,
+        1.5058520830280031e-06
+      ],
+      "correct": true,
+      "distance_cm": 1.893335168632403
+    },
+    {
+      "id": 10,
+      "text": "pick anything blue",
+      "n_obj": 4,
+      "target_idx": 2,
+      "chosen_idx": 2,
+      "gate_probs": [
+        5.19676978001371e-05,
+        8.293282917293254e-06,
+        0.9998513460159302,
+        8.833329047774896e-05
+      ],
+      "correct": true,
+      "distance_cm": 1.1037988456188894
+    }
+  ],
+  "summary": {
+    "n_scenes": 10,
+    "n_correct": 10,
+    "accuracy": 1.0
+  }
+}

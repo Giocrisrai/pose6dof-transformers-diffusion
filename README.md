@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/license-Academic-green.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-171%20passing-brightgreen)](tests/)
 [![Bootstrap CI](https://img.shields.io/badge/bootstrap-CI%2095%25-purple)](experiments/results/local_metrics_with_bootstrap.json)
-[![Exploraciones post-TFM](https://img.shields.io/badge/exploraciones-7%2F7%20%E2%9C%85-success)](docs/PLAN_EXPLORACIONES_POST_TFM.md)
+[![Exploraciones post-TFM](https://img.shields.io/badge/exploraciones-8%2F8%20%E2%9C%85-success)](docs/PLAN_EXPLORACIONES_POST_TFM.md)
 [![PyPI ready](https://img.shields.io/badge/PyPI-bop--bootstrap--ci-blue)](packages/bop_bootstrap_ci/)
 [![VLA-lite](https://img.shields.io/badge/VLA--lite-color%2Bshape%20%2099.9%25-orange)](docs/EXTRAPOLACION_INDUSTRIAL.md)
 
@@ -32,9 +32,9 @@
 
 ---
 
-## Exploraciones post-TFM (mayo 2026) — 7/7 éxitos ✅
+## Exploraciones post-TFM (mayo 2026) — 8/8 éxitos ✅
 
-Sobre el TFM entregado se planificaron y ejecutaron 7 exploraciones adicionales con criterios numéricos de éxito. **Todas mergeadas en `main`**.
+Sobre el TFM entregado se planificaron y ejecutaron 8 exploraciones adicionales con criterios numéricos de éxito. **Todas mergeadas en `main`**.
 
 | # | Exploración | Resultado clave | Doc |
 |---|---|---|---|
@@ -44,7 +44,8 @@ Sobre el TFM entregado se planificaron y ejecutaron 7 exploraciones adicionales 
 | 4 | **VLA-lite con CLIP (color)** | **98.6 %** selection accuracy en escenas multi-objeto | [04](docs/exploraciones/04_vla_lite_clip.md) |
 | 5 | **Robustez lingüística** | **100 %** sobre 6 familias de frases no vistas (n=900) | [05](docs/exploraciones/05_vla_robustness.md) |
 | 6 | **VLA-lite multi-atributo color+forma** | **99.9 %** global ("pick the red sphere") | [06](docs/exploraciones/06_vla_shapes.md) |
-| 7 | **Simulaciones visuales 3D** | **12/12** escenas renderizadas con cubos/esferas/cilindros/cajas | [07](docs/exploraciones/07_visual_simulations.md) |
+| 7 | **Simulaciones visuales 3D** | **12/12** escenas con cubos/esferas/cilindros/cajas | [07](docs/exploraciones/07_visual_simulations.md) |
+| 8 | **VLA-lite multi-objeto N=2..5** | **100 %** accuracy con hasta 5 objetos en escena | [08](docs/exploraciones/08_multi_object.md) |
 
 Plan completo: [`docs/PLAN_EXPLORACIONES_POST_TFM.md`](docs/PLAN_EXPLORACIONES_POST_TFM.md). Extrapolación industrial detallada: [`docs/EXTRAPOLACION_INDUSTRIAL.md`](docs/EXTRAPOLACION_INDUSTRIAL.md). Estado del arte mayo 2026: [`docs/INNOVACION_Y_ESTADO_DEL_ARTE.md`](docs/INNOVACION_Y_ESTADO_DEL_ARTE.md).
 

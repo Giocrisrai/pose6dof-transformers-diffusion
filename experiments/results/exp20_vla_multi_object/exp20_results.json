@@ -1,0 +1,152 @@
+{
+  "config": {
+    "n_train": 6000,
+    "n_val": 1500,
+    "epochs": 60,
+    "batch_size": 64,
+    "device": "mps",
+    "seed": 42,
+    "max_obj": 5,
+    "colors": [
+      "red",
+      "blue",
+      "green"
+    ],
+    "shapes": [
+      "cube",
+      "sphere",
+      "cylinder",
+      "box"
+    ]
+  },
+  "training": {
+    "best_val_loss": 0.002235056985790531,
+    "train_losses_last5": [
+      0.002343709284439683,
+      0.0022604244363804656,
+      0.0023922184736778337,
+      0.002308504264180859,
+      0.0021993051040917633
+    ],
+    "val_losses_last5": [
+      0.0024310909180591503,
+      0.002235056985790531,
+      0.00238002298027277,
+      0.0025668414225801825,
+      0.0022783049841721852
+    ]
+  },
+  "evaluation": {
+    "selection_accuracy_global": 1.0,
+    "accuracy_by_n_objects": {
+      "2": 1.0,
+      "3": 1.0,
+      "4": 1.0,
+      "5": 1.0
+    },
+    "n_by_n_objects": {
+      "2": 394,
+      "3": 365,
+      "4": 399,
+      "5": 342
+    },
+    "latency_ms_per_traj_ddim25": 1.7764625549316406,
+    "n_evaluated": 1500
+  },
+  "criteria": {
+    "acc_min_global": 0.75,
+    "acc_min_per_n": 0.65
+  },
+  "pass": {
+    "global_above": true,
+    "all_n_above": true
+  },
+  "all_criteria_pass": true,
+  "sample_scenes": [
+    {
+      "text": "pick the blue sphere",
+      "n_obj": 4,
+      "target_idx": 2,
+      "objects": [
+        "red_sphere",
+        "green_sphere",
+        "blue_sphere",
+        "red_box"
+      ]
+    },
+    {
+      "text": "grab the red box",
+      "n_obj": 3,
+      "target_idx": 1,
+      "objects": [
+        "blue_sphere",
+        "red_box",
+        "green_box"
+      ]
+    },
+    {
+      "text": "pick the blue cylinder",
+      "n_obj": 4,
+      "target_idx": 2,
+      "objects": [
+        "blue_cube",
+        "blue_cube",
+        "blue_cylinder",
+        "red_box"
+      ]
+    },
+    {
+      "text": "pick the blue cube",
+      "n_obj": 2,
+      "target_idx": 0,
+      "objects": [
+        "blue_cube",
+        "red_box"
+      ]
+    },
+    {
+      "text": "fetch the green cube",
+      "n_obj": 4,
+      "target_idx": 1,
+      "objects": [
+        "red_cube",
+        "green_cube",
+        "red_cylinder",
+        "blue_sphere"
+      ]
+    },
+    {
+      "text": "fetch the red cylinder",
+      "n_obj": 5,
+      "target_idx": 4,
+      "objects": [
+        "blue_cylinder",
+        "blue_cube",
+        "blue_sphere",
+        "blue_sphere",
+        "red_cylinder"
+      ]
+    },
+    {
+      "text": "grab the green sphere",
+      "n_obj": 4,
+      "target_idx": 2,
+      "objects": [
+        "red_box",
+        "green_cylinder",
+        "green_sphere",
+        "red_cylinder"
+      ]
+    },
+    {
+      "text": "fetch the red cylinder",
+      "n_obj": 3,
+      "target_idx": 2,
+      "objects": [
+        "blue_box",
+        "blue_cube",
+        "red_cylinder"
+      ]
+    }
+  ]
+}

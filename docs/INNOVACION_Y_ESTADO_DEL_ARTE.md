@@ -283,8 +283,8 @@ Lo que está vivo y funcionando ahora mismo:
 
 ## 7-bis. Contribuciones adicionales — exploraciones post-TFM (mayo 2026)
 
-Tras entregar el TFM se planificaron y ejecutaron 7 exploraciones con
-criterios numéricos de éxito. **Las 7 se mergearon a `main`** porque
+Tras entregar el TFM se planificaron y ejecutaron 8 exploraciones con
+criterios numéricos de éxito. **Las 8 se mergearon a `main`** porque
 cumplen los criterios. Documentación completa: [`docs/PLAN_EXPLORACIONES_POST_TFM.md`](PLAN_EXPLORACIONES_POST_TFM.md).
 
 | # | Exploración | Resultado clave | Doc cierre |
@@ -296,6 +296,7 @@ cumplen los criterios. Documentación completa: [`docs/PLAN_EXPLORACIONES_POST_T
 | 5 | **Robustez lingüística** (extensión #4) | 100 % sobre 6 familias de frases no vistas (n=900) | [05](exploraciones/05_vla_robustness.md) |
 | 6 | **VLA-lite multi-atributo color + forma** | 99.9 % global, 100 % en color/combinado | [06](exploraciones/06_vla_shapes.md) |
 | 7 | **Simulaciones visuales 3D** | 12/12 escenas con renders de cubo/esfera/cilindro/caja | [07](exploraciones/07_visual_simulations.md) |
+| 8 | **VLA-lite multi-objeto N=2..5** | 100 % accuracy con hasta 5 objetos en escena | [08](exploraciones/08_multi_object.md) |
 
 **Hallazgos metodológicos importantes documentados:**
 
@@ -311,9 +312,9 @@ cumplen los criterios. Documentación completa: [`docs/PLAN_EXPLORACIONES_POST_T
    en training: CLIP aporta comprensión real del lenguaje, no plantilla
    memorizada. Validado con 900 frases (exp 17).
 
-**Total acumulado**: 171 tests · 6 modelos Diffusion · 1 paquete PyPI ·
-4 hallazgos metodológicos · 7 documentos de cierre · 12 simulaciones
-visuales 3D · 1 doc de extrapolación industrial.
+**Total acumulado**: 171 tests · 7 modelos Diffusion · 1 paquete PyPI ·
+4 hallazgos metodológicos · 8 documentos de cierre · 22 simulaciones
+visuales 3D (12 de N=2 + 10 de N=2..5) · 1 doc de extrapolación industrial.
 
 **Extrapolación industrial documentada**: el pipeline multi-atributo del
 exp 6 escala directamente a logística (Amazon, DHL), reciclaje (AMP, TOMRA),
