@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bop-bootstrap-ci"
+version = "0.1.0"
+description = "Bootstrap percentile confidence intervals (95%, B=1000) for BOP Challenge 6-DoF pose estimation metrics (ADD, ADD-S, AUC, Recall@N mm)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Giocrisrai Godoy Bonillo", email = "giocrisrai@gmail.com" },
+    { name = "Jose Miguel Carrasco", email = "jmcarrascoc@gmail.com" },
+]
+keywords = ["pose-estimation", "6dof", "bop-challenge", "bootstrap", "confidence-intervals", "robotics"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
+dependencies = [
+    "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.4",
+]
+
+[project.urls]
+Homepage = "https://github.com/Giocrisrai/pose6dof-transformers-diffusion"
+Repository = "https://github.com/Giocrisrai/pose6dof-transformers-diffusion/tree/main/packages/bop_bootstrap_ci"
+Issues = "https://github.com/Giocrisrai/pose6dof-transformers-diffusion/issues"
+"BOP Challenge" = "https://bop.felk.cvut.cz/challenges/"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+bop_bootstrap_ci = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -q --strict-markers"
+
+[tool.coverage.run]
+source = ["bop_bootstrap_ci"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]

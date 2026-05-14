@@ -204,7 +204,7 @@ sobre escenas multi-objeto). Bootstrap CI sobre ello.
 
 | # | Exploración | Estado | Días invertidos |
 |---|---|---|---|
-| 1 | Bootstrap-CI toolkit | 📋 Planificada | 0 |
+| 1 | Bootstrap-CI toolkit | ✅ **Éxito → mergeada** ([detalle](exploraciones/01_bootstrap_ci_toolkit.md)) | 1 |
 | 2 | Distillation 2-NFE | 📋 Planificada | 0 |
 | 3 | Open-license pipeline | 📋 Planificada | 0 |
 | 4 | VLA-lite CLIP | 📋 Planificada | 0 |
