@@ -1,0 +1,24 @@
+{
+  "config": {
+    "n_train": 2500,
+    "n_val": 500,
+    "epochs": 40,
+    "device": "mps",
+    "seed": 42,
+    "crop_size_px": 64,
+    "clip_model": "openai/clip-vit-base-patch32"
+  },
+  "training": {
+    "best_val_loss": 0.0054529113732278344
+  },
+  "evaluation": {
+    "selection_accuracy": 1.0,
+    "n_correct": 500,
+    "n_total": 500
+  },
+  "criteria": {
+    "acc_min": 0.75
+  },
+  "pass": true,
+  "all_criteria_pass": true
+}

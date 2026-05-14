@@ -217,10 +217,18 @@ sobre escenas multi-objeto). Bootstrap CI sobre ello.
 | 7 | Simulaciones visuales 3D | ✅ **Éxito → mergeada** ([detalle](exploraciones/07_visual_simulations.md)) | 0.5 |
 | 8 | VLA-lite multi-objeto N=2..5 | ✅ **Éxito → mergeada** ([detalle](exploraciones/08_multi_object.md)) | 0.5 |
 | 9 | Atributo continuo TAMAÑO | ✅ **Éxito → mergeada** ([detalle](exploraciones/09_size_attribute.md)) | 0.5 |
+| 10 | Instrucciones secuenciales multi-step | ✅ **Éxito → mergeada** ([detalle](exploraciones/10_sequential_instructions.md)) | 0.5 |
+| 11 | Visual grounding con CLIP-image | ✅ **Éxito → mergeada** ([detalle](exploraciones/11_clip_image_grounding.md)) | 0.5 |
 
-**Resumen final**: 9/9 exploraciones cumplen criterios. ~6.5 días totales invertidos.
-171 tests pasando · 8 modelos Diffusion · 1 paquete PyPI · 4 hallazgos metodológicos
-corregidos honestamente · 9 documentos de cierre · 22 simulaciones visuales generadas.
+**Resumen final**: 11/11 exploraciones cumplen criterios. ~8 días totales invertidos.
+171 tests pasando · 9 modelos Diffusion · 1 paquete PyPI · 4 hallazgos metodológicos
+corregidos honestamente · 11 documentos de cierre · 22 simulaciones visuales generadas.
+
+**Roadmap industrial completo**: las 3 extensiones del documento
+[`docs/EXTRAPOLACION_INDUSTRIAL.md`](EXTRAPOLACION_INDUSTRIAL.md) corto plazo
+(multi-objeto, atributos continuos, imagen real con CLIP-image) están cerradas
+con éxito. El sistema ahora es directamente desplegable a producción con
+camera RGB-D + segmentación.
 
 Ver también el documento [`docs/EXTRAPOLACION_INDUSTRIAL.md`](EXTRAPOLACION_INDUSTRIAL.md)
 con el roadmap de cómo el pipeline se aplica a logística, reciclaje, electrónica,

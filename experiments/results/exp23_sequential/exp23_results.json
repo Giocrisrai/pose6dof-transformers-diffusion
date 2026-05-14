@@ -1,0 +1,260 @@
+{
+  "scenes": [
+    {
+      "id": 1,
+      "text": "first the red cube, then the blue sphere",
+      "parsed_steps": [
+        "the red cube",
+        "the blue sphere"
+      ],
+      "step_correctness": [
+        true,
+        true
+      ],
+      "overall_correct": true,
+      "step_details": [
+        {
+          "sub_text": "the red cube",
+          "chosen_idx": 0,
+          "confidence": 1.0,
+          "distance_cm": 1.9353636910802725
+        },
+        {
+          "sub_text": "the blue sphere",
+          "chosen_idx": 1,
+          "confidence": 1.0,
+          "distance_cm": 5.054736777505751
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "text": "pick the green cylinder, then the red box",
+      "parsed_steps": [
+        "pick the green cylinder",
+        "the red box"
+      ],
+      "step_correctness": [
+        true,
+        true
+      ],
+      "overall_correct": true,
+      "step_details": [
+        {
+          "sub_text": "pick the green cylinder",
+          "chosen_idx": 1,
+          "confidence": 1.0,
+          "distance_cm": 4.533624955033525
+        },
+        {
+          "sub_text": "the red box",
+          "chosen_idx": 2,
+          "confidence": 1.0,
+          "distance_cm": 2.1607093259671304
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "text": "grab the blue cube and then the green sphere",
+      "parsed_steps": [
+        "grab the blue cube",
+        "the green sphere"
+      ],
+      "step_correctness": [
+        true,
+        true
+      ],
+      "overall_correct": true,
+      "step_details": [
+        {
+          "sub_text": "grab the blue cube",
+          "chosen_idx": 0,
+          "confidence": 1.0,
+          "distance_cm": 5.369449244758512
+        },
+        {
+          "sub_text": "the green sphere",
+          "chosen_idx": 2,
+          "confidence": 1.0,
+          "distance_cm": 11.205917869687667
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "text": "first the green box, then the red sphere, then the blue cylinder",
+      "parsed_steps": [
+        "the green box",
+        "the red sphere",
+        "the blue cylinder"
+      ],
+      "step_correctness": [
+        true,
+        true,
+        true
+      ],
+      "overall_correct": true,
+      "step_details": [
+        {
+          "sub_text": "the green box",
+          "chosen_idx": 0,
+          "confidence": 1.0,
+          "distance_cm": 4.13235199750331
+        },
+        {
+          "sub_text": "the red sphere",
+          "chosen_idx": 2,
+          "confidence": 1.0,
+          "distance_cm": 2.7675818756460786
+        },
+        {
+          "sub_text": "the blue cylinder",
+          "chosen_idx": 1,
+          "confidence": 1.0,
+          "distance_cm": 5.283740429346318
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "text": "in order: red cube, blue box, green sphere",
+      "parsed_steps": [
+        "red cube",
+        "blue box",
+        "green sphere"
+      ],
+      "step_correctness": [
+        true,
+        true,
+        true
+      ],
+      "overall_correct": true,
+      "step_details": [
+        {
+          "sub_text": "red cube",
+          "chosen_idx": 1,
+          "confidence": 1.0,
+          "distance_cm": 2.7231944439518894
+        },
+        {
+          "sub_text": "blue box",
+          "chosen_idx": 0,
+          "confidence": 0.9999440908432007,
+          "distance_cm": 5.907595057566952
+        },
+        {
+          "sub_text": "green sphere",
+          "chosen_idx": 2,
+          "confidence": 1.0,
+          "distance_cm": 2.442747564715083
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "text": "take the red sphere followed by the blue cube",
+      "parsed_steps": [
+        "take the red sphere",
+        "the blue cube"
+      ],
+      "step_correctness": [
+        true,
+        true
+      ],
+      "overall_correct": true,
+      "step_details": [
+        {
+          "sub_text": "take the red sphere",
+          "chosen_idx": 0,
+          "confidence": 1.0,
+          "distance_cm": 4.265387252758943
+        },
+        {
+          "sub_text": "the blue cube",
+          "chosen_idx": 1,
+          "confidence": 1.0,
+          "distance_cm": 3.528259030875551
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "text": "first the blue sphere then the red cylinder then the green box then the red sphere",
+      "parsed_steps": [
+        "the blue sphere",
+        "the red cylinder",
+        "the green box",
+        "the red sphere"
+      ],
+      "step_correctness": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "overall_correct": true,
+      "step_details": [
+        {
+          "sub_text": "the blue sphere",
+          "chosen_idx": 0,
+          "confidence": 0.9999772310256958,
+          "distance_cm": 1.9133483072608377
+        },
+        {
+          "sub_text": "the red cylinder",
+          "chosen_idx": 1,
+          "confidence": 0.9999245405197144,
+          "distance_cm": 6.814209115417938
+        },
+        {
+          "sub_text": "the green box",
+          "chosen_idx": 2,
+          "confidence": 1.0,
+          "distance_cm": 7.16684097546373
+        },
+        {
+          "sub_text": "the red sphere",
+          "chosen_idx": 3,
+          "confidence": 1.0,
+          "distance_cm": 7.806678201992241
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "text": "pick the small green cube, then the large red sphere",
+      "parsed_steps": [
+        "pick the small green cube",
+        "the large red sphere"
+      ],
+      "step_correctness": [
+        true,
+        true
+      ],
+      "overall_correct": true,
+      "step_details": [
+        {
+          "sub_text": "pick the small green cube",
+          "chosen_idx": 0,
+          "confidence": 1.0,
+          "distance_cm": 3.732439817011552
+        },
+        {
+          "sub_text": "the large red sphere",
+          "chosen_idx": 1,
+          "confidence": 1.0,
+          "distance_cm": 7.67286296294177
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "n_scenes": 8,
+    "n_correct_sequences": 8,
+    "sequence_accuracy": 1.0,
+    "n_steps_total": 20,
+    "n_correct_steps": 20,
+    "step_accuracy": 1.0
+  }
+}
