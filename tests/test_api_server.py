@@ -42,11 +42,22 @@ class TestModelsEndpoint:
         r = client.get("/models")
         assert r.status_code == 200
         models = r.json()
-        # Modelos definidos en MODELS_INFO (original/extended/ultra + distillados)
-        assert len(models) >= 3
+        # Modelos definidos en MODELS_INFO (estandar + distillado + VLA-lite)
+        assert len(models) >= 4
         names = {m["name"] for m in models}
         # Los tres modelos del TFM original deben estar siempre
         assert {"original", "extended", "ultra"}.issubset(names)
+
+    def test_vla_models_listed(self, client):
+        """Los modelos VLA-lite deben aparecer en /models (informativos)."""
+        r = client.get("/models")
+        models = {m["name"] for m in r.json()}
+        # Si los pesos estan en disco, debe haber al menos algunos VLA-lite
+        vla_expected = {"clip", "clip_shapes", "clip_multi", "clip_size",
+                          "clip_image", "clip_spatial"}
+        # Verifica que los nombres estan registrados aunque los pesos no existan
+        intersection = vla_expected & models
+        assert len(intersection) >= 3, f"Esperaba >= 3 modelos VLA-lite, encontre: {intersection}"
 
     def test_models_have_mse_ref(self, client):
         r = client.get("/models")
@@ -122,6 +133,18 @@ class TestPlanGraspEndpoint:
         })
         # 400 (bad model) o 404 (path not found)
         assert r.status_code in (400, 404)
+
+    def test_plan_grasp_vla_lite_rejected(self, client):
+        """Los modelos VLA-lite no aceptan /plan-grasp estandar."""
+        r = client.post("/plan-grasp", json={
+            "object_position": [0.0, 0.0, 0.8],
+            "model": "clip",
+            "n_samples": 1,
+        })
+        assert r.status_code == 400
+        # El mensaje debe redirigir a Gradio o al script experimento
+        detail = r.json().get("detail", "")
+        assert "VLA-lite" in detail or "Gradio" in detail or "exp" in detail
 
     def test_plan_grasp_invalid_pose_422(self, client):
         # Falta object_position

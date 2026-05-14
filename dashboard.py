@@ -127,10 +127,10 @@ elif section == "🔬 Exploraciones post-TFM":
     )
 
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Tests totales", "171", "+48 vs TFM")
-    col2.metric("Modelos Diffusion", "5", "+2 nuevos")
-    col3.metric("Paquetes PyPI", "1", "bop-bootstrap-ci")
-    col4.metric("Exploraciones éxitos", "5/5", "100 %")
+    col1.metric("Tests totales", "173", "+50 vs TFM")
+    col2.metric("Modelos Diffusion", "10", "+7 nuevos")
+    col3.metric("Paquete PyPI publicado", "✓", "bop-bootstrap-ci 0.1.0")
+    col4.metric("Exploraciones éxitos", "13/13", "100 %")
 
     st.markdown("---")
 
@@ -219,12 +219,124 @@ elif section == "🔬 Exploraciones post-TFM":
         "pick the red object'* o *'go red'* sin re-entrenar."
     )
 
+    # Exploración 6
+    st.subheader("6️⃣  VLA-lite multi-atributo color + forma  ✅")
+    st.markdown(
+        "Extiende el gate a 7-D (RGB + shape one-hot). Soporta "
+        "*'pick the red sphere'*, *'grab the blue cube'*, *'select the green cylinder'*. "
+        "Modelo: `diffusion_policy_clip_shapes.pth`."
+    )
+    col_6a, col_6b, col_6c = st.columns(3)
+    col_6a.metric("Accuracy global", "99.9 %", "1199/1200")
+    col_6b.metric("Color-only", "100 %", "n=389")
+    col_6c.metric("Combinado color+forma", "100 %", "n=393")
+
+    # Exploración 7
+    st.subheader("7️⃣  Simulaciones visuales 3D  ✅")
+    st.markdown(
+        "12 renders 3D con objetos reales (cubos, esferas, cilindros, cajas) "
+        "mostrando la decisión del pipeline. Incluye casos límite como "
+        "*'the round one'* (entiende sinónimo de sphere)."
+    )
+    img_grid = REPO / "experiments/results/exp19_visual_sims/grid_overview.png"
+    if img_grid.exists():
+        st.image(str(img_grid), caption="12 escenas demostrativas — 12/12 correctas",
+                  use_container_width=True)
+
+    # Exploración 8
+    st.subheader("8️⃣  VLA-lite multi-objeto N=2..5  ✅")
+    st.markdown(
+        "Generaliza el gate a **hasta 5 objetos simultáneos en la escena** "
+        "(shared-weight scorer + mask + softmax). Aplicable directamente a "
+        "logística (cintas con varios paquetes), reciclaje (bins con categorías), "
+        "manufactura (bandejas)."
+    )
+    col_8a, col_8b, col_8c, col_8d = st.columns(4)
+    col_8a.metric("N=2", "100 %", "n=394")
+    col_8b.metric("N=3", "100 %", "n=365")
+    col_8c.metric("N=4", "100 %", "n=399")
+    col_8d.metric("N=5", "100 %", "n=342")
+
+    # Exploración 9
+    st.subheader("9️⃣  Atributo continuo TAMAÑO  ✅")
+    st.markdown(
+        "Añade dimensión continua **size** (small / medium / large = 30/50/80 mm). "
+        "Soporta *'pick the large red box'*, *'the small one'*, *'take the medium object'*."
+    )
+    col_9a, col_9b = st.columns(2)
+    col_9a.metric("Accuracy global", "99.9 %", "n=1500")
+    col_9b.metric("8 templates ≥ 99.5 %", "100 %", "todos pasan")
+
+    # Exploración 10
+    st.subheader("🔟  Instrucciones secuenciales multi-step  ✅")
+    st.markdown(
+        "Parser de connectors (*then*, *after*, *followed by*, *in order:*) + "
+        "ejecutor que reutiliza el modelo del exp 8 **sin re-train**. "
+        "Soporta *'first the red cube, then the blue sphere'* hasta 4 pasos."
+    )
+    col_10a, col_10b = st.columns(2)
+    col_10a.metric("Secuencias completas", "8/8 = 100 %", "")
+    col_10b.metric("Pasos individuales", "20/20 = 100 %", "")
+
+    # Exploración 11 — VISUAL GROUNDING (la más importante)
+    st.subheader("1️⃣1️⃣  CLIP-image visual grounding  ✅ **(crítico para producción)**")
+    st.markdown(
+        "**Cierre del pipeline industrial real**: el sistema selecciona el objeto "
+        "basándose en la **apariencia visual** (crop CLIP-image 768-D), no en "
+        "atributos sintéticos declarados. Esto es lo que permite enchufar una "
+        "cámara RGB-D real al sistema."
+    )
+    col_11a, col_11b = st.columns(2)
+    col_11a.metric("Selection accuracy", "100 %", "n=500 val")
+    col_11b.metric("Latencia training", "1.4 min M1 Pro", "")
+    st.code("""
+    Camera RGB-D → segmentación (SAM2) → crops 64×64 RGB
+                                                ↓
+                          CLIP-image (frozen, 86M) → embedding 768-D
+                                                ↓
+                          CLIP-text(instrucción) + VisualGate
+                                                ↓
+                          Diffusion Policy → trayectoria
+    """, language="text")
+
+    # Exploración 12
+    st.subheader("1️⃣2️⃣  Robustez CLIP-image con domain randomization  ✅")
+    st.markdown(
+        "Valida que el modelo del exp 11 sobrevive a condiciones reales: "
+        "oclusión, ruido sensor e iluminación variable. **Bootstrap CI 95 %** "
+        "usando el paquete PyPI publicado `bop-bootstrap-ci`."
+    )
+    img_robust = REPO / "experiments/results/exp25_robustness/fig_robustness_curves.png"
+    if img_robust.exists():
+        st.image(str(img_robust), caption="Curvas de robustez con CI 95 % B=1000",
+                  use_container_width=True)
+    col_12a, col_12b, col_12c = st.columns(3)
+    col_12a.metric("Condiciones robustas", "12/12 ≥ 75 %", "")
+    col_12b.metric("Accuracy media", "95.3 %", "")
+    col_12c.metric("Combinación realista", "93.7 %", "(occ 20 % + ruido + atenuación)")
+
+    # Exploración 13
+    st.subheader("1️⃣3️⃣  Razonamiento espacial  ✅")
+    st.markdown(
+        "Extiende el gate con **coordenadas XYZ normalizadas** para que el modelo "
+        "razone sobre referencias espaciales: *'the leftmost red object'*, "
+        "*'the closest one'*, *'the highest object'*, *'pick the one closest to me'*."
+    )
+    col_13a, col_13b = st.columns(2)
+    col_13a.metric("Accuracy global", "98.4 %", "n=1500")
+    col_13b.metric("Templates ≥ 94.9 %", "13/13", "todos pasan")
+    st.info(
+        "5 templates en **100 %**: *the lowest one*, *the closest one*, "
+        "*the farthest object*, *select the leftmost one*, *pick the one closest to me*."
+    )
+
     st.markdown("---")
     st.success(
-        "**Resumen**: 171 tests pasando · 5 modelos Diffusion · 1 paquete PyPI · "
-        "4 hallazgos metodológicos · 5 documentos de cierre. "
-        "Estas exploraciones extienden el TFM con contribuciones cuantitativas, "
-        "no se sobreponen al documento entregado."
+        "**Resumen completo**: 173 tests pasando · 10 modelos Diffusion · "
+        "**bop-bootstrap-ci 0.1.0 publicado en PyPI** · 4 hallazgos metodológicos · "
+        "13 documentos de cierre · 22 simulaciones visuales 3D. "
+        "Etapas físicas post-TFM detalladas en "
+        "[ROADMAP_POSTTFM.md](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/blob/main/docs/ROADMAP_POSTTFM.md)."
     )
 
 elif section == "💡 Innovación y SOTA":

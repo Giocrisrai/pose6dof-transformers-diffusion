@@ -141,6 +141,66 @@ MODELS_INFO = {
         "nfe": 1,
         "is_distilled": True,
     },
+    # === Modelos VLA-lite (exploraciones post-TFM 4-13) ===
+    # Estos modelos NO son drop-in replacements del DP estandar (requieren
+    # CLIP text/image encoder + gate especifico). Aparecen en /models para
+    # transparencia pero /plan-grasp solo soporta los modelos estandar
+    # (original/extended/ultra/ultra_fast). Para usar VLA-lite usar Gradio o
+    # los scripts experiments/exp{16,18,20,22,24,26}.
+    "clip": {
+        "path": REPO / "data/models/diffusion_policy_clip.pth",
+        "hidden_dim": 256,
+        "mse_val": None,
+        "description": "VLA-lite color (exp16): 'pick the red object' - 98.6% acc",
+        "nfe": 25,
+        "is_distilled": False,
+        "is_vla_lite": True,
+    },
+    "clip_shapes": {
+        "path": REPO / "data/models/diffusion_policy_clip_shapes.pth",
+        "hidden_dim": 256,
+        "mse_val": None,
+        "description": "VLA-lite color+forma (exp18): 'pick the red sphere' - 99.9% acc",
+        "nfe": 25,
+        "is_distilled": False,
+        "is_vla_lite": True,
+    },
+    "clip_multi": {
+        "path": REPO / "data/models/diffusion_policy_clip_multi.pth",
+        "hidden_dim": 256,
+        "mse_val": None,
+        "description": "VLA-lite multi-objeto N=2..5 (exp20): 100% acc",
+        "nfe": 25,
+        "is_distilled": False,
+        "is_vla_lite": True,
+    },
+    "clip_size": {
+        "path": REPO / "data/models/diffusion_policy_clip_size.pth",
+        "hidden_dim": 256,
+        "mse_val": None,
+        "description": "VLA-lite con atributo TAMANO (exp22): 'pick the large red box' - 99.9%",
+        "nfe": 25,
+        "is_distilled": False,
+        "is_vla_lite": True,
+    },
+    "clip_image": {
+        "path": REPO / "data/models/diffusion_policy_clip_image.pth",
+        "hidden_dim": 256,
+        "mse_val": None,
+        "description": "VLA-lite CLIP-image visual grounding (exp24): 100% sin atributos declarados",
+        "nfe": 25,
+        "is_distilled": False,
+        "is_vla_lite": True,
+    },
+    "clip_spatial": {
+        "path": REPO / "data/models/diffusion_policy_clip_spatial.pth",
+        "hidden_dim": 256,
+        "mse_val": None,
+        "description": "VLA-lite razonamiento espacial (exp26): 'the leftmost', 'closest' - 98.4%",
+        "nfe": 25,
+        "is_distilled": False,
+        "is_vla_lite": True,
+    },
 }
 
 
@@ -157,10 +217,19 @@ def load_model(name: str):
     """Lazy load del modelo solicitado."""
     if name not in MODELS_INFO:
         raise HTTPException(status_code=400, detail=f"Modelo desconocido: {name}")
+    info = MODELS_INFO[name]
+    if info.get("is_vla_lite"):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Modelo VLA-lite '{name}' requiere CLIP encoder + gate especifico. "
+                "Usa Gradio (puerto 7860) tab 'Hablar al robot' o el script "
+                f"experiments/exp{16 if 'shapes' not in name and name == 'clip' else 18}.py."
+            ),
+        )
     if name in _models_cache:
         return _models_cache[name]
 
-    info = MODELS_INFO[name]
     if not info["path"].exists():
         raise HTTPException(status_code=404, detail=f"Pesos no encontrados: {info['path'].name}")
 
