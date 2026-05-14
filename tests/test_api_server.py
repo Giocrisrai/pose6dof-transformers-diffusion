@@ -38,14 +38,15 @@ class TestRootEndpoints:
 
 
 class TestModelsEndpoint:
-    def test_models_returns_three(self, client):
+    def test_models_returns_all_registered(self, client):
         r = client.get("/models")
         assert r.status_code == 200
         models = r.json()
-        # Tres modelos definidos en MODELS_INFO
-        assert len(models) == 3
+        # Modelos definidos en MODELS_INFO (original/extended/ultra + distillados)
+        assert len(models) >= 3
         names = {m["name"] for m in models}
-        assert names == {"original", "extended", "ultra"}
+        # Los tres modelos del TFM original deben estar siempre
+        assert {"original", "extended", "ultra"}.issubset(names)
 
     def test_models_have_mse_ref(self, client):
         r = client.get("/models")
@@ -81,6 +82,38 @@ class TestPlanGraspEndpoint:
         assert len(traj[0]) == 16
         assert len(traj[0][0]) == 7
         assert data["latency_ms"] > 0
+
+    def test_plan_grasp_with_distilled_model(self, client):
+        """El modelo distillado ultra_fast deberia ser >10x mas rapido que ultra."""
+        models = {m["name"]: m for m in client.get("/models").json()}
+        if "ultra_fast" not in models or not models["ultra_fast"]["exists"]:
+            pytest.skip("Modelo ultra_fast (distillado) no presente")
+        if not models["ultra"]["exists"]:
+            pytest.skip("Modelo ultra no presente para comparar")
+
+        # Calentar modelos (primer call carga pesos)
+        warmup = {"object_position": [0.0, 0.0, 0.8], "n_samples": 1}
+        client.post("/plan-grasp", json={**warmup, "model": "ultra"})
+        client.post("/plan-grasp", json={**warmup, "model": "ultra_fast"})
+
+        n = 5
+        req = {"object_position": [0.05, -0.1, 0.85], "n_samples": n, "n_diffusion_steps": 25}
+
+        r_ultra = client.post("/plan-grasp", json={**req, "model": "ultra"})
+        r_fast = client.post("/plan-grasp", json={**req, "model": "ultra_fast"})
+
+        assert r_ultra.status_code == 200 and r_fast.status_code == 200
+        d_ultra = r_ultra.json()
+        d_fast = r_fast.json()
+
+        # Verificar forma y modelo
+        assert d_fast["model_used"] == "ultra_fast"
+        assert len(d_fast["trajectory"]) == n
+        assert len(d_fast["trajectory"][0]) == 16
+        assert len(d_fast["trajectory"][0][0]) == 7
+        # Latencia distillado debe ser MUCHO menor (>10x)
+        assert d_fast["latency_ms"] < d_ultra["latency_ms"] / 10, \
+            f"distilled latency {d_fast['latency_ms']:.1f} no es <10x de ultra {d_ultra['latency_ms']:.1f}"
 
     def test_plan_grasp_unknown_model_400(self, client):
         r = client.post("/plan-grasp", json={
