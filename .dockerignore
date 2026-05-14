@@ -1,0 +1,40 @@
+# Build / venv / cache
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Datos pesados (montados por volumen, no en imagen)
+data/datasets/
+data/raw/
+data/bop_data/
+external/FoundationPose/
+**/wandb/
+**/runs/
+
+# Resultados/experimentos voluminosos (montados por volumen)
+experiments/results/**/*.png
+experiments/results/**/*.mp4
+experiments/results/**/*.pkl
+
+# Notebooks (no necesarios en imagen API)
+notebooks/
+
+# Docs
+docs/
+*.pdf
+*.docx
+
+# Git
+.git/
+.github/
+
+# OS / editores
+.DS_Store
+.idea/
+.vscode/

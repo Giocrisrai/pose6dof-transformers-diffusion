@@ -83,3 +83,24 @@ services:
     stdin_open: true
     tty: true
     command: bash
+
+  # -----------------------------------------------------------
+  # API REST + Gradio demo (ligero, sin GPU, sin ROS)
+  # -----------------------------------------------------------
+  # Útil para deployment ligero del pipeline en cualquier host
+  # (Mac, Linux x86, Linux ARM). No requiere CUDA ni X11.
+  # API: http://localhost:8000/docs   Gradio: http://localhost:7860
+  api:
+    build:
+      context: ..
+      dockerfile: docker/api.Dockerfile
+    container_name: tfm_api
+    image: tfm-pose6dof-api:latest
+    ports:
+      - "8000:8000"
+      - "7860:7860"
+    volumes:
+      - ../data/models:/app/data/models:ro
+      - ../experiments/checkpoints:/app/experiments/checkpoints:ro
+      - ../experiments/results:/app/experiments/results:ro
+    restart: unless-stopped
