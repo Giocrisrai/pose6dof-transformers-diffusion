@@ -388,6 +388,287 @@ with gr.Blocks(title="TFM Pose 6-DoF Demo") as demo:
         - **Coste total estimado por estacion industrial**: < 5.000 USD vs 15.000-150.000 USD industriales.
         """)
 
+    with gr.Tab("🗣️  Hablar al robot (VLA-lite)"):
+        gr.HTML('<div class="callout">'
+                'Escribe en lenguaje natural "<b>pick the red object</b>" y mira como el sistema '
+                'identifica cual de los dos objetos quieres y planifica la trayectoria hacia el. '
+                'Este modulo (exploracion #4) usa CLIP de OpenAI para entender el texto y un '
+                'TextGroundedGate que decide entre los objetos. <b>Selection accuracy 98.6 %</b> '
+                'sobre escenas multi-objeto.</div>')
+
+        with gr.Row():
+            with gr.Column(scale=1):
+                gr.Markdown("### Escena: 2 objetos con colores distintos")
+                with gr.Row():
+                    with gr.Column():
+                        gr.Markdown("**Objeto A** (azul ✓)")
+                        vla_pa_x = gr.Slider(-0.4, 0.4, value=-0.25, step=0.05, label="A: X (m)")
+                        vla_pa_y = gr.Slider(-0.4, 0.4, value=0.10, step=0.05, label="A: Y (m)")
+                        vla_pa_z = gr.Slider(0.7, 1.0, value=0.80, step=0.05, label="A: Z (m)")
+                        vla_color_a = gr.Radio(["red", "blue", "green"], value="blue", label="Color A")
+                    with gr.Column():
+                        gr.Markdown("**Objeto B** (rojo ✓)")
+                        vla_pb_x = gr.Slider(-0.4, 0.4, value=0.30, step=0.05, label="B: X (m)")
+                        vla_pb_y = gr.Slider(-0.4, 0.4, value=-0.10, step=0.05, label="B: Y (m)")
+                        vla_pb_z = gr.Slider(0.7, 1.0, value=0.85, step=0.05, label="B: Z (m)")
+                        vla_color_b = gr.Radio(["red", "blue", "green"], value="red", label="Color B")
+
+                gr.Markdown("### Instruccion en lenguaje natural")
+                vla_text = gr.Textbox(
+                    value="pick the red object",
+                    label="Que quieres que el robot recoja?",
+                    info="Ejemplos: 'pick the red object', 'grab the blue item', 'get the green thing'",
+                )
+                vla_btn = gr.Button("▶  Interpretar y planificar", variant="primary", size="lg")
+
+            with gr.Column(scale=2):
+                vla_plot = gr.Plot(label="Trayectoria seleccionada por el modelo")
+                vla_info = gr.Markdown()
+
+        def vla_predict(pa_x, pa_y, pa_z, color_a, pb_x, pb_y, pb_z, color_b, text):
+            import time
+            import torch
+            from src.planning.diffusion_policy import ConditionalUNet1D, SimpleDDPMScheduler
+            # Carga lazy del modelo CLIP + DP
+            if "_vla" not in _models_cache:
+                from transformers import CLIPTokenizer, CLIPTextModel
+                device = "mps" if torch.backends.mps.is_available() else "cpu"
+                tok = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")
+                clip_mod = CLIPTextModel.from_pretrained("openai/clip-vit-base-patch32").to(device).eval()
+                ckpt = torch.load(REPO / "data/models/diffusion_policy_clip.pth",
+                                     map_location=device, weights_only=True)
+                dp = ConditionalUNet1D(action_dim=7, horizon=16, cond_dim=64, hidden_dim=256).to(device).eval()
+                dp.load_state_dict(ckpt["model_state_dict"])
+                # CLIPProjector y TextGroundedGate inline
+                import torch.nn as nn
+                class CLIPProjector(nn.Module):
+                    def __init__(self):
+                        super().__init__()
+                        self.net = nn.Sequential(nn.Linear(512, 64), nn.Mish(), nn.Linear(64, 32))
+                    def forward(self, x): return self.net(x)
+                class TextGroundedGate(nn.Module):
+                    def __init__(self):
+                        super().__init__()
+                        self.score = nn.Sequential(
+                            nn.Linear(3+512, 128), nn.Mish(),
+                            nn.Linear(128, 128), nn.Mish(),
+                            nn.Linear(128, 1))
+                    def forward(self, clip, rgb_a, rgb_b):
+                        import torch.nn.functional as F
+                        s_a = self.score(torch.cat([rgb_a, clip], -1)).squeeze(-1)
+                        s_b = self.score(torch.cat([rgb_b, clip], -1)).squeeze(-1)
+                        gates = F.softmax(torch.stack([s_a, s_b], -1), dim=-1)
+                        return gates[:, 0], gates[:, 1]
+                proj = CLIPProjector().to(device).eval()
+                gate = TextGroundedGate().to(device).eval()
+                proj.load_state_dict(ckpt["projector_state_dict"])
+                gate.load_state_dict(ckpt["gate_state_dict"])
+                _models_cache["_vla"] = (tok, clip_mod, dp, proj, gate, device,
+                                            SimpleDDPMScheduler(num_timesteps=100))
+            tok, clip_mod, dp, proj, gate, device, sched = _models_cache["_vla"]
+
+            # CLIP encode
+            t0 = time.time()
+            with torch.no_grad():
+                inputs = tok([text], padding=True, return_tensors="pt", truncation=True)
+                inputs = {k: v.to(device) for k, v in inputs.items()}
+                ce = clip_mod(**inputs).pooler_output  # (1, 512)
+            clip_ms = (time.time() - t0) * 1000
+
+            # RGB lookup
+            RGB = {"red": [1.0, 0.0, 0.0], "blue": [0.0, 0.0, 1.0], "green": [0.0, 1.0, 0.0]}
+            p_a = np.array([pa_x, pa_y, pa_z], dtype=np.float32)
+            p_b = np.array([pb_x, pb_y, pb_z], dtype=np.float32)
+            rgb_a = torch.tensor([RGB[color_a]], device=device)
+            rgb_b = torch.tensor([RGB[color_b]], device=device)
+
+            t0 = time.time()
+            with torch.no_grad():
+                g_a, g_b = gate(ce, rgb_a, rgb_b)
+                gate_a_val = float(g_a.item())
+                gate_b_val = float(g_b.item())
+                selected = gate_a_val * p_a + gate_b_val * p_b
+                clip_proj = proj(ce)
+                # build static cond
+                sc = torch.zeros(1, 64, device=device)
+                sc[0, 4:7] = torch.tensor(p_a, device=device)
+                sc[0, 7:10] = torch.tensor(p_b, device=device)
+                sc[0, 10:13] = rgb_a[0]
+                sc[0, 13:16] = rgb_b[0]
+                sc[0, :3] = torch.tensor(selected, device=device)
+                sc[0, 19:51] = clip_proj[0]
+                # DDIM
+                import numpy as _np
+                x = torch.randn(1, 16, 7, device=device)
+                step_indices = _np.linspace(0, 99, 25).astype(int)[::-1]
+                alpha_bar = torch.tensor(sched.alpha_bar, dtype=torch.float32, device=device)
+                for i, step in enumerate(step_indices):
+                    t_tensor = torch.full((1,), int(step), dtype=torch.long, device=device)
+                    noise_pred = dp(x, t_tensor, sc)
+                    ab_t = alpha_bar[step]
+                    pred_x0 = (x - torch.sqrt(1 - ab_t) * noise_pred) / torch.sqrt(ab_t)
+                    if i < len(step_indices) - 1:
+                        ab_next = alpha_bar[step_indices[i+1]]
+                        x = torch.sqrt(ab_next) * pred_x0 + torch.sqrt(1 - ab_next) * noise_pred
+                    else:
+                        x = pred_x0
+                traj = x.cpu().numpy()[0]
+            sample_ms = (time.time() - t0) * 1000
+
+            # Endpoint cerca de A o B
+            endpoint = traj[-1, :3]
+            d_a = np.linalg.norm(endpoint - p_a)
+            d_b = np.linalg.norm(endpoint - p_b)
+            chosen = "A" if d_a < d_b else "B"
+            chosen_color = color_a if chosen == "A" else color_b
+
+            # Plot
+            fig = plt.figure(figsize=(11, 5))
+            ax1 = fig.add_subplot(121, projection="3d")
+            ax1.plot(traj[:, 0], traj[:, 1], traj[:, 2], color="#0098CD", linewidth=2.5,
+                     label="Trayectoria planificada")
+            color_map = {"red": "#E63946", "blue": "#1D3557", "green": "#2A9D8F"}
+            ax1.scatter([p_a[0]], [p_a[1]], [p_a[2]], s=400, c=color_map[color_a], marker="o",
+                          edgecolor="white", linewidth=2, label=f"Objeto A ({color_a})", zorder=5)
+            ax1.scatter([p_b[0]], [p_b[1]], [p_b[2]], s=400, c=color_map[color_b], marker="o",
+                          edgecolor="white", linewidth=2, label=f"Objeto B ({color_b})", zorder=5)
+            ax1.scatter([endpoint[0]], [endpoint[1]], [endpoint[2]], s=200, c="black", marker="*",
+                          label=f"Endpoint", zorder=10)
+            ax1.set_xlabel("X (m)"); ax1.set_ylabel("Y (m)"); ax1.set_zlabel("Z (m)")
+            ax1.set_title(f"'{text}' -> el modelo escogio el objeto {chosen} ({chosen_color})")
+            ax1.legend(fontsize=8)
+            ax1.grid(True, alpha=0.3)
+
+            ax2 = fig.add_subplot(122)
+            ax2.bar(["Objeto A", "Objeto B"], [gate_a_val, gate_b_val],
+                       color=[color_map[color_a], color_map[color_b]], edgecolor="black")
+            ax2.set_ylim(0, 1)
+            ax2.set_ylabel("Probabilidad del gate")
+            ax2.set_title("Confianza del modelo VLA-lite")
+            ax2.axhline(0.5, color="gray", linestyle="--", alpha=0.5)
+            for i, v in enumerate([gate_a_val, gate_b_val]):
+                ax2.text(i, v + 0.02, f"{v:.2%}", ha="center", fontweight="bold")
+            ax2.grid(True, alpha=0.3, axis="y")
+            plt.tight_layout()
+
+            success_emoji = "✅" if d_a + d_b > 0.05 and abs(d_a - d_b) > 0.05 else "⚠️"
+            info = f"""
+### {success_emoji} Resultado
+
+**Instruccion**: "{text}"
+
+El modelo CLIP interpreto el texto, el **TextGroundedGate** asigno probabilidades:
+- Objeto A ({color_a}): **{gate_a_val:.1%}**
+- Objeto B ({color_b}): **{gate_b_val:.1%}**
+
+El modelo eligio el objeto **{chosen}** ({chosen_color}), planifico una trayectoria que termina
+a **{min(d_a, d_b)*100:.1f} cm** del target seleccionado vs **{max(d_a, d_b)*100:.1f} cm** del distractor.
+
+### Latencias
+- CLIP encode: {clip_ms:.1f} ms
+- Gate + Diffusion DDIM-25: {sample_ms:.1f} ms
+- **Total: {clip_ms + sample_ms:.1f} ms**
+
+### Como funciona
+
+```
+"{text}"
+   v
+CLIP text encoder (frozen, 63 M params)
+   v
+embedding 512-D ----> TextGroundedGate(CLIP, RGB_a, RGB_b)
+                          v
+                  gates (softmax) -> selected_pos
+                          v
+                  Diffusion Policy condicionado
+                          v
+                  trayectoria hacia objeto target
+```
+
+Esta es la exploracion #4 del TFM: VLA-lite con coste 1000x menor que RDT-1B / pi0.
+"""
+            return fig, info
+
+        vla_btn.click(
+            vla_predict,
+            inputs=[vla_pa_x, vla_pa_y, vla_pa_z, vla_color_a,
+                       vla_pb_x, vla_pb_y, vla_pb_z, vla_color_b, vla_text],
+            outputs=[vla_plot, vla_info],
+        )
+
+    with gr.Tab("🔬  Exploraciones post-TFM"):
+        gr.Markdown("""
+        ## 4 contribuciones novedosas sobre el TFM entregado
+
+        Tras entregar el TFM se planificaron y ejecutaron 4 exploraciones con criterios
+        numericos de exito. **Las 4 se mergearon a `main`** porque cumplen los criterios.
+        Documentacion completa: [`docs/PLAN_EXPLORACIONES_POST_TFM.md`](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/blob/main/docs/PLAN_EXPLORACIONES_POST_TFM.md).
+
+        ### #1  Bootstrap-CI BOP toolkit (PyPI)  ✅
+
+        Paquete `bop-bootstrap-ci` 0.1.0 que extrae el framework de evaluacion del TFM
+        a libreria standalone. **27 tests pasando, 97 % cobertura, twine check PASSED**.
+        Compatible con `bop_toolkit` oficial.
+
+        ```python
+        pip install bop-bootstrap-ci
+        from bop_bootstrap_ci import bootstrap_auc_adds
+        ci = bootstrap_auc_adds(add_s_errors_mm).as_dict()
+        # {"point": 0.908, "lo": 0.901, "hi": 0.916, "B": 1000, "alpha": 0.05}
+        ```
+
+        ### #2  Distillation Diffusion 1-NFE  ✅
+
+        El modelo `ultra` (DDIM-25, 93 ms) se destila a un student `ultra_fast` de **1 NFE**.
+
+        | Metrica | Teacher ultra | Student ultra_fast | Mejora |
+        |---|---|---|---|
+        | MSE vs GT heuristic | 0.0129 | 0.0124 | **-4 %** |
+        | Jerk RMS | 0.064 | 0.018 | **-71 %** |
+        | Latencia/trayectoria | 48.5 ms | 0.09 ms | **×517 speedup** |
+
+        Probado en vivo en la API REST. **Hallazgo metodologico**: el "MSE 0.0022" del TFM
+        original era noise-prediction loss durante el training, no MSE de trayectoria
+        reconstruida (que para el teacher es 0.0129). Corregido honestamente.
+
+        ### #3  Pipeline 100 % open-license  ✅
+
+        Comparativa cuantitativa con bootstrap CI 95 % usando el paquete #1 sobre las
+        alternativas open a FoundationPose (que tiene licencia NC NVIDIA).
+
+        | Metodo | Licencia | AUC YCB-V | AUC T-LESS | Comercial |
+        |---|---|---|---|:---:|
+        | FoundationPose | NC | 0.8988 | 0.9515 | ❌ |
+        | **FreeZeV2** | Apache-2.0 | **0.8703** | **0.9177** | ✅ |
+        | MegaPose | AGPL-3.0 | 0.8568 | 0.9009 | ❌ |
+        | Any6D | MIT | 0.8323 | 0.8715 | ✅ |
+        | SamPose | Apache-2.0 | 0.8048 | 0.8424 | ✅ |
+
+        **Conclusion**: cambiar a FreeZeV2 cuesta solo **-3 pp AUC** y abre la puerta
+        a comercializacion. Pipeline ahora es agnostico de estimador via `PoseEstimator`
+        protocol.
+
+        ### #4  VLA-lite con CLIP  ✅
+
+        Anade lenguaje natural al pipeline. Lo puedes probar tu en la tab
+        "🗣️ Hablar al robot" arriba. **Selection accuracy 98.6 %** sobre escenas
+        multi-objeto sinteticas, con **TextGroundedGate** que asigna probabilidades
+        a cada objeto candidato. Coste: **1000x menor que RDT-1B / pi0**.
+
+        ---
+
+        ## Total acumulado
+
+        - **171 tests** pasando (123 TFM + 48 exploraciones)
+        - **5 modelos Diffusion** entrenados (original, extended, ultra, ultra_fast, clip)
+        - **1 paquete PyPI** listo para publicar
+        - **3 hallazgos metodologicos** corregidos honestamente
+        - **4 documentos de cierre** en `docs/exploraciones/` con criterios y limitaciones
+
+        Estas exploraciones extienden el TFM con contribuciones cuantitativas, no se
+        sobreponen al documento entregado.
+        """)
+
     with gr.Tab("💡  Por que este TFM importa"):
         gr.Markdown("""
         ## En 60 segundos

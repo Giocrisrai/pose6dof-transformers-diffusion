@@ -57,7 +57,8 @@ with st.sidebar:
     st.markdown("---")
     section = st.radio(
         "Sección",
-        ["📊 Resumen", "💡 Innovación y SOTA", "🧠 Decisiones del pipeline",
+        ["📊 Resumen", "🔬 Exploraciones post-TFM",
+         "💡 Innovación y SOTA", "🧠 Decisiones del pipeline",
          "🎯 Hipótesis", "📈 Métricas FP",
          "🛡️ Robustez", "⚙️ Profiling", "🌳 Diversidad",
          "🎮 PBVS", "📦 Per-Object", "🎬 Video", "📚 Recursos"]
@@ -115,6 +116,99 @@ if section == "📊 Resumen":
     img = load_image("experiments/results/pipeline_e2e/fig_pipeline_arquitectura.png")
     if img:
         st.image(img, caption="Pipeline TFM: FoundationPose + Diffusion Policy + CoppeliaSim")
+
+elif section == "🔬 Exploraciones post-TFM":
+    st.title("4 contribuciones novedosas sobre el TFM entregado")
+    st.markdown(
+        "Tras entregar el TFM se planificaron y ejecutaron 4 exploraciones con "
+        "criterios numéricos de éxito. **Las 4 se mergearon a `main`** porque "
+        "cumplen los criterios. Documentación completa: "
+        "[`docs/PLAN_EXPLORACIONES_POST_TFM.md`](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/blob/main/docs/PLAN_EXPLORACIONES_POST_TFM.md)."
+    )
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Tests totales", "171", "+48 vs TFM")
+    col2.metric("Modelos Diffusion", "5", "+2 nuevos")
+    col3.metric("Paquetes PyPI", "1", "bop-bootstrap-ci")
+    col4.metric("Exploraciones éxitos", "4/4", "100 %")
+
+    st.markdown("---")
+
+    # Exploración 1
+    st.subheader("1️⃣  Bootstrap-CI BOP toolkit (PyPI)  ✅")
+    st.markdown(
+        "Paquete `bop-bootstrap-ci` 0.1.0 que extrae el framework de evaluación a "
+        "librería standalone. **27 tests pasando, 97 % cobertura, twine check PASSED**."
+    )
+    st.code(
+        "pip install bop-bootstrap-ci\n\n"
+        "from bop_bootstrap_ci import bootstrap_auc_adds\n"
+        "ci = bootstrap_auc_adds(add_s_errors_mm).as_dict()\n"
+        '# {"point": 0.908, "lo": 0.901, "hi": 0.916, "B": 1000, "alpha": 0.05}',
+        language="python",
+    )
+
+    # Exploración 2
+    st.subheader("2️⃣  Distillation Diffusion 1-NFE  ✅")
+    st.markdown(
+        "El modelo `ultra` (DDIM-25, 93 ms) se destila a un student `ultra_fast` de "
+        "**1 forward pass**. Verificado en vivo en la API REST."
+    )
+    st.table(pd.DataFrame({
+        "Métrica": ["MSE vs GT heurístico", "Jerk RMS", "Latencia por trayectoria", "NFE inference"],
+        "Teacher ultra (DDIM-25)": ["0.0129", "0.064", "48.5 ms", "25"],
+        "Student ultra_fast": ["**0.0124**", "**0.018**", "**0.09 ms**", "**1**"],
+        "Mejora": ["−4 %", "−71 %", "**×517 speedup**", "×25 menos"],
+    }))
+    st.info(
+        "**Hallazgo metodológico**: el 'MSE 0.0022' reportado en el TFM original "
+        "era *noise-prediction loss* durante el training, no MSE de trayectoria "
+        "reconstruida (que para el teacher es 0.0129). Corregido honestamente."
+    )
+
+    # Exploración 3
+    st.subheader("3️⃣  Pipeline 100 % open-license  ✅")
+    st.markdown(
+        "Comparativa cuantitativa con bootstrap CI 95 % usando el paquete de #1, "
+        "sobre alternativas open a FoundationPose (que tiene licencia NC NVIDIA). "
+        "Pipeline ahora es agnóstico de estimador via `PoseEstimator` protocol."
+    )
+
+    img_pareto = REPO / "experiments/results/exp15_open_license/fig_pareto.png"
+    if img_pareto.exists():
+        st.image(str(img_pareto), caption="Pareto licencia × performance — bootstrap CI 95 %",
+                  use_container_width=True)
+
+    st.markdown(
+        "**Conclusión**: cambiar a **FreeZeV2 (Apache-2.0)** cuesta solo **−3 pp AUC** "
+        "y abre la puerta a comercialización del pipeline."
+    )
+
+    # Exploración 4
+    st.subheader("4️⃣  VLA-lite con CLIP  ✅")
+    col_a, col_b = st.columns([2, 1])
+    with col_a:
+        st.markdown(
+            "Añade **lenguaje natural** al pipeline. El usuario escribe "
+            "*'pick the red object'* → CLIP encode → TextGroundedGate selecciona "
+            "el objeto → Diffusion genera trayectoria.\n\n"
+            "**Selection accuracy 98.6 %** sobre escenas multi-objeto sintéticas. "
+            "Coste: **1000× menor que RDT-1B / π0**.\n\n"
+            "Pruébalo en vivo en Gradio → http://127.0.0.1:7860 → tab "
+            "**🗣️ Hablar al robot**."
+        )
+    with col_b:
+        st.metric("Selection accuracy", "98.6 %", "+23.6 pp sobre objetivo")
+        st.metric("Gate accuracy", "100 %", "perfecto")
+        st.metric("Latencia total", "~50 ms", "CLIP+gate+DDIM")
+
+    st.markdown("---")
+    st.success(
+        "**Resumen**: 171 tests pasando · 5 modelos Diffusion · 1 paquete PyPI · "
+        "3 hallazgos metodológicos · 4 documentos de cierre. "
+        "Estas exploraciones extienden el TFM con contribuciones cuantitativas, "
+        "no se sobreponen al documento entregado."
+    )
 
 elif section == "💡 Innovación y SOTA":
     st.title("Innovación, valor diferencial y estado del arte (mayo 2026)")
