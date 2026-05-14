@@ -8,7 +8,8 @@
 [![Tests](https://img.shields.io/badge/tests-171%20passing-brightgreen)](tests/)
 [![Bootstrap CI](https://img.shields.io/badge/bootstrap-CI%2095%25-purple)](experiments/results/local_metrics_with_bootstrap.json)
 [![Exploraciones post-TFM](https://img.shields.io/badge/exploraciones-13%2F13%20%E2%9C%85-success)](docs/PLAN_EXPLORACIONES_POST_TFM.md)
-[![PyPI ready](https://img.shields.io/badge/PyPI-bop--bootstrap--ci-blue)](packages/bop_bootstrap_ci/)
+[![PyPI version](https://img.shields.io/pypi/v/bop-bootstrap-ci?label=PyPI%20bop-bootstrap-ci&color=blue)](https://pypi.org/project/bop-bootstrap-ci/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/bop-bootstrap-ci?label=installs)](https://pypistats.org/packages/bop-bootstrap-ci)
 [![VLA-lite](https://img.shields.io/badge/VLA--lite-color%2Bshape%20%2099.9%25-orange)](docs/EXTRAPOLACION_INDUSTRIAL.md)
 
 ## Autores
@@ -38,7 +39,7 @@ Sobre el TFM entregado se planificaron y ejecutaron 13 exploraciones adicionales
 
 | # | Exploración | Resultado clave | Doc |
 |---|---|---|---|
-| 1 | **bop-bootstrap-ci** (paquete PyPI) | 27 tests, 97 % cov, bit-a-bit reproduce el TFM | [01](docs/exploraciones/01_bootstrap_ci_toolkit.md) |
+| 1 | **bop-bootstrap-ci** ([paquete publicado en PyPI](https://pypi.org/project/bop-bootstrap-ci/)) | `pip install bop-bootstrap-ci` · 27 tests, 97 % cov, bit-a-bit reproduce el TFM | [01](docs/exploraciones/01_bootstrap_ci_toolkit.md) |
 | 2 | **Distillation 1-NFE** | **×517 speedup** real con mejor MSE y jerk que teacher | [02](docs/exploraciones/02_distillation_2nfe.md) |
 | 3 | **Pipeline open-license** | FreeZeV2 Apache-2.0 viable a solo **−3 pp AUC** | [03](docs/exploraciones/03_open_license_pipeline.md) |
 | 4 | **VLA-lite con CLIP (color)** | **98.6 %** selection accuracy en escenas multi-objeto | [04](docs/exploraciones/04_vla_lite_clip.md) |

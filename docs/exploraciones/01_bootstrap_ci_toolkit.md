@@ -1,6 +1,6 @@
 # Exploración 1 — Bootstrap-CI BOP toolkit (PyPI)
 
-**Estado**: ✅ **ÉXITO** — listo para merge a `main` y publicación en PyPI.
+**Estado**: ✅ **ÉXITO** — **publicado en PyPI**: https://pypi.org/project/bop-bootstrap-ci/0.1.0/ (mayo 2026).
 
 **Rama**: `explore/01-bootstrap-ci-toolkit`
 
