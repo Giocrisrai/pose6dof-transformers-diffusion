@@ -278,6 +278,35 @@ Lo que está vivo y funcionando ahora mismo:
 
 ---
 
+## 7-bis. Contribuciones adicionales — exploraciones post-TFM (mayo 2026)
+
+Tras entregar el TFM se planificaron y ejecutaron 4 exploraciones con
+criterios numéricos de éxito. **Las 4 se mergearon a `main`** porque
+cumplen los criterios. Documentación completa: [`docs/PLAN_EXPLORACIONES_POST_TFM.md`](PLAN_EXPLORACIONES_POST_TFM.md).
+
+| # | Exploración | Resultado clave | Doc cierre |
+|---|---|---|---|
+| 1 | **bop-bootstrap-ci** (paquete PyPI) | 27 tests, 97 % cov, bit-a-bit reproduce el TFM | [01](exploraciones/01_bootstrap_ci_toolkit.md) |
+| 2 | **Distillation 1-NFE** | ×517 speedup real con mejor MSE y jerk que teacher | [02](exploraciones/02_distillation_2nfe.md) |
+| 3 | **Pipeline open-license** | FreeZeV2 Apache-2.0 viable a solo −3 pp AUC | [03](exploraciones/03_open_license_pipeline.md) |
+| 4 | **VLA-lite con CLIP** | 98.6 % selection accuracy con TextGroundedGate | [04](exploraciones/04_vla_lite_clip.md) |
+
+**Hallazgos metodológicos importantes documentados:**
+
+1. El "MSE 0.0022" reportado en el TFM original era *MSE de noise-prediction
+   loss* durante el training, NO MSE de trayectoria reconstruida (que es
+   ~0.0129 para el teacher). Detectado durante la Exploración 2.
+2. El modelo `ultra` es prácticamente determinista (dispersión 3.8 cm); para
+   multimodalidad real conviene usar `extended`. Documentado.
+3. VLA-lite necesita gating explícito como inductive bias; sin él el modelo
+   "promedia" trayectorias (50 % acc). Con TextGroundedGate + aux loss
+   alcanza 98.6 %.
+
+**Total acumulado**: 171 tests · 5 modelos Diffusion · 1 paquete PyPI ·
+3 hallazgos metodológicos corregidos · 4 documentos de cierre.
+
+---
+
 ## 8. Conclusión profesional
 
 Este TFM **no inventa una pieza nueva** del rompecabezas de manipulación

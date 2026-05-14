@@ -1,0 +1,107 @@
+{
+  "families": {
+    "1_in_distribution": {
+      "accuracy": 1.0,
+      "n": 150,
+      "mean_confidence": 0.9999252510070801,
+      "min_confidence": 0.9999092817306519,
+      "sample_fails": [],
+      "description": "Templates similares a los del training (5 originales)",
+      "templates": [
+        "pick the {color} object",
+        "grab the {color} item",
+        "get the {color} thing",
+        "select the {color} one",
+        "take the {color} cube"
+      ],
+      "eval_time_s": 2.646365165710449
+    },
+    "2_synonyms": {
+      "accuracy": 1.0,
+      "n": 150,
+      "mean_confidence": 0.99990354458491,
+      "min_confidence": 0.9998618364334106,
+      "sample_fails": [],
+      "description": "Sinonimos de verbos no vistos en training",
+      "templates": [
+        "fetch the {color} object",
+        "retrieve the {color} item",
+        "lift the {color} cube",
+        "collect the {color} one",
+        "obtain the {color} thing"
+      ],
+      "eval_time_s": 3.351001262664795
+    },
+    "3_modifiers": {
+      "accuracy": 1.0,
+      "n": 150,
+      "mean_confidence": 0.9998832742373148,
+      "min_confidence": 0.9996824264526367,
+      "sample_fails": [],
+      "description": "Frases con modificadores y articulos extra",
+      "templates": [
+        "please pick the {color} object",
+        "I want the {color} one",
+        "go for the {color} item",
+        "the {color} cube is what I need",
+        "give me the {color} thing"
+      ],
+      "eval_time_s": 2.5830438137054443
+    },
+    "4_longer_sentences": {
+      "accuracy": 1.0,
+      "n": 150,
+      "mean_confidence": 0.9998850166797638,
+      "min_confidence": 0.9997735619544983,
+      "sample_fails": [],
+      "description": "Frases mas largas con contexto",
+      "templates": [
+        "between the two, pick the {color} object",
+        "ignore the others and grab the {color} item",
+        "your target is the {color} one",
+        "go ahead and take the {color} cube please",
+        "the goal here is to fetch the {color} thing"
+      ],
+      "eval_time_s": 3.072072982788086
+    },
+    "5_color_with_object": {
+      "accuracy": 1.0,
+      "n": 150,
+      "mean_confidence": 0.99985360344251,
+      "min_confidence": 0.9996474981307983,
+      "sample_fails": [],
+      "description": "Color seguido de nombre concreto (cup, ball, box)",
+      "templates": [
+        "pick the {color} cup",
+        "grab the {color} ball",
+        "select the {color} box",
+        "take the {color} sphere",
+        "get the {color} item"
+      ],
+      "eval_time_s": 1.829502820968628
+    },
+    "6_implicit": {
+      "accuracy": 1.0,
+      "n": 150,
+      "mean_confidence": 0.9998752665519715,
+      "min_confidence": 0.9995777010917664,
+      "sample_fails": [],
+      "description": "Casos limite: el color es implicito por contraste",
+      "templates": [
+        "not the other one, the {color}",
+        "pick anything {color}",
+        "the {color}, please",
+        "{color}",
+        "go {color}"
+      ],
+      "eval_time_s": 3.571873188018799
+    }
+  },
+  "summary": {
+    "mean_accuracy": 1.0,
+    "min_accuracy": 1.0,
+    "max_accuracy": 1.0,
+    "robust_above_75pct": 6,
+    "total_families": 6
+  }
+}

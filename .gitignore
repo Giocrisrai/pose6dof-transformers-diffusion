@@ -81,3 +81,4 @@ packages/*/dist/
 packages/*/build/
 packages/*/*.egg-info/
 packages/*/.coverage
+.coverage
