@@ -154,8 +154,17 @@ def draw_object(ax, center, color, shape):
 
 def render_scene(scene, traj, gate_probs, text, save_path):
     """Genera figura con la escena 3D + decision del modelo."""
-    fig = plt.figure(figsize=(13, 6.5))
-    gs = fig.add_gridspec(1, 3, width_ratios=[2.2, 1, 1])
+    # Estilo global mas legible
+    plt.rcParams.update({
+        "font.size": 13,
+        "axes.titlesize": 14,
+        "axes.labelsize": 12,
+        "xtick.labelsize": 11,
+        "ytick.labelsize": 11,
+        "legend.fontsize": 11,
+    })
+    fig = plt.figure(figsize=(18, 8))
+    gs = fig.add_gridspec(1, 3, width_ratios=[2.4, 1.1, 1.4], wspace=0.25)
 
     # PANEL A: Escena 3D
     ax = fig.add_subplot(gs[0, 0], projection="3d")
@@ -186,23 +195,25 @@ def render_scene(scene, traj, gate_probs, text, save_path):
                   edgecolor="white", linewidth=1.5, label="Punto de agarre", zorder=12)
 
     ax.set_xlabel("X (m)"); ax.set_ylabel("Y (m)"); ax.set_zlabel("Z (m)")
-    ax.set_xlim(-0.5, 0.5); ax.set_ylim(-0.5, 0.5); ax.set_zlim(0.65, 1.1)
-    ax.set_title(f'Instruccion: "{text}"', fontsize=11, pad=10)
-    ax.legend(loc="upper left", fontsize=8)
-    ax.grid(True, alpha=0.2)
+    ax.set_xlim(-0.5, 0.5); ax.set_ylim(-0.5, 0.5); ax.set_zlim(0.65, 1.15)
+    ax.set_title(f'Instruccion: "{text}"', fontsize=15, pad=15, fontweight="bold")
+    ax.legend(loc="upper left", fontsize=11, framealpha=0.92)
+    ax.grid(True, alpha=0.25)
 
     # PANEL B: Gate probabilities
     ax2 = fig.add_subplot(gs[0, 1])
     labels = [f"A\n{scene['c_a']}\n{scene['s_a']}",
                 f"B\n{scene['c_b']}\n{scene['s_b']}"]
     colors_bar = [COLORS_RGB_HEX[scene["c_a"]], COLORS_RGB_HEX[scene["c_b"]]]
-    bars = ax2.bar(labels, gate_probs, color=colors_bar, edgecolor="black", linewidth=1.5)
-    ax2.set_ylim(0, 1.05)
-    ax2.set_ylabel("Confianza del gate")
-    ax2.set_title("Decision del modelo VLA-lite", fontsize=10)
+    ax2.bar(labels, gate_probs, color=colors_bar, edgecolor="black", linewidth=1.8)
+    ax2.set_ylim(0, 1.15)
+    ax2.set_ylabel("Confianza del gate", fontsize=13)
+    ax2.set_title("Decision del modelo", fontsize=14, fontweight="bold", pad=10)
     ax2.axhline(0.5, color="gray", linestyle="--", alpha=0.5)
+    ax2.tick_params(axis="x", labelsize=11)
+    ax2.tick_params(axis="y", labelsize=11)
     for i, v in enumerate(gate_probs):
-        ax2.text(i, v + 0.03, f"{v:.1%}", ha="center", fontweight="bold", fontsize=10)
+        ax2.text(i, v + 0.04, f"{v:.0%}", ha="center", fontweight="bold", fontsize=13)
     ax2.grid(True, alpha=0.3, axis="y")
 
     # PANEL C: Explicacion
@@ -212,35 +223,42 @@ def render_scene(scene, traj, gate_probs, text, save_path):
     chosen_color = scene["c_a"] if chosen == "A" else scene["c_b"]
     chosen_shape = scene["s_a"] if chosen == "A" else scene["s_b"]
     target_match = chosen == ("A" if scene["target_idx"] == 0 else "B")
-    correct = "✓" if target_match else "✗"
+    correct = "ACIERTA" if target_match else "ERROR"
 
-    text_box = f"""
-Atributos:
-
-   A = {scene['c_a']:<6s} {scene['s_a']}
-   B = {scene['c_b']:<6s} {scene['s_b']}
-
-Frase decodificada:
-"{text}"
-
-El modelo eligio:
-   Objeto {chosen}
-   ({chosen_color}, {chosen_shape})
-   confianza: {max(gate_probs):.2%}
-
-Target esperado:
-   Objeto {'A' if scene['target_idx'] == 0 else 'B'}
-
-Resultado: {correct}
-"""
-    ax3.text(0.05, 0.95, text_box, transform=ax3.transAxes, fontsize=10,
+    text_box = (
+        f"ATRIBUTOS DE LA ESCENA\n"
+        f"\n"
+        f"  Objeto A : {scene['c_a']} {scene['s_a']}\n"
+        f"  Objeto B : {scene['c_b']} {scene['s_b']}\n"
+        f"\n"
+        f"INSTRUCCION RECIBIDA\n"
+        f"\n"
+        f'  "{text}"\n'
+        f"\n"
+        f"DECISION DEL MODELO\n"
+        f"\n"
+        f"  Eligio   : Objeto {chosen}\n"
+        f"             ({chosen_color} {chosen_shape})\n"
+        f"  Confianza: {max(gate_probs):.1%}\n"
+        f"\n"
+        f"TARGET ESPERADO\n"
+        f"\n"
+        f"  Objeto {'A' if scene['target_idx'] == 0 else 'B'}\n"
+        f"\n"
+        f"RESULTADO\n"
+        f"\n"
+        f"  {correct}"
+    )
+    ax3.text(0.0, 0.97, text_box, transform=ax3.transAxes, fontsize=12,
               verticalalignment="top", family="monospace",
-              bbox=dict(boxstyle="round,pad=0.5",
-                          facecolor="#f0f9ff" if target_match else "#fee2e2",
-                          edgecolor="#0098CD" if target_match else "#dc2626"))
+              linespacing=1.4,
+              bbox=dict(boxstyle="round,pad=0.8",
+                          facecolor="#f0fdf4" if target_match else "#fee2e2",
+                          edgecolor="#16a34a" if target_match else "#dc2626",
+                          linewidth=2))
 
     plt.tight_layout()
-    plt.savefig(save_path, dpi=130, bbox_inches="tight", facecolor="white")
+    plt.savefig(save_path, dpi=110, bbox_inches="tight", facecolor="white")
     plt.close()
 
 
@@ -394,21 +412,25 @@ def main():
         "accuracy": correct_count / len(DEMO_SCENES),
     }
 
-    # Grid overview con miniaturas
+    # Grid overview con miniaturas (2 columnas para que cada escena se vea legible)
     print("\n  Generando grid overview...")
-    fig, axes = plt.subplots(3, 4, figsize=(20, 13))
-    for i, (ax, scene) in enumerate(zip(axes.flat, DEMO_SCENES)):
+    n_cols = 2
+    n_rows = (len(DEMO_SCENES) + n_cols - 1) // n_cols
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(28, 7 * n_rows))
+    axes_flat = axes.flat if n_rows > 1 else [axes] if n_cols == 1 else axes
+    for i, (ax, scene) in enumerate(zip(axes_flat, DEMO_SCENES)):
         from matplotlib.image import imread
         img = imread(OUTPUT / f"scene_{i+1:02d}.png")
         ax.imshow(img)
-        ax.set_title(f'#{i+1}: "{scene["text"]}"', fontsize=9)
+        ax.set_title(f'Escena {i+1}: "{scene["text"]}"',
+                       fontsize=14, fontweight="bold", pad=8)
         ax.axis("off")
     plt.suptitle(f"VLA-lite multi-atributo — {len(DEMO_SCENES)} escenas demostrativas "
                   f"({correct_count}/{len(DEMO_SCENES)} aciertos)",
-                  fontsize=14, fontweight="bold", y=1.0)
-    plt.tight_layout()
+                  fontsize=18, fontweight="bold", y=0.998)
+    plt.tight_layout(rect=(0, 0, 1, 0.985))
     overview_path = OUTPUT / "grid_overview.png"
-    plt.savefig(overview_path, dpi=100, bbox_inches="tight", facecolor="white")
+    plt.savefig(overview_path, dpi=80, bbox_inches="tight", facecolor="white")
     plt.close()
     print(f"  -> {overview_path}")
 

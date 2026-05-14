@@ -17,13 +17,13 @@
           "sub_text": "the red cube",
           "chosen_idx": 0,
           "confidence": 1.0,
-          "distance_cm": 1.9353636910802725
+          "distance_cm": 1.892335008092556
         },
         {
           "sub_text": "the blue sphere",
           "chosen_idx": 1,
           "confidence": 1.0,
-          "distance_cm": 5.054736777505751
+          "distance_cm": 3.4860365282314856
         }
       ]
     },
@@ -44,13 +44,13 @@
           "sub_text": "pick the green cylinder",
           "chosen_idx": 1,
           "confidence": 1.0,
-          "distance_cm": 4.533624955033525
+          "distance_cm": 2.9639401355020807
         },
         {
           "sub_text": "the red box",
           "chosen_idx": 2,
           "confidence": 1.0,
-          "distance_cm": 2.1607093259671304
+          "distance_cm": 1.9909638519295847
         }
       ]
     },
@@ -71,13 +71,13 @@
           "sub_text": "grab the blue cube",
           "chosen_idx": 0,
           "confidence": 1.0,
-          "distance_cm": 5.369449244758512
+          "distance_cm": 2.11993144819793
         },
         {
           "sub_text": "the green sphere",
           "chosen_idx": 2,
           "confidence": 1.0,
-          "distance_cm": 11.205917869687667
+          "distance_cm": 2.6987498275673456
         }
       ]
     },
@@ -100,19 +100,19 @@
           "sub_text": "the green box",
           "chosen_idx": 0,
           "confidence": 1.0,
-          "distance_cm": 4.13235199750331
+          "distance_cm": 3.0791420181182385
         },
         {
           "sub_text": "the red sphere",
           "chosen_idx": 2,
           "confidence": 1.0,
-          "distance_cm": 2.7675818756460786
+          "distance_cm": 5.230780838459436
         },
         {
           "sub_text": "the blue cylinder",
           "chosen_idx": 1,
           "confidence": 1.0,
-          "distance_cm": 5.283740429346318
+          "distance_cm": 2.269397070758148
         }
       ]
     },
@@ -135,19 +135,19 @@
           "sub_text": "red cube",
           "chosen_idx": 1,
           "confidence": 1.0,
-          "distance_cm": 2.7231944439518894
+          "distance_cm": 1.942884626756619
         },
         {
           "sub_text": "blue box",
           "chosen_idx": 0,
           "confidence": 0.9999440908432007,
-          "distance_cm": 5.907595057566952
+          "distance_cm": 3.478518180476765
         },
         {
           "sub_text": "green sphere",
           "chosen_idx": 2,
           "confidence": 1.0,
-          "distance_cm": 2.442747564715083
+          "distance_cm": 3.713663460776867
         }
       ]
     },
@@ -168,13 +168,13 @@
           "sub_text": "take the red sphere",
           "chosen_idx": 0,
           "confidence": 1.0,
-          "distance_cm": 4.265387252758943
+          "distance_cm": 1.3861306707661
         },
         {
           "sub_text": "the blue cube",
           "chosen_idx": 1,
           "confidence": 1.0,
-          "distance_cm": 3.528259030875551
+          "distance_cm": 2.520435238923122
         }
       ]
     },
@@ -199,25 +199,25 @@
           "sub_text": "the blue sphere",
           "chosen_idx": 0,
           "confidence": 0.9999772310256958,
-          "distance_cm": 1.9133483072608377
+          "distance_cm": 3.619121185146584
         },
         {
           "sub_text": "the red cylinder",
           "chosen_idx": 1,
           "confidence": 0.9999245405197144,
-          "distance_cm": 6.814209115417938
+          "distance_cm": 4.433770406252736
         },
         {
           "sub_text": "the green box",
           "chosen_idx": 2,
           "confidence": 1.0,
-          "distance_cm": 7.16684097546373
+          "distance_cm": 1.5192770854724094
         },
         {
           "sub_text": "the red sphere",
           "chosen_idx": 3,
           "confidence": 1.0,
-          "distance_cm": 7.806678201992241
+          "distance_cm": 4.281770115187157
         }
       ]
     },
@@ -238,13 +238,13 @@
           "sub_text": "pick the small green cube",
           "chosen_idx": 0,
           "confidence": 1.0,
-          "distance_cm": 3.732439817011552
+          "distance_cm": 7.334790392662131
         },
         {
           "sub_text": "the large red sphere",
           "chosen_idx": 1,
           "confidence": 1.0,
-          "distance_cm": 7.67286296294177
+          "distance_cm": 1.6621861688539217
         }
       ]
     }
