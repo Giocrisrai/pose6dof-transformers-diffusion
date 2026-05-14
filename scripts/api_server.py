@@ -114,18 +114,32 @@ MODELS_INFO = {
         "hidden_dim": 128,
         "mse_val": 0.020,
         "description": "Modelo original: 30 epochs, 2K trayectorias",
+        "nfe": 25,
+        "is_distilled": False,
     },
     "extended": {
         "path": REPO / "data/models/diffusion_policy_extended_mps.pth",
         "hidden_dim": 192,
         "mse_val": 0.01288,
         "description": "Modelo extendido: 50 epochs, 5K trayectorias",
+        "nfe": 25,
+        "is_distilled": False,
     },
     "ultra": {
         "path": REPO / "data/models/diffusion_policy_ultra.pth",
         "hidden_dim": 256,
         "mse_val": 0.00221,
-        "description": "Modelo ultra: 100 epochs, 10K trayectorias",
+        "description": "Modelo ultra: 100 epochs, 10K trayectorias (DDIM-25)",
+        "nfe": 25,
+        "is_distilled": False,
+    },
+    "ultra_fast": {
+        "path": REPO / "data/models/diffusion_policy_ultra_fast.pth",
+        "hidden_dim": 256,
+        "mse_val": 0.01235,  # MSE student vs GT heuristic (exp14)
+        "description": "Modelo ultra distillado a 1 NFE (exp14): igual calidad, ~500x mas rapido",
+        "nfe": 1,
+        "is_distilled": True,
     },
 }
 
@@ -254,8 +268,17 @@ def plan_grasp(req: GraspRequest):
 
     t0 = time.time()
     trajectories = []
+    is_distilled = cached["info"].get("is_distilled", False)
     for _ in range(req.n_samples):
-        traj = ddim_sample(model, scheduler, cond, device, req.n_diffusion_steps)
+        if is_distilled:
+            # Modelos distillados: 1 forward pass directo (no iteration DDIM)
+            with torch.no_grad():
+                x_noise = torch.randn(1, 16, 7, device=device)
+                t_dummy = torch.zeros(1, dtype=torch.long, device=device)
+                pred = model(x_noise, t_dummy, cond)
+                traj = pred.cpu().numpy()[0]
+        else:
+            traj = ddim_sample(model, scheduler, cond, device, req.n_diffusion_steps)
         trajectories.append(traj.tolist())
     latency_ms = (time.time() - t0) * 1000
 
