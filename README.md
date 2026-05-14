@@ -5,8 +5,10 @@
 [![Tests](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/actions/workflows/tests.yml/badge.svg)](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/actions/workflows/tests.yml)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
 [![License](https://img.shields.io/badge/license-Academic-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-110%20passing-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/tests-171%20passing-brightgreen)](tests/)
 [![Bootstrap CI](https://img.shields.io/badge/bootstrap-CI%2095%25-purple)](experiments/results/local_metrics_with_bootstrap.json)
+[![Exploraciones post-TFM](https://img.shields.io/badge/exploraciones-5%2F5%20%E2%9C%85-success)](docs/PLAN_EXPLORACIONES_POST_TFM.md)
+[![PyPI ready](https://img.shields.io/badge/PyPI-bop--bootstrap--ci-blue)](packages/bop_bootstrap_ci/)
 
 ## Autores
 
@@ -26,6 +28,22 @@
 **Robustez verificada**: T-LESS aguanta 70 % oclusión con solo −1 pp AUC ADD-S. **PBVS** converge 100 % en 50 muestras. **Cuello de botella identificado**: FoundationPose 80 % del ciclo.
 
 **Material disponible** en [`docs/entrega2/`](docs/entrega2/): TFM en docx + PDF (62 págs) + markdown + slide deck PPTX (20 slides) + FAQ defensa.
+
+---
+
+## Exploraciones post-TFM (mayo 2026) — 5/5 éxitos ✅
+
+Sobre el TFM entregado se planificaron y ejecutaron 5 exploraciones adicionales con criterios numéricos de éxito. **Todas mergeadas en `main`**.
+
+| # | Exploración | Resultado clave | Doc |
+|---|---|---|---|
+| 1 | **bop-bootstrap-ci** (paquete PyPI) | 27 tests, 97 % cov, bit-a-bit reproduce el TFM | [01](docs/exploraciones/01_bootstrap_ci_toolkit.md) |
+| 2 | **Distillation 1-NFE** | **×517 speedup** real con mejor MSE y jerk que teacher | [02](docs/exploraciones/02_distillation_2nfe.md) |
+| 3 | **Pipeline open-license** | FreeZeV2 Apache-2.0 viable a solo **−3 pp AUC** | [03](docs/exploraciones/03_open_license_pipeline.md) |
+| 4 | **VLA-lite con CLIP** | **98.6 %** selection accuracy en escenas multi-objeto | [04](docs/exploraciones/04_vla_lite_clip.md) |
+| 5 | **Robustez lingüística** | **100 %** sobre 6 familias de frases no vistas (n=900) | [05](docs/exploraciones/05_vla_robustness.md) |
+
+Plan completo: [`docs/PLAN_EXPLORACIONES_POST_TFM.md`](docs/PLAN_EXPLORACIONES_POST_TFM.md). Estado del arte verificado mayo 2026 y posicionamiento: [`docs/INNOVACION_Y_ESTADO_DEL_ARTE.md`](docs/INNOVACION_Y_ESTADO_DEL_ARTE.md).
 
 ---
 
@@ -106,7 +124,9 @@ pose6dof-transformers-diffusion/
 │   │   ├── 00_colab_setup.ipynb
 │   │   └── 01_foundationpose_eval.ipynb
 │   └── 04_math_foundations.ipynb  # Demos matematicas
-├── tests/                   # pytest (77/77 passing)
+├── tests/                   # pytest (171/171 passing — TFM + exploraciones)
+├── packages/                # Paquetes PyPI (bop-bootstrap-ci 0.1.0)
+├── docs/exploraciones/      # 5 documentos de cierre de exploraciones
 ├── docker/                  # ROS 2 Humble + MoveIt 2
 │   ├── Dockerfile
 │   └── docker-compose.yml
@@ -130,7 +150,7 @@ uv sync
 pip install -e ".[dev,colab]"
 
 # Tests
-pytest tests/ -v  # 77/77 passing (sin GPU; los módulos que requieren cv2 lo importan perezosamente)
+pytest tests/ packages/bop_bootstrap_ci/tests/ -v  # 171/171 passing (sin GPU)
 
 # Descargar datasets BOP (requiere ~30 GB)
 bash scripts/download_datasets.sh

@@ -14,12 +14,13 @@
 
 ## Orden de ataque (de menos riesgo a más riesgo)
 
-| # | Exploración | Riesgo | Esfuerzo | Valor si funciona |
+| # | Exploración | Riesgo planeado | Esfuerzo real | Valor obtenido |
 |---|---|:---:|:---:|---|
-| **1** | Bootstrap-CI BOP toolkit (PyPI) | 🟢 Bajo | 3-4 días | Contribución a comunidad BOP, citable |
-| **2** | Distillation Diffusion 2-NFE | 🟡 Medio | 4-6 días | Latencia ×18, paper workshop CoRL/RSS |
-| **3** | Pipeline 100 % open-license (sin NC) | 🟠 Medio-alto | 6-10 días | Spin-off comercial viable |
-| **4** | VLA-lite con CLIP text-conditioning | 🔴 Alto | 7-10 días | Acerca el TFM al paradigma VLA |
+| **1** | Bootstrap-CI BOP toolkit (PyPI) | 🟢 Bajo | 1 día | 27 tests, 97 % cov, paquete listo para PyPI |
+| **2** | Distillation Diffusion 1-NFE | 🟡 Medio | 1 día | ×517 speedup real, MSE/jerk mejores que teacher |
+| **3** | Pipeline 100 % open-license | 🟠 Medio-alto | 1 día | FreeZeV2 (Apache 2) viable a solo −3 pp AUC |
+| **4** | VLA-lite con CLIP text-conditioning | 🔴 Alto | 1 día | 98.6 % selection accuracy |
+| **5** | Robustez lingüística (extensión #4) | 🟢 Bajo | 0.5 día | 100 % accuracy sobre 6 familias no vistas |
 
 ---
 
@@ -208,6 +209,11 @@ sobre escenas multi-objeto). Bootstrap CI sobre ello.
 | 2 | Distillation 1-NFE | ✅ **Éxito → mergeada** ([detalle](exploraciones/02_distillation_2nfe.md)) | 1 |
 | 3 | Open-license pipeline | ✅ **Éxito → mergeada** ([detalle](exploraciones/03_open_license_pipeline.md)) | 1 |
 | 4 | VLA-lite CLIP | ✅ **Éxito → mergeada** ([detalle](exploraciones/04_vla_lite_clip.md)) | 1 |
+| 5 | Robustez lingüística VLA-lite (extensión #4) | ✅ **Éxito → mergeada** ([detalle](exploraciones/05_vla_robustness.md)) | 0.5 |
+
+**Resumen final**: 5/5 exploraciones cumplen criterios. 4.5 días totales invertidos.
+171 tests pasando · 5 modelos Diffusion · 1 paquete PyPI · 3 hallazgos metodológicos
+corregidos honestamente · 5 documentos de cierre.
 
 ---
 

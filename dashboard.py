@@ -120,7 +120,7 @@ if section == "📊 Resumen":
 elif section == "🔬 Exploraciones post-TFM":
     st.title("4 contribuciones novedosas sobre el TFM entregado")
     st.markdown(
-        "Tras entregar el TFM se planificaron y ejecutaron 4 exploraciones con "
+        "Tras entregar el TFM se planificaron y ejecutaron 5 exploraciones con "
         "criterios numéricos de éxito. **Las 4 se mergearon a `main`** porque "
         "cumplen los criterios. Documentación completa: "
         "[`docs/PLAN_EXPLORACIONES_POST_TFM.md`](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/blob/main/docs/PLAN_EXPLORACIONES_POST_TFM.md)."
@@ -130,7 +130,7 @@ elif section == "🔬 Exploraciones post-TFM":
     col1.metric("Tests totales", "171", "+48 vs TFM")
     col2.metric("Modelos Diffusion", "5", "+2 nuevos")
     col3.metric("Paquetes PyPI", "1", "bop-bootstrap-ci")
-    col4.metric("Exploraciones éxitos", "4/4", "100 %")
+    col4.metric("Exploraciones éxitos", "5/5", "100 %")
 
     st.markdown("---")
 
@@ -202,10 +202,27 @@ elif section == "🔬 Exploraciones post-TFM":
         st.metric("Gate accuracy", "100 %", "perfecto")
         st.metric("Latencia total", "~50 ms", "CLIP+gate+DDIM")
 
+    # Exploración 5
+    st.subheader("5️⃣  Robustez lingüística del VLA-lite  ✅")
+    st.markdown(
+        "Extensión cuantitativa del exp 4: evaluación del modelo CLIP+gate "
+        "sobre **900 frases en 6 familias lingüísticas no vistas en training** "
+        "(sinónimos, modificadores, frases largas, casos extremos como solo `{color}`)."
+    )
+    col_r1, col_r2, col_r3 = st.columns(3)
+    col_r1.metric("Familias evaluadas", "6/6 ≥ 75 % acc", "100 % éxito")
+    col_r2.metric("Accuracy media", "100.0 %", "900/900 frases")
+    col_r3.metric("Min confidence", "99.96 %", "todas las familias")
+    st.info(
+        "**Implicación**: CLIP aporta comprensión real del lenguaje, no plantilla "
+        "memorizada. El modelo generaliza incluso a frases tipo *'between the two, "
+        "pick the red object'* o *'go red'* sin re-entrenar."
+    )
+
     st.markdown("---")
     st.success(
         "**Resumen**: 171 tests pasando · 5 modelos Diffusion · 1 paquete PyPI · "
-        "3 hallazgos metodológicos · 4 documentos de cierre. "
+        "4 hallazgos metodológicos · 5 documentos de cierre. "
         "Estas exploraciones extienden el TFM con contribuciones cuantitativas, "
         "no se sobreponen al documento entregado."
     )
@@ -492,7 +509,7 @@ elif section == "📚 Recursos":
     ```
 
     ### Reproducibilidad
-    - 110 tests pasando (`pytest tests/`)
+    - 171 tests pasando (`pytest tests/ packages/bop_bootstrap_ci/tests/`)
     - 12 experimentos commiteados con resultados
     - RUN_CARD trazable hasta commit
     - Bootstrap CI 95% B=1000, semilla 42

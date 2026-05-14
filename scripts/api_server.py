@@ -231,7 +231,7 @@ def health():
 
 @app.get("/models", response_model=list[ModelInfo], tags=["info"])
 def list_models():
-    """Lista los 3 modelos Diffusion Policy disponibles."""
+    """Lista los modelos Diffusion Policy disponibles (incluido ultra_fast distillado)."""
     out = []
     for name, info in MODELS_INFO.items():
         path = info["path"]

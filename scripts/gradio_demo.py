@@ -598,10 +598,10 @@ Esta es la exploracion #4 del TFM: VLA-lite con coste 1000x menor que RDT-1B / p
 
     with gr.Tab("🔬  Exploraciones post-TFM"):
         gr.Markdown("""
-        ## 4 contribuciones novedosas sobre el TFM entregado
+        ## 5 contribuciones novedosas sobre el TFM entregado
 
-        Tras entregar el TFM se planificaron y ejecutaron 4 exploraciones con criterios
-        numericos de exito. **Las 4 se mergearon a `main`** porque cumplen los criterios.
+        Tras entregar el TFM se planificaron y ejecutaron 5 exploraciones con criterios
+        numericos de exito. **Las 5 se mergearon a `main`** porque cumplen los criterios.
         Documentacion completa: [`docs/PLAN_EXPLORACIONES_POST_TFM.md`](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/blob/main/docs/PLAN_EXPLORACIONES_POST_TFM.md).
 
         ### #1  Bootstrap-CI BOP toolkit (PyPI)  ✅
@@ -655,6 +655,13 @@ Esta es la exploracion #4 del TFM: VLA-lite con coste 1000x menor que RDT-1B / p
         multi-objeto sinteticas, con **TextGroundedGate** que asigna probabilidades
         a cada objeto candidato. Coste: **1000x menor que RDT-1B / pi0**.
 
+        ### #5  Robustez linguistica  ✅
+
+        Extension del exp 4: evaluacion sobre **900 frases en 6 familias linguisticas
+        no vistas en training**. Resultado: **100 % accuracy** en TODAS las familias
+        con min confidence 99.96 %. Confirma que CLIP aporta comprension real del
+        lenguaje (no plantilla memorizada).
+
         ---
 
         ## Total acumulado
@@ -662,8 +669,8 @@ Esta es la exploracion #4 del TFM: VLA-lite con coste 1000x menor que RDT-1B / p
         - **171 tests** pasando (123 TFM + 48 exploraciones)
         - **5 modelos Diffusion** entrenados (original, extended, ultra, ultra_fast, clip)
         - **1 paquete PyPI** listo para publicar
-        - **3 hallazgos metodologicos** corregidos honestamente
-        - **4 documentos de cierre** en `docs/exploraciones/` con criterios y limitaciones
+        - **4 hallazgos metodologicos** corregidos honestamente
+        - **5 documentos de cierre** en `docs/exploraciones/` con criterios y limitaciones
 
         Estas exploraciones extienden el TFM con contribuciones cuantitativas, no se
         sobreponen al documento entregado.
@@ -792,7 +799,7 @@ Esta es la exploracion #4 del TFM: VLA-lite con coste 1000x menor que RDT-1B / p
 
         [github.com/Giocrisrai/pose6dof-transformers-diffusion](https://github.com/Giocrisrai/pose6dof-transformers-diffusion)
 
-        - 123 tests pasando
+        - 171 tests pasando (123 TFM + 48 de exploraciones)
         - 13 experimentos commiteados con resultados reproducibles
         - Docker, API REST FastAPI, este demo Gradio y dashboard Streamlit incluidos
         """)

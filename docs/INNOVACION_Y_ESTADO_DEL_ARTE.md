@@ -228,7 +228,8 @@ Para quien quiera **reproducir** y obtener métricas equivalentes:
 
 - Pocos TFMs incluyen evaluación BOP-19 con CIs bootstrap.
 - Pocos TFMs entregan código MIT + Docker + API REST + Gradio + Streamlit
-  + 123 tests + 13 experimentos commiteados + tutorial Jupyter.
+  + 171 tests + 17 experimentos commiteados + tutorial Jupyter + paquete
+  PyPI propio.
 - Pocos TFMs van más allá del paper a producto desplegable.
 
 ---
@@ -273,15 +274,17 @@ Lo que está vivo y funcionando ahora mismo:
 **Resultados verificados en vivo (mayo 2026)**:
 - API REST `POST /e2e` con n=5 instancias YCB-V: p95 = 5 076 ms (margen 4 924 ms)
 - API REST `POST /e2e` con n=5 instancias T-LESS: p95 = 6 117 ms (margen 3 883 ms)
-- 123 tests pasando (incluye 13 tests específicos para la API REST)
-- 3 modelos Diffusion en disco (4 + 2.93 + 5.15 MB) listos para inferencia
+- 171 tests pasando (123 del TFM + 48 de exploraciones)
+- 5 modelos Diffusion en disco (original 4 MB · extended 2.93 MB · ultra
+  5.15 MB · ultra_fast 5.16 MB distillado · clip 5.6 MB con VLA-lite) listos
+  para inferencia
 
 ---
 
 ## 7-bis. Contribuciones adicionales — exploraciones post-TFM (mayo 2026)
 
-Tras entregar el TFM se planificaron y ejecutaron 4 exploraciones con
-criterios numéricos de éxito. **Las 4 se mergearon a `main`** porque
+Tras entregar el TFM se planificaron y ejecutaron 5 exploraciones con
+criterios numéricos de éxito. **Las 5 se mergearon a `main`** porque
 cumplen los criterios. Documentación completa: [`docs/PLAN_EXPLORACIONES_POST_TFM.md`](PLAN_EXPLORACIONES_POST_TFM.md).
 
 | # | Exploración | Resultado clave | Doc cierre |
@@ -290,6 +293,7 @@ cumplen los criterios. Documentación completa: [`docs/PLAN_EXPLORACIONES_POST_T
 | 2 | **Distillation 1-NFE** | ×517 speedup real con mejor MSE y jerk que teacher | [02](exploraciones/02_distillation_2nfe.md) |
 | 3 | **Pipeline open-license** | FreeZeV2 Apache-2.0 viable a solo −3 pp AUC | [03](exploraciones/03_open_license_pipeline.md) |
 | 4 | **VLA-lite con CLIP** | 98.6 % selection accuracy con TextGroundedGate | [04](exploraciones/04_vla_lite_clip.md) |
+| 5 | **Robustez lingüística** (extensión #4) | 100 % sobre 6 familias de frases no vistas (n=900) | [05](exploraciones/05_vla_robustness.md) |
 
 **Hallazgos metodológicos importantes documentados:**
 
@@ -301,9 +305,12 @@ cumplen los criterios. Documentación completa: [`docs/PLAN_EXPLORACIONES_POST_T
 3. VLA-lite necesita gating explícito como inductive bias; sin él el modelo
    "promedia" trayectorias (50 % acc). Con TextGroundedGate + aux loss
    alcanza 98.6 %.
+4. VLA-lite generaliza al 100 % sobre 6 familias lingüísticas no vistas
+   en training: CLIP aporta comprensión real del lenguaje, no plantilla
+   memorizada. Validado con 900 frases (exp 17).
 
 **Total acumulado**: 171 tests · 5 modelos Diffusion · 1 paquete PyPI ·
-3 hallazgos metodológicos corregidos · 4 documentos de cierre.
+4 hallazgos metodológicos · 5 documentos de cierre.
 
 ---
 

@@ -3,7 +3,7 @@
 Imagen ligera (~1.5 GB) que empaqueta el pipeline de inferencia con dos servicios:
 
 - **FastAPI** en `:8000` con endpoints `/plan-grasp`, `/e2e`, `/models`, `/metrics`, `/docs`.
-- **Gradio** en `:7860` con UI interactiva para probar los tres modelos Diffusion.
+- **Gradio** en `:7860` con UI interactiva para probar los **5 modelos Diffusion** (original/extended/ultra/ultra_fast distillado/clip VLA-lite).
 
 A diferencia de `inference-gpu.Dockerfile` (CUDA + FoundationPose + nvdiffrast, ~6 GB),
 este contenedor sólo necesita CPU/MPS y los pesos ya entrenados. Apto para deployment
