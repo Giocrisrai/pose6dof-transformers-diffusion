@@ -1,0 +1,98 @@
+{
+  "config": {
+    "n_train": 4000,
+    "n_val": 800,
+    "epochs": 40,
+    "batch_size": 64,
+    "device": "mps",
+    "seed": 42
+  },
+  "clip_model": "openai/clip-vit-base-patch32",
+  "training": {
+    "best_val_loss": 0.004489995893090963,
+    "train_losses_last10": [
+      0.005923274707049131,
+      0.005567259781062603,
+      0.005732935287058353,
+      0.0053780081160366535,
+      0.005393742840737104,
+      0.004953252945095301,
+      0.0048090296685695645,
+      0.0049033031202852725,
+      0.0047586367167532445,
+      0.004687903955578804
+    ],
+    "val_losses_last10": [
+      0.005459211654961109,
+      0.006143567562103272,
+      0.005096790120005607,
+      0.005654886420816183,
+      0.005084400847554207,
+      0.004937558881938458,
+      0.004920496046543122,
+      0.004668465238064527,
+      0.0046193085610866545,
+      0.004489995893090963
+    ]
+  },
+  "evaluation": {
+    "selection_accuracy": 0.98625,
+    "gate_accuracy": 1.0,
+    "mse_vs_gt": 0.0018563737394288182,
+    "latency_ms_per_traj_ddim25": 1.9613176584243774,
+    "mean_distance_to_target_m": 0.1095495137409943,
+    "mean_distance_to_distractor_m": 0.46348708039084224,
+    "n_evaluated": 800
+  },
+  "criteria": {
+    "selection_accuracy_min": 0.75,
+    "latency_overhead_max_ms": 50.0
+  },
+  "pass": {
+    "selection_above_target": true,
+    "latency_reasonable": true
+  },
+  "all_criteria_pass": true,
+  "sample_scenes": [
+    {
+      "text": "grab the green item",
+      "target_color": "green",
+      "distractor_color": "blue"
+    },
+    {
+      "text": "grab the blue item",
+      "target_color": "blue",
+      "distractor_color": "red"
+    },
+    {
+      "text": "pick the blue object",
+      "target_color": "blue",
+      "distractor_color": "green"
+    },
+    {
+      "text": "get the red thing",
+      "target_color": "red",
+      "distractor_color": "blue"
+    },
+    {
+      "text": "grab the red item",
+      "target_color": "red",
+      "distractor_color": "blue"
+    },
+    {
+      "text": "get the blue thing",
+      "target_color": "blue",
+      "distractor_color": "red"
+    },
+    {
+      "text": "take the green cube",
+      "target_color": "green",
+      "distractor_color": "blue"
+    },
+    {
+      "text": "take the blue cube",
+      "target_color": "blue",
+      "distractor_color": "green"
+    }
+  ]
+}
