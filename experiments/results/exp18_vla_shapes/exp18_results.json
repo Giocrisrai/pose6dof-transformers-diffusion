@@ -1,0 +1,126 @@
+{
+  "config": {
+    "n_train": 6000,
+    "n_val": 1200,
+    "epochs": 50,
+    "batch_size": 64,
+    "device": "mps",
+    "seed": 42,
+    "colors": [
+      "red",
+      "blue",
+      "green"
+    ],
+    "shapes": [
+      "cube",
+      "sphere",
+      "cylinder",
+      "box"
+    ]
+  },
+  "training": {
+    "best_val_loss": 0.0025818009302020074,
+    "train_losses_last5": [
+      0.002761448860789339,
+      0.0027523473439117273,
+      0.002734302746132016,
+      0.002657145877058307,
+      0.0026487909524391096
+    ],
+    "val_losses_last5": [
+      0.0028922455819944543,
+      0.0025818009302020074,
+      0.002787413960322738,
+      0.002947071548551321,
+      0.0026587075864275295
+    ]
+  },
+  "evaluation": {
+    "selection_accuracy_global": 0.9991666666666666,
+    "accuracy_by_mode": {
+      "color": 1.0,
+      "shape": 0.9976076555023924,
+      "both": 1.0
+    },
+    "n_by_mode": {
+      "color": 389,
+      "shape": 418,
+      "both": 393
+    },
+    "latency_ms_per_traj_ddim25": 1.7346084117889404,
+    "n_evaluated": 1200
+  },
+  "criteria": {
+    "acc_min_global": 0.75,
+    "acc_min_per_mode": 0.65
+  },
+  "pass": {
+    "global_above_target": true,
+    "color_above": true,
+    "shape_above": true,
+    "both_above": true
+  },
+  "all_criteria_pass": true,
+  "sample_scenes": [
+    {
+      "text": "grab the sphere",
+      "A": "blue_sphere",
+      "B": "blue_cube",
+      "target": 0
+    },
+    {
+      "text": "grab the red cylinder",
+      "A": "green_cube",
+      "B": "red_cylinder",
+      "target": 1
+    },
+    {
+      "text": "select the box",
+      "A": "blue_cylinder",
+      "B": "blue_box",
+      "target": 1
+    },
+    {
+      "text": "grab the red sphere",
+      "A": "blue_cylinder",
+      "B": "red_sphere",
+      "target": 1
+    },
+    {
+      "text": "grab the green item",
+      "A": "green_cylinder",
+      "B": "red_cylinder",
+      "target": 0
+    },
+    {
+      "text": "select the green one",
+      "A": "red_sphere",
+      "B": "green_sphere",
+      "target": 1
+    },
+    {
+      "text": "select the green box",
+      "A": "blue_cylinder",
+      "B": "green_box",
+      "target": 1
+    },
+    {
+      "text": "select the cylinder",
+      "A": "blue_cylinder",
+      "B": "blue_box",
+      "target": 0
+    },
+    {
+      "text": "take the box",
+      "A": "blue_cylinder",
+      "B": "blue_box",
+      "target": 1
+    },
+    {
+      "text": "select the blue cylinder",
+      "A": "green_box",
+      "B": "blue_cylinder",
+      "target": 1
+    }
+  ]
+}

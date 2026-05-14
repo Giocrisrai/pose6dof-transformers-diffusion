@@ -1,0 +1,153 @@
+{
+  "scenes": [
+    {
+      "id": 1,
+      "text": "pick the red object",
+      "A": "blue cube",
+      "B": "red cube",
+      "target": 1,
+      "chosen": 1,
+      "gate_a": 1.720785985526163e-05,
+      "gate_b": 0.9999828338623047,
+      "correct": true,
+      "distance_to_target_cm": 5.941121009397115
+    },
+    {
+      "id": 2,
+      "text": "select the green one",
+      "A": "green sphere",
+      "B": "red sphere",
+      "target": 0,
+      "chosen": 0,
+      "gate_a": 0.9999656677246094,
+      "gate_b": 3.428875425015576e-05,
+      "correct": true,
+      "distance_to_target_cm": 7.514761722817092
+    },
+    {
+      "id": 3,
+      "text": "pick the sphere",
+      "A": "blue cube",
+      "B": "blue sphere",
+      "target": 1,
+      "chosen": 1,
+      "gate_a": 4.811791586689651e-05,
+      "gate_b": 0.9999518394470215,
+      "correct": true,
+      "distance_to_target_cm": 8.103497298219784
+    },
+    {
+      "id": 4,
+      "text": "grab the cylinder",
+      "A": "red cylinder",
+      "B": "red box",
+      "target": 0,
+      "chosen": 0,
+      "gate_a": 0.9999551773071289,
+      "gate_b": 4.479019844438881e-05,
+      "correct": true,
+      "distance_to_target_cm": 1.2983656789633697
+    },
+    {
+      "id": 5,
+      "text": "take the box",
+      "A": "green sphere",
+      "B": "green box",
+      "target": 1,
+      "chosen": 1,
+      "gate_a": 1.912501102196984e-05,
+      "gate_b": 0.9999809265136719,
+      "correct": true,
+      "distance_to_target_cm": 3.783148311362071
+    },
+    {
+      "id": 6,
+      "text": "select the cube",
+      "A": "red sphere",
+      "B": "red cube",
+      "target": 1,
+      "chosen": 1,
+      "gate_a": 4.880883716396056e-05,
+      "gate_b": 0.9999512434005737,
+      "correct": true,
+      "distance_to_target_cm": 6.546427367766003
+    },
+    {
+      "id": 7,
+      "text": "pick the red sphere",
+      "A": "blue sphere",
+      "B": "red sphere",
+      "target": 1,
+      "chosen": 1,
+      "gate_a": 0.0003365177835803479,
+      "gate_b": 0.9996634721755981,
+      "correct": true,
+      "distance_to_target_cm": 7.1729537061836295
+    },
+    {
+      "id": 8,
+      "text": "grab the blue cube",
+      "A": "blue cube",
+      "B": "red cube",
+      "target": 0,
+      "chosen": 0,
+      "gate_a": 0.9993627667427063,
+      "gate_b": 0.0006372106145136058,
+      "correct": true,
+      "distance_to_target_cm": 7.52184107802981
+    },
+    {
+      "id": 9,
+      "text": "select the green cylinder",
+      "A": "red cylinder",
+      "B": "green cylinder",
+      "target": 1,
+      "chosen": 1,
+      "gate_a": 0.0008828934514895082,
+      "gate_b": 0.9991170763969421,
+      "correct": true,
+      "distance_to_target_cm": 5.28015542430857
+    },
+    {
+      "id": 10,
+      "text": "take the green box",
+      "A": "green box",
+      "B": "blue box",
+      "target": 0,
+      "chosen": 0,
+      "gate_a": 0.9996408224105835,
+      "gate_b": 0.0003592036955524236,
+      "correct": true,
+      "distance_to_target_cm": 10.010444436977616
+    },
+    {
+      "id": 11,
+      "text": "the round one",
+      "A": "red cube",
+      "B": "red sphere",
+      "target": 1,
+      "chosen": 1,
+      "gate_a": 0.010935836471617222,
+      "gate_b": 0.9890641570091248,
+      "correct": true,
+      "distance_to_target_cm": 3.4945166725785293
+    },
+    {
+      "id": 12,
+      "text": "pick anything blue",
+      "A": "green cylinder",
+      "B": "blue cylinder",
+      "target": 1,
+      "chosen": 1,
+      "gate_a": 3.5918284993385896e-05,
+      "gate_b": 0.9999641180038452,
+      "correct": true,
+      "distance_to_target_cm": 7.048224485829239
+    }
+  ],
+  "summary": {
+    "n_scenes": 12,
+    "n_correct": 12,
+    "accuracy": 1.0
+  }
+}
