@@ -1,0 +1,80 @@
+{
+  "config": {
+    "n_train": 7000,
+    "n_val": 1500,
+    "epochs": 60,
+    "attr_dim": 8,
+    "colors": [
+      "red",
+      "blue",
+      "green"
+    ],
+    "shapes": [
+      "cube",
+      "sphere",
+      "cylinder",
+      "box"
+    ],
+    "sizes": [
+      "small",
+      "medium",
+      "large"
+    ],
+    "size_mm": {
+      "small": 30.0,
+      "medium": 50.0,
+      "large": 80.0
+    },
+    "device": "mps",
+    "seed": 42
+  },
+  "training": {
+    "best_val_loss": 0.001953507202366988
+  },
+  "evaluation": {
+    "selection_accuracy_global": 0.9993333333333333,
+    "accuracy_by_template": {
+      "take the {size} object": 1.0,
+      "the {size} one": 1.0,
+      "grab the {size} {color} {shape}": 0.9951456310679612,
+      "pick the {color} {shape}": 1.0,
+      "select the {size} {color} one": 1.0,
+      "pick the {size} {color} {shape}": 1.0,
+      "pick the {size} {shape}": 1.0,
+      "fetch the {color} {shape}": 1.0
+    },
+    "n_by_template": {
+      "take the {size} object": 184,
+      "the {size} one": 185,
+      "grab the {size} {color} {shape}": 206,
+      "pick the {color} {shape}": 198,
+      "select the {size} {color} one": 197,
+      "pick the {size} {color} {shape}": 172,
+      "pick the {size} {shape}": 165,
+      "fetch the {color} {shape}": 193
+    },
+    "accuracy_by_n_objects": {
+      "2": 1.0,
+      "3": 1.0,
+      "4": 1.0,
+      "5": 0.9973614775725593
+    },
+    "n_by_n_objects": {
+      "2": 375,
+      "3": 360,
+      "4": 386,
+      "5": 379
+    },
+    "latency_ms_per_traj_ddim25": 0.049326578776041664,
+    "n_evaluated": 1500
+  },
+  "criteria": {
+    "acc_min_global": 0.75,
+    "acc_min_per_template": 0.65
+  },
+  "pass": {
+    "global_above": true,
+    "all_templates_above": true
+  },
+  "all_criteria_pass": true
+}

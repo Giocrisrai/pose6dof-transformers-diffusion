@@ -216,10 +216,11 @@ sobre escenas multi-objeto). Bootstrap CI sobre ello.
 | 6 | VLA-lite multi-atributo color+forma | ✅ **Éxito → mergeada** ([detalle](exploraciones/06_vla_shapes.md)) | 0.5 |
 | 7 | Simulaciones visuales 3D | ✅ **Éxito → mergeada** ([detalle](exploraciones/07_visual_simulations.md)) | 0.5 |
 | 8 | VLA-lite multi-objeto N=2..5 | ✅ **Éxito → mergeada** ([detalle](exploraciones/08_multi_object.md)) | 0.5 |
+| 9 | Atributo continuo TAMAÑO | ✅ **Éxito → mergeada** ([detalle](exploraciones/09_size_attribute.md)) | 0.5 |
 
-**Resumen final**: 8/8 exploraciones cumplen criterios. ~6 días totales invertidos.
-171 tests pasando · 7 modelos Diffusion · 1 paquete PyPI · 4 hallazgos metodológicos
-corregidos honestamente · 8 documentos de cierre · 22 simulaciones visuales generadas.
+**Resumen final**: 9/9 exploraciones cumplen criterios. ~6.5 días totales invertidos.
+171 tests pasando · 8 modelos Diffusion · 1 paquete PyPI · 4 hallazgos metodológicos
+corregidos honestamente · 9 documentos de cierre · 22 simulaciones visuales generadas.
 
 Ver también el documento [`docs/EXTRAPOLACION_INDUSTRIAL.md`](EXTRAPOLACION_INDUSTRIAL.md)
 con el roadmap de cómo el pipeline se aplica a logística, reciclaje, electrónica,
