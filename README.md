@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/license-Academic-green.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-171%20passing-brightgreen)](tests/)
 [![Bootstrap CI](https://img.shields.io/badge/bootstrap-CI%2095%25-purple)](experiments/results/local_metrics_with_bootstrap.json)
-[![Exploraciones post-TFM](https://img.shields.io/badge/exploraciones-11%2F11%20%E2%9C%85-success)](docs/PLAN_EXPLORACIONES_POST_TFM.md)
+[![Exploraciones post-TFM](https://img.shields.io/badge/exploraciones-13%2F13%20%E2%9C%85-success)](docs/PLAN_EXPLORACIONES_POST_TFM.md)
 [![PyPI ready](https://img.shields.io/badge/PyPI-bop--bootstrap--ci-blue)](packages/bop_bootstrap_ci/)
 [![VLA-lite](https://img.shields.io/badge/VLA--lite-color%2Bshape%20%2099.9%25-orange)](docs/EXTRAPOLACION_INDUSTRIAL.md)
 
@@ -32,9 +32,9 @@
 
 ---
 
-## Exploraciones post-TFM (mayo 2026) — 11/11 éxitos ✅
+## Exploraciones post-TFM (mayo 2026) — 13/13 éxitos ✅
 
-Sobre el TFM entregado se planificaron y ejecutaron 11 exploraciones adicionales con criterios numéricos de éxito. **Todas mergeadas en `main`**.
+Sobre el TFM entregado se planificaron y ejecutaron 13 exploraciones adicionales con criterios numéricos de éxito. **Todas mergeadas en `main`**.
 
 | # | Exploración | Resultado clave | Doc |
 |---|---|---|---|
@@ -49,8 +49,10 @@ Sobre el TFM entregado se planificaron y ejecutaron 11 exploraciones adicionales
 | 9 | **Atributo continuo TAMAÑO** | **99.9 %** sobre 8 templates ("the small one", etc.) | [09](docs/exploraciones/09_size_attribute.md) |
 | 10 | **Instrucciones secuenciales multi-step** | **8/8 secuencias** (20/20 pasos correctos) | [10](docs/exploraciones/10_sequential_instructions.md) |
 | 11 | **CLIP-image visual grounding** | **100 %** sin atributos declarados — cierra el pipeline real | [11](docs/exploraciones/11_clip_image_grounding.md) |
+| 12 | **Robustez con domain randomization** | **12/12 condiciones** ≥ 75 % (oclusión 60 %, ruido σ=50, illum 2x) | [12](docs/exploraciones/12_robustness_domain_random.md) |
+| 13 | **Razonamiento espacial** | **98.4 %** sobre 13 templates ("leftmost", "closest", "topmost") | [13](docs/exploraciones/13_spatial_reasoning.md) |
 
-Plan completo: [`docs/PLAN_EXPLORACIONES_POST_TFM.md`](docs/PLAN_EXPLORACIONES_POST_TFM.md). Extrapolación industrial detallada: [`docs/EXTRAPOLACION_INDUSTRIAL.md`](docs/EXTRAPOLACION_INDUSTRIAL.md). Estado del arte mayo 2026: [`docs/INNOVACION_Y_ESTADO_DEL_ARTE.md`](docs/INNOVACION_Y_ESTADO_DEL_ARTE.md).
+Plan completo: [`docs/PLAN_EXPLORACIONES_POST_TFM.md`](docs/PLAN_EXPLORACIONES_POST_TFM.md). Extrapolación industrial: [`docs/EXTRAPOLACION_INDUSTRIAL.md`](docs/EXTRAPOLACION_INDUSTRIAL.md). Etapas físicas post-TFM: [`docs/ROADMAP_POSTTFM.md`](docs/ROADMAP_POSTTFM.md). Estado del arte mayo 2026: [`docs/INNOVACION_Y_ESTADO_DEL_ARTE.md`](docs/INNOVACION_Y_ESTADO_DEL_ARTE.md).
 
 ---
 

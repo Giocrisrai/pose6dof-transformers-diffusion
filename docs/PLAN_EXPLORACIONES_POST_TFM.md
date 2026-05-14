@@ -219,16 +219,20 @@ sobre escenas multi-objeto). Bootstrap CI sobre ello.
 | 9 | Atributo continuo TAMAÑO | ✅ **Éxito → mergeada** ([detalle](exploraciones/09_size_attribute.md)) | 0.5 |
 | 10 | Instrucciones secuenciales multi-step | ✅ **Éxito → mergeada** ([detalle](exploraciones/10_sequential_instructions.md)) | 0.5 |
 | 11 | Visual grounding con CLIP-image | ✅ **Éxito → mergeada** ([detalle](exploraciones/11_clip_image_grounding.md)) | 0.5 |
+| 12 | Robustez CLIP-image con domain randomization | ✅ **Éxito → mergeada** ([detalle](exploraciones/12_robustness_domain_random.md)) | 0.5 |
+| 13 | Razonamiento espacial (leftmost/closest/highest) | ✅ **Éxito → mergeada** ([detalle](exploraciones/13_spatial_reasoning.md)) | 0.5 |
 
-**Resumen final**: 11/11 exploraciones cumplen criterios. ~8 días totales invertidos.
-171 tests pasando · 9 modelos Diffusion · 1 paquete PyPI · 4 hallazgos metodológicos
-corregidos honestamente · 11 documentos de cierre · 22 simulaciones visuales generadas.
+**Resumen final**: 13/13 exploraciones cumplen criterios. ~9 días totales invertidos.
+171 tests pasando · 10 modelos Diffusion · 1 paquete PyPI · 4 hallazgos metodológicos
+corregidos honestamente · 13 documentos de cierre · 22 simulaciones visuales generadas.
 
-**Roadmap industrial completo**: las 3 extensiones del documento
+**Roadmap industrial completo en simulación**: las 3 extensiones del documento
 [`docs/EXTRAPOLACION_INDUSTRIAL.md`](EXTRAPOLACION_INDUSTRIAL.md) corto plazo
 (multi-objeto, atributos continuos, imagen real con CLIP-image) están cerradas
-con éxito. El sistema ahora es directamente desplegable a producción con
-camera RGB-D + segmentación.
+con éxito + bonus de robustez evaluada con bootstrap CI 95% y razonamiento
+espacial. **Lo que requiere hardware físico** está documentado en
+[`docs/ROADMAP_POSTTFM.md`](ROADMAP_POSTTFM.md) como etapas 1-7 con timeline
+y presupuesto estimado (~200 k EUR / 2 años hasta producto comercial certificado).
 
 Ver también el documento [`docs/EXTRAPOLACION_INDUSTRIAL.md`](EXTRAPOLACION_INDUSTRIAL.md)
 con el roadmap de cómo el pipeline se aplica a logística, reciclaje, electrónica,

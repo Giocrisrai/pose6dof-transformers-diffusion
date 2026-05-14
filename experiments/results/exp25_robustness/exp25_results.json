@@ -1,0 +1,240 @@
+{
+  "conditions": [
+    {
+      "name": "occ_0",
+      "occlusion": 0.0,
+      "noise": 0.0,
+      "illum": 1.0,
+      "category": "occlusion",
+      "level": 0.0,
+      "accuracy": 1.0,
+      "accuracy_ci95": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0,
+        "B": 1000,
+        "alpha": 0.05
+      },
+      "mean_confidence": 0.9999744935830435,
+      "n": 300,
+      "time_s": 12.039993047714233
+    },
+    {
+      "name": "occ_20",
+      "occlusion": 0.2,
+      "noise": 0.0,
+      "illum": 1.0,
+      "category": "occlusion",
+      "level": 0.2,
+      "accuracy": 0.98,
+      "accuracy_ci95": {
+        "point": 0.98,
+        "lo": 0.96,
+        "hi": 0.9933333333333333,
+        "B": 1000,
+        "alpha": 0.05
+      },
+      "mean_confidence": 0.9819515518347423,
+      "n": 300,
+      "time_s": 9.793078184127808
+    },
+    {
+      "name": "occ_40",
+      "occlusion": 0.4,
+      "noise": 0.0,
+      "illum": 1.0,
+      "category": "occlusion",
+      "level": 0.4,
+      "accuracy": 0.91,
+      "accuracy_ci95": {
+        "point": 0.91,
+        "lo": 0.8766666666666667,
+        "hi": 0.94,
+        "B": 1000,
+        "alpha": 0.05
+      },
+      "mean_confidence": 0.9648293605446816,
+      "n": 300,
+      "time_s": 10.039241075515747
+    },
+    {
+      "name": "occ_60",
+      "occlusion": 0.6,
+      "noise": 0.0,
+      "illum": 1.0,
+      "category": "occlusion",
+      "level": 0.6,
+      "accuracy": 0.7766666666666666,
+      "accuracy_ci95": {
+        "point": 0.7766666666666666,
+        "lo": 0.73,
+        "hi": 0.82,
+        "B": 1000,
+        "alpha": 0.05
+      },
+      "mean_confidence": 0.9026886469125748,
+      "n": 300,
+      "time_s": 12.87776517868042
+    },
+    {
+      "name": "noise_10",
+      "occlusion": 0.0,
+      "noise": 10,
+      "illum": 1.0,
+      "category": "noise",
+      "level": 10,
+      "accuracy": 1.0,
+      "accuracy_ci95": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0,
+        "B": 1000,
+        "alpha": 0.05
+      },
+      "mean_confidence": 0.9993657181660335,
+      "n": 300,
+      "time_s": 11.016998767852783
+    },
+    {
+      "name": "noise_25",
+      "occlusion": 0.0,
+      "noise": 25,
+      "illum": 1.0,
+      "category": "noise",
+      "level": 25,
+      "accuracy": 1.0,
+      "accuracy_ci95": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0,
+        "B": 1000,
+        "alpha": 0.05
+      },
+      "mean_confidence": 0.9988306907812754,
+      "n": 300,
+      "time_s": 10.314941883087158
+    },
+    {
+      "name": "noise_50",
+      "occlusion": 0.0,
+      "noise": 50,
+      "illum": 1.0,
+      "category": "noise",
+      "level": 50,
+      "accuracy": 0.9933333333333333,
+      "accuracy_ci95": {
+        "point": 0.9933333333333333,
+        "lo": 0.9833333333333333,
+        "hi": 1.0,
+        "B": 1000,
+        "alpha": 0.05
+      },
+      "mean_confidence": 0.9931597912311554,
+      "n": 300,
+      "time_s": 13.054719924926758
+    },
+    {
+      "name": "illum_0.5",
+      "occlusion": 0.0,
+      "noise": 0.0,
+      "illum": 0.5,
+      "category": "illum",
+      "level": 0.5,
+      "accuracy": 1.0,
+      "accuracy_ci95": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0,
+        "B": 1000,
+        "alpha": 0.05
+      },
+      "mean_confidence": 0.9995652627944946,
+      "n": 300,
+      "time_s": 10.46756887435913
+    },
+    {
+      "name": "illum_0.75",
+      "occlusion": 0.0,
+      "noise": 0.0,
+      "illum": 0.75,
+      "category": "illum",
+      "level": 0.75,
+      "accuracy": 1.0,
+      "accuracy_ci95": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0,
+        "B": 1000,
+        "alpha": 0.05
+      },
+      "mean_confidence": 0.9996410069863001,
+      "n": 300,
+      "time_s": 10.616651058197021
+    },
+    {
+      "name": "illum_1.5",
+      "occlusion": 0.0,
+      "noise": 0.0,
+      "illum": 1.5,
+      "category": "illum",
+      "level": 1.5,
+      "accuracy": 0.93,
+      "accuracy_ci95": {
+        "point": 0.93,
+        "lo": 0.9,
+        "hi": 0.9566666666666667,
+        "B": 1000,
+        "alpha": 0.05
+      },
+      "mean_confidence": 0.9610708903272946,
+      "n": 300,
+      "time_s": 10.082315921783447
+    },
+    {
+      "name": "illum_2.0",
+      "occlusion": 0.0,
+      "noise": 0.0,
+      "illum": 2.0,
+      "category": "illum",
+      "level": 2.0,
+      "accuracy": 0.91,
+      "accuracy_ci95": {
+        "point": 0.91,
+        "lo": 0.8766666666666667,
+        "hi": 0.94,
+        "B": 1000,
+        "alpha": 0.05
+      },
+      "mean_confidence": 0.9490954610705375,
+      "n": 300,
+      "time_s": 10.066972017288208
+    },
+    {
+      "name": "combined_realistic",
+      "occlusion": 0.2,
+      "noise": 15,
+      "illum": 0.8,
+      "category": "combined",
+      "level": -1,
+      "accuracy": 0.9366666666666666,
+      "accuracy_ci95": {
+        "point": 0.9366666666666666,
+        "lo": 0.9066666666666666,
+        "hi": 0.9633333333333334,
+        "B": 1000,
+        "alpha": 0.05
+      },
+      "mean_confidence": 0.9784780925512314,
+      "n": 300,
+      "time_s": 10.0576810836792
+    }
+  ],
+  "scene_n": 300,
+  "summary": {
+    "n_conditions": 12,
+    "mean_accuracy_across_conditions": 0.9530555555555557,
+    "min_accuracy": 0.7766666666666666,
+    "max_accuracy": 1.0,
+    "robust_above_75pct": 12
+  }
+}

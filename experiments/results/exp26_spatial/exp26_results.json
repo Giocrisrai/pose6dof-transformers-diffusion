@@ -1,0 +1,71 @@
+{
+  "config": {
+    "n_train": 8000,
+    "n_val": 1500,
+    "epochs": 70,
+    "attr_dim": 10,
+    "templates": [
+      "pick the leftmost {color} object",
+      "grab the rightmost {shape}",
+      "select the leftmost one",
+      "the rightmost object",
+      "pick the closest {color} {shape}",
+      "the closest one",
+      "the farthest object",
+      "the highest one",
+      "the lowest one",
+      "the {color} on the left",
+      "the {color} on the right",
+      "pick the one closest to me",
+      "the topmost {shape}"
+    ],
+    "device": "mps",
+    "seed": 42
+  },
+  "training": {
+    "best_val_loss": 0.003807977889974912
+  },
+  "evaluation": {
+    "selection_accuracy_global": 0.984,
+    "accuracy_by_template": {
+      "the lowest one": 1.0,
+      "the {color} on the right": 0.9824561403508771,
+      "pick the leftmost {color} object": 0.9826086956521739,
+      "pick the closest {color} {shape}": 0.9485294117647058,
+      "the closest one": 1.0,
+      "the farthest object": 1.0,
+      "select the leftmost one": 1.0,
+      "the topmost {shape}": 0.9529411764705882,
+      "the highest one": 0.9908256880733946,
+      "grab the rightmost {shape}": 0.9541284403669725,
+      "the {color} on the left": 0.9841269841269841,
+      "pick the one closest to me": 1.0,
+      "the rightmost object": 0.9916666666666667
+    },
+    "n_by_template": {
+      "the lowest one": 119,
+      "the {color} on the right": 114,
+      "pick the leftmost {color} object": 115,
+      "pick the closest {color} {shape}": 136,
+      "the closest one": 138,
+      "the farthest object": 105,
+      "select the leftmost one": 108,
+      "the topmost {shape}": 85,
+      "the highest one": 109,
+      "grab the rightmost {shape}": 109,
+      "the {color} on the left": 126,
+      "pick the one closest to me": 116,
+      "the rightmost object": 120
+    },
+    "n_evaluated": 1500
+  },
+  "criteria": {
+    "acc_min_global": 0.7,
+    "acc_min_per_template": 0.55
+  },
+  "pass": {
+    "global_above": true,
+    "all_templates_above": true
+  },
+  "all_criteria_pass": true
+}
