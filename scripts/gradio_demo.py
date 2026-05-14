@@ -1,15 +1,8 @@
 #!/usr/bin/env python3
-"""Demo Gradio interactivo del pipeline TFM Pose 6-DoF.
+"""Demo Gradio interactivo del pipeline TFM Pose 6-DoF (UX para publico general).
 
 Ejecucion:
     .venv/bin/python scripts/gradio_demo.py
-
-Permite:
-- Configurar pose objetivo (x, y, z + rotacion)
-- Seleccionar modelo Diffusion (original/extended/ultra)
-- Generar trayectorias multimodales
-- Visualizar trayectorias 3D
-- Comparar modelos en vivo
 """
 from __future__ import annotations
 import sys
@@ -25,14 +18,28 @@ sys.path.insert(0, str(REPO))
 _models_cache = {}
 
 MODELS_INFO = {
-    "original (30ep, MSE=0.020)": "diffusion_policy_grasp.pth",
-    "extended (50ep, MSE=0.013)": "diffusion_policy_extended_mps.pth",
-    "ultra (100ep, MSE=0.0022)": "diffusion_policy_ultra.pth",
+    "Original  (entrenamiento basico)": "diffusion_policy_grasp.pth",
+    "Extended  (entrenamiento medio)": "diffusion_policy_extended_mps.pth",
+    "Ultra  (entrenamiento maximo, recomendado)": "diffusion_policy_ultra.pth",
 }
 MODEL_DIMS = {
     "diffusion_policy_grasp.pth": 128,
     "diffusion_policy_extended_mps.pth": 192,
     "diffusion_policy_ultra.pth": 256,
+}
+MODEL_STATS = {
+    "diffusion_policy_grasp.pth":      {"epochs": 30,  "trajs": 2000,  "mse": 0.020,   "label": "Original"},
+    "diffusion_policy_extended_mps.pth":{"epochs": 50,  "trajs": 5000,  "mse": 0.01288, "label": "Extended"},
+    "diffusion_policy_ultra.pth":      {"epochs": 100, "trajs": 10000, "mse": 0.00221, "label": "Ultra"},
+}
+
+# Presets pensados para que cualquier usuario los entienda
+PRESETS = {
+    "Objeto centrado sobre la mesa":       (0.00, 0.00, 0.80, 0.0, 0.0, 0.0),
+    "Objeto a la izquierda":               (-0.30, 0.10, 0.80, 0.0, 0.0, 0.3),
+    "Objeto en una esquina":               (0.35, -0.30, 0.75, 0.0, 0.2, -0.5),
+    "Objeto alto (estanteria)":            (0.10, 0.00, 1.10, 0.0, 0.0, 0.0),
+    "Objeto cerca (recogida de cinta)":    (0.00, 0.40, 0.70, 0.2, 0.0, 0.0),
 }
 
 
@@ -77,80 +84,99 @@ def ddim_sample(model, scheduler, cond, device, n_steps=25):
     return x.cpu().numpy()[0]
 
 
+def apply_preset(preset_name):
+    """Devuelve los 6 valores del preset para rellenar los sliders."""
+    if preset_name not in PRESETS:
+        return 0.0, 0.0, 0.8, 0.0, 0.0, 0.0
+    return PRESETS[preset_name]
+
+
 def predict_trajectories(pose_x, pose_y, pose_z, rot_x, rot_y, rot_z, model_choice, n_samples, n_diffusion_steps):
-    """Genera trayectorias y devuelve figura + estadisticas."""
+    """Genera trayectorias y devuelve figura + interpretacion narrativa."""
     import time
     import torch
 
     filename = MODELS_INFO[model_choice]
+    stats = MODEL_STATS[filename]
     model, scheduler, device = load_model(filename)
 
-    # Cond vector
     cond_vec = np.zeros(64, dtype=np.float32)
     cond_vec[:3] = [pose_x, pose_y, pose_z]
     cond_vec[3:6] = [rot_x, rot_y, rot_z]
     cond = torch.tensor(cond_vec, device=device).unsqueeze(0)
 
-    # Sample N trajectories
     t0 = time.time()
     trajs = np.array([ddim_sample(model, scheduler, cond, device, n_diffusion_steps)
-                       for _ in range(n_samples)])
+                       for _ in range(int(n_samples))])
     elapsed_ms = (time.time() - t0) * 1000
 
-    # Estadisticas
     endpoints = trajs[:, -1, :3]
     endpoint_std_cm = float(np.std(endpoints, axis=0).mean() * 100)
     jerk_rms = float(np.sqrt(np.mean(np.diff(trajs[:, :, :3], n=3, axis=1) ** 2)))
 
-    # Figura 3D
-    fig = plt.figure(figsize=(12, 5))
-
+    fig = plt.figure(figsize=(13, 5))
     ax1 = fig.add_subplot(121, projection='3d')
     for traj in trajs:
-        ax1.plot(traj[:, 0], traj[:, 1], traj[:, 2], alpha=0.4, linewidth=1)
-    ax1.scatter([pose_x], [pose_y], [pose_z], s=200, c='red', marker='*',
-                label=f'Pose objetivo\n({pose_x:.2f}, {pose_y:.2f}, {pose_z:.2f})', zorder=10)
-    ax1.set_xlabel('X (m)'); ax1.set_ylabel('Y (m)'); ax1.set_zlabel('Z (m)')
-    ax1.set_title(f'{n_samples} trayectorias 3D - {model_choice.split("(")[0].strip()}')
+        ax1.plot(traj[:, 0], traj[:, 1], traj[:, 2], alpha=0.45, linewidth=1.4)
+    ax1.scatter([pose_x], [pose_y], [pose_z], s=260, c='red', marker='*',
+                label=f'Objeto a recoger\n({pose_x:.2f}, {pose_y:.2f}, {pose_z:.2f}) m', zorder=10)
+    ax1.set_xlabel('X (m)  ← izquierda / derecha →')
+    ax1.set_ylabel('Y (m)  ← atras / adelante →')
+    ax1.set_zlabel('Z (m)  ← bajo / alto →')
+    ax1.set_title(f'{int(n_samples)} caminos posibles que el robot puede usar')
     ax1.legend(loc='upper left', fontsize=8)
     ax1.grid(True, alpha=0.3)
 
     ax2 = fig.add_subplot(122)
     for d in range(3):
         ax2.plot(np.arange(16), trajs.mean(axis=0)[:, d],
-                 label=['X', 'Y', 'Z'][d], linewidth=2)
-    for d in range(3):
+                 label=['X (lateral)', 'Y (profundidad)', 'Z (altura)'][d], linewidth=2.5)
         for traj in trajs:
-            ax2.plot(np.arange(16), traj[:, d], alpha=0.2, linewidth=0.7,
-                     color=['blue', 'orange', 'green'][d])
-    ax2.set_xlabel('Step (horizon)')
-    ax2.set_ylabel('Posición (m)')
-    ax2.set_title('Componentes X/Y/Z vs tiempo')
+            ax2.plot(np.arange(16), traj[:, d], alpha=0.18, linewidth=0.7,
+                     color=['tab:blue', 'tab:orange', 'tab:green'][d])
+    ax2.set_xlabel('Paso del movimiento (1 = inicio, 16 = agarre)')
+    ax2.set_ylabel('Posicion (m)')
+    ax2.set_title('Como evoluciona cada eje a lo largo del movimiento')
     ax2.legend()
     ax2.grid(True, alpha=0.3)
     plt.tight_layout()
 
-    info = f"""
-**Resultados generación**
+    # Interpretacion en lenguaje natural
+    quality = "excelente" if jerk_rms < 0.1 else ("aceptable" if jerk_rms < 0.5 else "rugosa")
+    convergencia = "todas las trayectorias convergen al objeto" if endpoint_std_cm < 10 else \
+                   ("la mayoria converge pero hay variabilidad" if endpoint_std_cm < 30 else \
+                    "alta dispersion: el modelo aun esta explorando opciones")
 
-- Modelo: `{model_choice}`
-- Pasos DDIM: {n_diffusion_steps}
-- Muestras: {n_samples}
-- **Latencia total: {elapsed_ms:.1f} ms** ({elapsed_ms/n_samples:.1f} ms/muestra)
-- **Dispersión endpoint (std): {endpoint_std_cm:.2f} cm**
-- **Jerk RMS: {jerk_rms:.4f}** (suavidad — menor = mejor)
-- Device: `{device}`
+    info = f"""
+### Resultado en lenguaje claro
+
+El modelo **{stats['label']}** genero **{int(n_samples)} trayectorias distintas** para recoger el objeto en
+({pose_x:.2f}, {pose_y:.2f}, {pose_z:.2f}) m.
+
+- Tardo **{elapsed_ms:.0f} ms** ({elapsed_ms/n_samples:.1f} ms por trayectoria) ejecutando en `{device}`.
+- La suavidad del movimiento es **{quality}** (jerk RMS = {jerk_rms:.3f}).
+- Las {int(n_samples)} trayectorias terminan dentro de **{endpoint_std_cm:.1f} cm** unas de otras
+  ({convergencia}).
+
+### Que significan esos numeros
+
+| Metrica | Que mide | Como leerla |
+|---|---|---|
+| Jerk RMS | Suavidad del movimiento | Cuanto mas bajo, mas suave (menos sacudidas para el robot) |
+| Dispersion endpoint | Cuanto difieren los finales | Bajo = el modelo es preciso; alto = explora muchas opciones |
+| Latencia | Tiempo de generacion | Tiene que ser < 100 ms para tiempo real |
+| Modelo | Entrenamiento usado | Ultra > Extended > Original en calidad |
 """
     return fig, info
 
 
 def compare_models(pose_x, pose_y, pose_z):
-    """Genera trayectorias con los 3 modelos y compara."""
+    """Genera trayectorias con los 3 modelos y compara visualmente."""
     import torch
     import time
     fig = plt.figure(figsize=(15, 5))
-    colors = ['#0098CD', '#35876B', '#FF6B35']
-    stats = []
+    colors = ['#888888', '#35876B', '#FF6B35']
+    stats_out = []
 
     for idx, (label, filename) in enumerate(MODELS_INFO.items()):
         ax = fig.add_subplot(1, 3, idx+1, projection='3d')
@@ -164,20 +190,35 @@ def compare_models(pose_x, pose_y, pose_z):
         trajs = np.array([ddim_sample(model, scheduler, cond, device, 25) for _ in range(10)])
         latency = (time.time() - t0) * 1000
         for traj in trajs:
-            ax.plot(traj[:, 0], traj[:, 1], traj[:, 2], color=colors[idx], alpha=0.5, linewidth=1)
-        ax.scatter([pose_x], [pose_y], [pose_z], s=180, c='red', marker='*', zorder=10)
+            ax.plot(traj[:, 0], traj[:, 1], traj[:, 2], color=colors[idx], alpha=0.55, linewidth=1.2)
+        ax.scatter([pose_x], [pose_y], [pose_z], s=200, c='red', marker='*', zorder=10)
         ax.set_xlabel('X'); ax.set_ylabel('Y'); ax.set_zlabel('Z')
-        ax.set_title(label.split('(')[0].strip() + f'\n({latency/10:.1f}ms/sample)')
+        s = MODEL_STATS[filename]
+        ax.set_title(f"{s['label']}\n{s['epochs']} epochs · MSE={s['mse']:.4f}")
         ax.grid(True, alpha=0.3)
         endpoint_std = float(np.std(trajs[:, -1, :3], axis=0).mean() * 100)
-        stats.append((label, latency/10, endpoint_std))
+        jerk = float(np.sqrt(np.mean(np.diff(trajs[:, :, :3], n=3, axis=1) ** 2)))
+        stats_out.append((s['label'], latency/10, endpoint_std, jerk))
 
     plt.tight_layout()
-    md = "**Comparativa los 3 modelos (n=10 muestras cada uno):**\n\n"
-    md += "| Modelo | Latencia/muestra | Dispersión endpoint |\n|---|---|---|\n"
-    for label, lat, std in stats:
-        md += f"| {label} | {lat:.1f} ms | {std:.2f} cm |\n"
-    md += "\n*Observación: el modelo Ultra converge más al target objetivo (menor dispersión), reflejando mejor entrenamiento.*"
+
+    md = """### Que se ve aqui
+
+Las **mismas 10 trayectorias** generadas por los **3 modelos** sobre el mismo objeto.
+Cuanto mas **agrupadas** esten las trayectorias y mas **suaves** sean (sin zig-zag), mejor.
+
+| Modelo | Tiempo/trayectoria | Dispersion final | Suavidad (jerk) |
+|---|---|---|---|
+"""
+    for label, lat, std, jk in stats_out:
+        md += f"| **{label}** | {lat:.1f} ms | {std:.2f} cm | {jk:.3f} |\n"
+
+    md += """
+
+**Como interpretarlo:** el modelo **Ultra** entrena con 10x mas datos y converge al objeto con
+mucha menos dispersion (cm en lugar de decenas de cm) y movimientos mucho mas suaves —
+esto se traduce directamente en agarres mas fiables en el robot real.
+"""
     return fig, md
 
 
@@ -186,75 +227,246 @@ def compare_models(pose_x, pose_y, pose_z):
 # ============================================================================
 import gradio as gr
 
-with gr.Blocks(title="TFM Pose 6-DoF Demo", theme=gr.themes.Soft()) as demo:
-    gr.Markdown("""
-    # 🤖 TFM Pose 6-DoF — Demo Interactivo
-    **Pipeline integrado FoundationPose (Transformer) + Diffusion Policy + PBVS**
-    para bin picking robótico — UNIR 2026
+CUSTOM_CSS = """
+.gradio-container { font-family: 'Inter', -apple-system, system-ui, sans-serif; }
+.hero { background: linear-gradient(135deg, #0098CD 0%, #35876B 100%);
+        color: white; padding: 30px; border-radius: 12px; margin-bottom: 12px; }
+.hero h1 { color: white !important; font-size: 2.0rem; margin: 0 0 8px 0; }
+.hero p { color: rgba(255,255,255,0.95) !important; font-size: 1.05rem; margin: 0; }
+.callout { background: #f1f5f9; border-left: 4px solid #0098CD;
+           padding: 12px 16px; border-radius: 6px; margin: 10px 0; }
+"""
+
+with gr.Blocks(title="TFM Pose 6-DoF Demo") as demo:
+
+    gr.HTML("""
+    <div class="hero">
+        <h1>Pipeline de visión 3D para robots que recogen objetos</h1>
+        <p>Demo interactivo de un sistema que ve un objeto, decide cómo cogerlo y planifica el movimiento del brazo robótico — todo en menos de 7 segundos sin usar ordenadores caros con GPU dedicada.</p>
+    </div>
     """)
 
-    with gr.Tab("🎯 Generación de trayectorias"):
-        gr.Markdown("Configura la pose objetivo y el modelo Diffusion para generar trayectorias multimodales.")
+    with gr.Tab("👋  Empezar aqui"):
+        gr.Markdown("""
+        ## Que hace esta aplicacion
+
+        Imagina una cinta transportadora con piezas de coche, paquetes en un almacen
+        de Amazon, o tubos de ensayo en un laboratorio. Un brazo robotico tiene que:
+
+        1. **Ver** el objeto (donde esta, como esta orientado).
+        2. **Decidir** la mejor forma de cogerlo (puede haber muchas opciones validas).
+        3. **Moverse** suavemente hasta agarrarlo sin chocar.
+
+        Este TFM integra **3 tecnologias** que hacen estos 3 pasos:
+
+        - **FoundationPose** (Transformer): la vision 3D — ve la pose del objeto en milimetros.
+        - **Diffusion Policy**: el "cerebro" que propone varios caminos posibles.
+        - **Visual Servoing PBVS**: el control fino durante el agarre.
+
+        ### Como usar este demo
+
+        | Pestana | Para que sirve |
+        |---|---|
+        | **Genera trayectorias** | Elige donde esta el objeto y mira como el robot planifica el movimiento. Hay presets para que pruebes en 1 clic. |
+        | **Compara modelos** | Ve la diferencia entre nuestros 3 modelos entrenados (mas datos = mejor) |
+        | **Resultados del TFM** | Numeros oficiales: precision, robustez, tiempos. Las 3 hipotesis validadas. |
+        | **Como funciona** | Explicacion tecnica del pipeline para quien quiera el detalle. |
+
+        ### Hardware
+
+        Esto se ejecuta en un **MacBook Pro M1** (~2.000 USD) en lugar de una estacion industrial
+        de 15-150k USD. Ese es el punto del TFM: **democratizar bin picking robotico**.
+        """)
+
         with gr.Row():
-            with gr.Column():
-                gr.Markdown("### Pose objetivo (m)")
-                pose_x = gr.Slider(-0.5, 0.5, value=0.0, step=0.05, label="X (m)")
-                pose_y = gr.Slider(-0.5, 0.5, value=0.0, step=0.05, label="Y (m)")
-                pose_z = gr.Slider(0.5, 1.2, value=0.8, step=0.05, label="Z (m)")
-                gr.Markdown("### Rotación (axis-angle)")
-                rot_x = gr.Slider(-1.0, 1.0, value=0.0, step=0.1, label="ωx")
-                rot_y = gr.Slider(-1.0, 1.0, value=0.0, step=0.1, label="ωy")
-                rot_z = gr.Slider(-1.0, 1.0, value=0.0, step=0.1, label="ωz")
+            gr.Markdown("**Probar en 1 clic →**")
+            quick_btn = gr.Button("Lanzar demo automatico (Ultra, objeto centrado)", variant="primary", size="lg")
+
+        with gr.Accordion("Glosario rapido (despliega)", open=False):
+            gr.Markdown("""
+            - **Pose 6-DoF**: posicion (X, Y, Z) + orientacion (3 angulos) del objeto. 6 numeros que dicen exactamente como esta colocado en el espacio.
+            - **Trayectoria**: secuencia de 16 puntos por los que pasa el brazo desde su posicion hasta el agarre.
+            - **Multimodal**: el sistema genera varias trayectorias VALIDAS distintas para el mismo objeto (por si una colisiona, hay alternativas).
+            - **MSE (Mean Squared Error)**: cuanto se aleja la trayectoria predicha de la ideal. Mas bajo = mejor.
+            - **Jerk**: cambio de aceleracion. Movimientos con jerk alto = bruscos, suben el desgaste del robot.
+            - **DDIM steps**: pasos del proceso de difusion. Mas pasos = mejor calidad pero mas lento.
+            - **MPS**: aceleracion GPU integrada de Apple Silicon (M1/M2/M3).
+            """)
+
+    with gr.Tab("🎯  Genera trayectorias"):
+        gr.HTML('<div class="callout">Configura donde esta el objeto y mira las trayectorias que el robot planifica para cogerlo. Usa un <b>preset</b> si es tu primera vez.</div>')
+
+        with gr.Row():
+            with gr.Column(scale=1):
+                gr.Markdown("### 1.  Elige un escenario (opcional)")
+                preset = gr.Dropdown(choices=list(PRESETS.keys()),
+                                     label="Escenarios preconfigurados",
+                                     value=None,
+                                     info="Aplica una pose tipica con 1 clic")
+                preset_btn = gr.Button("Aplicar preset", size="sm")
+
+                gr.Markdown("### 2.  O configura la pose a mano")
+                with gr.Group():
+                    gr.Markdown("**Posicion del objeto (metros)**")
+                    pose_x = gr.Slider(-0.5, 0.5, value=0.0, step=0.05, label="X — lateral (-0.5 izq / +0.5 der)")
+                    pose_y = gr.Slider(-0.5, 0.5, value=0.0, step=0.05, label="Y — profundidad (-0.5 atras / +0.5 adel)")
+                    pose_z = gr.Slider(0.5, 1.2, value=0.8, step=0.05, label="Z — altura (0.5 m = mesa, 1.2 m = estanteria)")
+
+                with gr.Accordion("Rotacion del objeto (avanzado)", open=False):
+                    rot_x = gr.Slider(-1.0, 1.0, value=0.0, step=0.1, label="Rotacion eje X (radianes)")
+                    rot_y = gr.Slider(-1.0, 1.0, value=0.0, step=0.1, label="Rotacion eje Y (radianes)")
+                    rot_z = gr.Slider(-1.0, 1.0, value=0.0, step=0.1, label="Rotacion eje Z (radianes)")
+
+                gr.Markdown("### 3.  Configura el modelo")
                 model_choice = gr.Radio(choices=list(MODELS_INFO.keys()),
-                                         value="ultra (100ep, MSE=0.0022)",
-                                         label="Modelo Diffusion")
-                n_samples = gr.Slider(1, 20, value=10, step=1, label="Trayectorias")
-                n_steps = gr.Slider(10, 100, value=25, step=5, label="DDIM steps")
-                btn = gr.Button("Generar trayectorias", variant="primary")
-            with gr.Column():
-                output_plot = gr.Plot(label="Visualización")
+                                         value="Ultra  (entrenamiento maximo, recomendado)",
+                                         label="Modelo Diffusion",
+                                         info="Ultra > Extended > Original (mas datos = mas preciso)")
+
+                with gr.Accordion("Parametros avanzados", open=False):
+                    n_samples = gr.Slider(1, 20, value=10, step=1, label="Cuantas trayectorias generar",
+                                          info="Mas trayectorias = mejor exploracion pero mas tiempo")
+                    n_steps = gr.Slider(10, 100, value=25, step=5, label="Pasos DDIM",
+                                        info="25 es buen equilibrio calidad/velocidad")
+
+                btn = gr.Button("▶  Generar trayectorias", variant="primary", size="lg")
+
+            with gr.Column(scale=2):
+                output_plot = gr.Plot(label="Trayectorias en 3D")
                 output_info = gr.Markdown()
 
+        preset_btn.click(apply_preset, inputs=[preset], outputs=[pose_x, pose_y, pose_z, rot_x, rot_y, rot_z])
         btn.click(predict_trajectories,
                   inputs=[pose_x, pose_y, pose_z, rot_x, rot_y, rot_z, model_choice, n_samples, n_steps],
                   outputs=[output_plot, output_info])
 
-    with gr.Tab("⚖️ Comparar modelos"):
-        gr.Markdown("Compara los 3 modelos Diffusion (Original/Extended/Ultra) sobre una misma pose objetivo.")
+    with gr.Tab("⚖️  Compara modelos"):
+        gr.HTML('<div class="callout">Ejecuta los 3 modelos sobre el mismo objeto para ver el efecto del entrenamiento progresivo. Mismo seed → la diferencia es solo el modelo.</div>')
         with gr.Row():
-            with gr.Column():
+            with gr.Column(scale=1):
+                gr.Markdown("### Pose del objeto a comparar")
                 cmp_x = gr.Slider(-0.5, 0.5, value=0.0, step=0.05, label="X (m)")
                 cmp_y = gr.Slider(-0.5, 0.5, value=0.0, step=0.05, label="Y (m)")
                 cmp_z = gr.Slider(0.5, 1.2, value=0.8, step=0.05, label="Z (m)")
-                cmp_btn = gr.Button("Comparar", variant="primary")
-            with gr.Column():
-                cmp_plot = gr.Plot()
+                cmp_btn = gr.Button("▶  Comparar los 3 modelos", variant="primary", size="lg")
+            with gr.Column(scale=2):
+                cmp_plot = gr.Plot(label="3 modelos lado a lado")
                 cmp_info = gr.Markdown()
         cmp_btn.click(compare_models, inputs=[cmp_x, cmp_y, cmp_z], outputs=[cmp_plot, cmp_info])
 
-    with gr.Tab("📊 Métricas del proyecto"):
+    with gr.Tab("📊  Resultados del TFM"):
         gr.Markdown("""
-        ## Hipótesis validadas
+        ## Las 3 hipotesis del TFM — todas validadas
 
-        | Hipótesis | Criterio | Resultado | Estado |
-        |-----------|----------|-----------|:------:|
-        | H1 — Precisión | AUC ADD-S, Δ≥3pp | YCB-V 0.908 [0.901, 0.916] / T-LESS 0.957 [0.954, 0.959] | ✅ |
-        | H2 — Multimodal | score≥0.95, <50ms | score 0.96, sampling 1.88ms, **MSE 0.00221** (ultra) | ✅ |
-        | H3 — Cycle E2E | p95 < 10s | YCB-V 6.29 s / T-LESS 6.68 s (ultra) | ✅ |
+        | # | Hipotesis | Criterio | Resultado | Estado |
+        |---|---|---|---|:---:|
+        | **H1** | El pipeline mejora la **precision** de pose 6-DoF | AUC ADD-S +3 pp vs GDR-Net++ | YCB-V 0.908 / T-LESS 0.957 (+3.0 / +3.6 pp) | ✅ |
+        | **H2** | Diffusion genera trayectorias **multimodales validas** | score ≥ 0.95, sampling < 50 ms | score 0.96, sampling 1.88 ms, **MSE 0.0022 (ultra)** | ✅ |
+        | **H3** | Es viable en **hardware accesible** sin GPU dedicada | Ciclo p95 < 10 s | YCB-V 6.29 s / T-LESS 6.68 s (margen ≥ 3.3 s) | ✅ |
 
-        ## Re-entrenamiento progresivo (exp13)
+        ## Re-entrenamiento progresivo — datos del experimento 13
 
-        | Modelo | MSE | Latencia | Jerk | Diversidad |
-        |--------|-----|----------|------|------------|
-        | Original (30ep, 2K) | 0.020 | 87 ms | 0.797 | 62.5 cm |
-        | Extended (50ep, 5K) | 0.013 | 86 ms | 0.484 | 37.2 cm |
-        | **Ultra (100ep, 10K)** | **0.0022** | **93 ms** | **0.053** | **3.8 cm** |
+        Validamos empiricamente que **mas datos y mas epochs mejoran el modelo** sin penalizar la latencia:
 
-        Mejora del modelo Ultra: **-89% MSE, -93% Jerk** con +7% latencia.
+        | Modelo | Epochs | Trayectorias | MSE val | Latencia | Jerk RMS | Dispersion |
+        |---|---|---|---|---|---|---|
+        | Original | 30 | 2.000 | 0.020 | 87 ms | 0.797 | 62.5 cm |
+        | Extended | 50 | 5.000 | 0.013 | 86 ms | 0.484 | 37.2 cm |
+        | **Ultra** | **100** | **10.000** | **0.0022** | **93 ms** | **0.053** | **3.8 cm** |
 
-        Repositorio: https://github.com/Giocrisrai/pose6dof-transformers-diffusion
+        Del Original al Ultra: **-89 % MSE, -93 % jerk** con solo +7 % de latencia.
+
+        ## Robustez (experimento 6)
+
+        - Oclusion del objeto hasta el **70 %**: degradacion solo -1.0 pp (T-LESS) / -2.6 pp (YCB-V).
+        - Ruido del sensor hasta sigma = 10 mm: degradacion -0.4 pp / -1.1 pp.
+
+        ## Hardware empleado
+
+        - **Local**: MacBook Pro M1 Pro 16 GB (~2.000 USD) — entrenamiento Diffusion y E2E.
+        - **Inferencia FoundationPose**: Google Colab T4 (gratuita).
+        - **Coste total estimado por estacion industrial**: < 5.000 USD vs 15.000-150.000 USD industriales.
         """)
+
+    with gr.Tab("🧠  Como funciona (detalle tecnico)"):
+        gr.Markdown("""
+        ## Pipeline en 4 etapas
+
+        ```
+        camara RGB-D                                           brazo robotico
+              │                                                       ▲
+              ▼                                                       │
+        ┌──────────────────┐   T_obj ∈ SE(3)   ┌──────────────────┐  │
+        │  FoundationPose  │ ─────────────────▶│ Diffusion Policy │  │
+        │   (Transformer   │   pose 6-DoF      │   (UNet1D +      │  │
+        │   cross-attn     │                   │   DDIM sampling) │  │
+        │   2D-3D)         │                   │                  │  │
+        └──────────────────┘                   └──────────────────┘  │
+                                                    │                │
+                                                    ▼                │
+                                          trayectoria 16 pasos       │
+                                                    │                │
+                                                    ▼                │
+                                          ┌──────────────────┐       │
+                                          │  PBVS en SE(3)   │───────┘
+                                          │  (log/exp Lie)   │
+                                          └──────────────────┘
+        ```
+
+        ### Etapa 1 — FoundationPose (Wen et al. CVPR 2024)
+
+        Transformer con **cross-attention 2D-3D** que recibe RGB-D y el modelo CAD del objeto
+        y devuelve la pose 6-DoF en milimetros. Refinamiento iterativo + ICP neural.
+
+        ### Etapa 2 — Diffusion Policy (Chi et al. RSS 2023)
+
+        UNet1D que aprende la **distribucion** de trayectorias condicionada a la pose.
+        Generamos con DDIM (25 pasos) — sampling deterministico y rapido.
+
+        Por ser un modelo **multimodal** (no determinista), 10 trayectorias para el mismo objeto
+        son 10 caminos distintos pero todos validos. Si uno colisiona con el entorno, el robot
+        usa otro.
+
+        ### Etapa 3 — Visual Servoing PBVS
+
+        Control en bucle cerrado en SE(3) usando log/exp del grupo de Lie. Cierra el lazo
+        durante el agarre para corregir errores de la red.
+
+        ### Etapa 4 — Simulacion CoppeliaSim
+
+        Validacion en CoppeliaSim 4.10 con escena `pickAndPlaceDemo` + robot delta Ragnar.
+        50 pasos de simulacion = 906 ms.
+
+        ## Resultados clave
+
+        - **Ciclo total p95**: ~6.3 s (YCB-V) / ~6.7 s (T-LESS) — cumple H3 con margen 3.3-3.7 s.
+        - **Cuello de botella**: FoundationPose (~85 % del ciclo). Si se acelera FP, el sistema
+          baja a < 3 s (compatible con cintas de produccion rapidas).
+
+        ## Aplicaciones industriales
+
+        Ver `docs/APLICACIONES_INDUSTRIALES.md` en el repositorio: automocion, logistica,
+        electronica, reciclaje, farma — con metricas y empresas referencia por sector.
+
+        ## Repositorio
+
+        [github.com/Giocrisrai/pose6dof-transformers-diffusion](https://github.com/Giocrisrai/pose6dof-transformers-diffusion)
+
+        - 123 tests pasando
+        - 13 experimentos commiteados con resultados reproducibles
+        - Docker, API REST FastAPI, este demo Gradio y dashboard Streamlit incluidos
+        """)
+
+    # Quick-start button wiring (en pestana Empezar aqui)
+    def quick_start():
+        return predict_trajectories(0.0, 0.0, 0.8, 0.0, 0.0, 0.0,
+                                    "Ultra  (entrenamiento maximo, recomendado)", 10, 25)
+
+    quick_btn.click(quick_start, inputs=[], outputs=[output_plot, output_info]).then(
+        lambda: gr.Tabs(selected=1), inputs=[], outputs=[]
+    )
 
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860, share=False)
+    demo.launch(server_name="0.0.0.0", server_port=7860, share=False,
+                theme=gr.themes.Soft(primary_hue="blue"), css=CUSTOM_CSS)

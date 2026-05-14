@@ -57,7 +57,7 @@ with st.sidebar:
     st.markdown("---")
     section = st.radio(
         "Sección",
-        ["📊 Resumen", "🎯 Hipótesis", "📈 Métricas FP",
+        ["📊 Resumen", "🧠 Decisiones del pipeline", "🎯 Hipótesis", "📈 Métricas FP",
          "🛡️ Robustez", "⚙️ Profiling", "🌳 Diversidad",
          "🎮 PBVS", "📦 Per-Object", "🎬 Video", "📚 Recursos"]
     )
@@ -85,20 +85,72 @@ if section == "📊 Resumen":
     st.title("Resumen ejecutivo")
 
     col1, col2, col3 = st.columns(3)
-    col1.metric("Páginas TFM", "62")
-    col2.metric("Experimentos", "12", "+11 vs entrega 1")
-    col3.metric("Tests pasando", "110", "✓")
+    st.markdown(
+        "**¿Qué es esto?** Un sistema que permite a un brazo robótico ver un objeto, "
+        "decidir cómo cogerlo y planificar el movimiento — todo en menos de 7 s y sin "
+        "necesitar un ordenador con GPU dedicada de gama alta. Integra tres tecnologías "
+        "(Transformer para visión 3D, Diffusion Policy para planificación, Visual Servoing "
+        "para control fino) y valida tres hipótesis sobre datasets industriales reconocidos "
+        "(YCB-Video, T-LESS)."
+    )
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Páginas TFM", "63")
+    col2.metric("Experimentos", "13", "+12 vs entrega 1")
+    col3.metric("Tests pasando", "123", "✓")
 
     col4, col5, col6 = st.columns(3)
     col4.metric("AUC ADD-S YCB-V", "0.908", "[CI 95% 0.901–0.916]")
     col5.metric("AUC ADD-S T-LESS", "0.957", "[CI 95% 0.954–0.959]")
-    col6.metric("Cycle p95 E2E", "6.12 s / 6.86 s", "<10 s ✓")
+    col6.metric("Cycle p95 E2E (ultra)", "6.29 s / 6.68 s", "<10 s ✓")
+
+    col7, col8, col9 = st.columns(3)
+    col7.metric("MSE Diffusion ultra", "0.0022", "-89 % vs original")
+    col8.metric("Jerk RMS ultra", "0.053", "-93 % vs original")
+    col9.metric("Coste hardware", "~2.000 USD", "vs 15-150k USD industrial")
 
     st.markdown("---")
     st.subheader("Diagrama de arquitectura")
     img = load_image("experiments/results/pipeline_e2e/fig_pipeline_arquitectura.png")
     if img:
         st.image(img, caption="Pipeline TFM: FoundationPose + Diffusion Policy + CoppeliaSim")
+
+elif section == "🧠 Decisiones del pipeline":
+    st.title("Cómo decide el sistema, paso a paso")
+    st.markdown(
+        "Estas tarjetas muestran qué hace el pipeline para cada objeto detectado: "
+        "(1) lo identifica, (2) mide su pose 6-DoF, (3) genera múltiples trayectorias "
+        "de agarre y (4) las ejecuta con el robot — todo dentro del presupuesto de 10 s."
+    )
+
+    cards_dir = REPO / "experiments/results/pipeline_e2e/decision_cards"
+    cards = sorted(cards_dir.glob("decision_*.png")) if cards_dir.exists() else []
+
+    if not cards:
+        st.warning(
+            "No hay tarjetas generadas todavía. Ejecuta:\n\n"
+            "`.venv/bin/python experiments/make_decision_visualization.py`"
+        )
+    else:
+        ds_filter = st.radio("Filtrar dataset", ["Todos", "YCB-V", "T-LESS"], horizontal=True)
+        filtered = [c for c in cards if
+                    (ds_filter == "Todos" or
+                     (ds_filter == "YCB-V" and "ycbv" in c.name) or
+                     (ds_filter == "T-LESS" and "tless" in c.name))]
+        for card in filtered:
+            obj_id = card.stem.split("_obj")[-1]
+            dataset = "YCB-V" if "ycbv" in card.name else "T-LESS"
+            st.subheader(f"{dataset} · objeto #{int(obj_id)}")
+            st.image(str(card), use_container_width=True)
+            st.markdown("---")
+
+    st.info(
+        "**Cómo leerlo**: cada tarjeta tiene 4 paneles. Arriba-izq: qué objeto se detectó "
+        "(nombre, dataset, escena origen). Arriba-der: la pose 6-DoF predicha mostrada como "
+        "ejes XYZ en 3D. Abajo-izq: las 10 trayectorias que Diffusion Policy propone para "
+        "el agarre. Abajo-der: línea de tiempo con la latencia real de cada fase y el margen "
+        "que queda contra el límite de 10 s (H3)."
+    )
 
 elif section == "🎯 Hipótesis":
     st.title("Hipótesis verificables")
