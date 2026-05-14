@@ -57,7 +57,8 @@ with st.sidebar:
     st.markdown("---")
     section = st.radio(
         "Sección",
-        ["📊 Resumen", "🧠 Decisiones del pipeline", "🎯 Hipótesis", "📈 Métricas FP",
+        ["📊 Resumen", "💡 Innovación y SOTA", "🧠 Decisiones del pipeline",
+         "🎯 Hipótesis", "📈 Métricas FP",
          "🛡️ Robustez", "⚙️ Profiling", "🌳 Diversidad",
          "🎮 PBVS", "📦 Per-Object", "🎬 Video", "📚 Recursos"]
     )
@@ -114,6 +115,101 @@ if section == "📊 Resumen":
     img = load_image("experiments/results/pipeline_e2e/fig_pipeline_arquitectura.png")
     if img:
         st.image(img, caption="Pipeline TFM: FoundationPose + Diffusion Policy + CoppeliaSim")
+
+elif section == "💡 Innovación y SOTA":
+    st.title("Innovación, valor diferencial y estado del arte (mayo 2026)")
+
+    st.markdown("### En 60 segundos")
+    st.markdown(
+        "Este TFM **no inventa** FoundationPose ni Diffusion Policy — esas piezas ya "
+        "existen (CVPR 2024 y RSS 2023). Lo que hace es **integrarlas en un pipeline "
+        "E2E reproducible, estadísticamente riguroso y entrenable en un portátil**. "
+        "A fecha de mayo 2026, **nadie ha publicado en abierto** esta combinación con "
+        "este nivel de detalle estadístico."
+    )
+
+    st.markdown("### Mapa del estado del arte (mayo 2026)")
+
+    col_p, col_d = st.columns(2)
+    with col_p:
+        st.markdown("#### Percepción 6-DoF post-FoundationPose")
+        st.markdown(
+            "| Método | Año | Aporte |\n"
+            "|---|---|---|\n"
+            "| FreeZeV2 | 2025 | Training-free, 8× speedup, +5 % accuracy |\n"
+            "| Any6D | 2025 | Una sola imagen RGB-D, model-free |\n"
+            "| SamPose | 2025 | Open-world, single-view prompt (sin CAD) |\n"
+            "| NBV active perception | 2025 | 95 % success en escenarios ambiguos |\n"
+            "| BOP Challenge 2025 | Nov 2025 | Resultados ICCV'25 Honolulu |\n"
+        )
+    with col_d:
+        st.markdown("#### Planificación post-Diffusion Policy")
+        st.markdown(
+            "| Método | Año | Aporte |\n"
+            "|---|---|---|\n"
+            "| RDT-1B | Oct 2024 | 1,2 B params, bimanual, 46 datasets |\n"
+            "| π0 / π0-FAST / π0.5 | 2024-2025 | VLA flow matching, control 50 Hz |\n"
+            "| OpenVLA | 2024 | 7 B params, abre RT-2 paradigm |\n"
+            "| Two-Steps Diffusion | Oct 2025 | Solo 2 NFE (vs 25-100) |\n"
+            "| On-Device DiT Policy | ICCV 2025 | Latencia edge para tiempo real |\n"
+        )
+
+    st.markdown("---")
+    st.markdown("### Posicionamiento")
+
+    pos_col1, pos_col2 = st.columns([1, 1])
+    with pos_col1:
+        st.success(
+            "**Lo que SÍ aporta valor diferencial:**\n\n"
+            "1. Pipeline E2E **open-source MIT** que une FP + Diffusion + PBVS\n"
+            "2. **Bootstrap CI 95 %** B=1000 en todas las métricas\n"
+            "3. **Re-entrenamiento progresivo** demostrado: -89 % MSE, -93 % jerk\n"
+            "4. **Robustez cuantificada** (oclusión hasta 70 %, ruido hasta σ=10 mm)\n"
+            "5. **Validación E2E live** sobre 60+ instancias en CoppeliaSim\n"
+            "6. **Entrenamiento en M1 Pro MPS en 3,3 min** — sin datacenter\n"
+            "7. **Aplicaciones industriales mapeadas** por sector"
+        )
+    with pos_col2:
+        st.warning(
+            "**Lo que NO es novedoso (transparencia):**\n\n"
+            "- FoundationPose es de NVIDIA Labs (CVPR 2024)\n"
+            "- Diffusion Policy es de Columbia/Toyota (RSS 2023)\n"
+            "- PBVS en SE(3) existe desde los 90\n"
+            "- Combinar percepción + planificación + control lo hace cualquier pipeline\n\n"
+            "**El aporte es la integración pulida + auditoría estadística + democratización**, "
+            "no la novedad algorítmica."
+        )
+
+    st.markdown("### Limitaciones honestas")
+    st.markdown(
+        "- Solo simulación (CoppeliaSim). Sin robot físico. Sim-to-real no validado.\n"
+        "- Requiere CAD model — no funciona con objetos novel sin modelo.\n"
+        "- Single-arm, sin lenguaje natural (vs RDT-1B / π0).\n"
+        "- Cycle 6-7 s — superable: métodos on-device 2025 logran 1-3 s.\n"
+        "- FoundationPose tiene licencia NC (NVIDIA) — restricción comercial.\n"
+        "- Subset BOP-19 evaluado, no challenge completo — no comparable con leaderboard oficial."
+    )
+
+    st.markdown("### Comparativa de posicionamiento")
+    st.table(pd.DataFrame({
+        "Aspecto": ["Hardware", "Código", "Rigor estadístico", "Latencia",
+                    "Lenguaje natural", "Coste estación industrial"],
+        "Este TFM": ["~2 000 USD (M1 Pro)", "Open MIT", "Bootstrap CI 95 %",
+                     "6-7 s", "No", "< 5 000 USD"],
+        "SOTA puntera (RDT-1B, π0)": ["20-200 k USD cluster", "Open mayoritario",
+                                       "Habitualmente puntos", "1-3 s", "Sí (VLA)", "N/A"],
+        "Industriales (Isaac, Symbotic)": ["15-150 k USD", "Cerrado", "N/A publicado",
+                                            "< 1 s", "A veces", "15-150 k USD"],
+    }))
+
+    st.markdown("---")
+    st.markdown(
+        "**El nicho**: democratizar bin picking robótico para PYMES y educación, "
+        "manteniendo rigor académico.\n\n"
+        "**Documento completo**: "
+        "[`docs/INNOVACION_Y_ESTADO_DEL_ARTE.md`](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/blob/main/docs/INNOVACION_Y_ESTADO_DEL_ARTE.md) "
+        "(incluye 11 referencias clave verificadas en mayo 2026)."
+    )
 
 elif section == "🧠 Decisiones del pipeline":
     st.title("Cómo decide el sistema, paso a paso")

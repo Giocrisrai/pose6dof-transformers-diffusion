@@ -388,6 +388,65 @@ with gr.Blocks(title="TFM Pose 6-DoF Demo") as demo:
         - **Coste total estimado por estacion industrial**: < 5.000 USD vs 15.000-150.000 USD industriales.
         """)
 
+    with gr.Tab("💡  Por que este TFM importa"):
+        gr.Markdown("""
+        ## En 60 segundos
+
+        Este TFM **no inventa** FoundationPose ni Diffusion Policy — esas piezas ya existen
+        (CVPR 2024 y RSS 2023, respectivamente). Lo que hace es **integrarlas en un pipeline
+        E2E reproducible, estadisticamente riguroso y entrenable en un portatil** — algo que
+        a fecha de mayo 2026 **nadie ha publicado en abierto** con este nivel de detalle.
+
+        ## Lo que existe en mayo 2026 vs lo que aporta este TFM
+
+        | Frente | Estado del arte (2025-2026) | Que aporta este TFM |
+        |---|---|---|
+        | **Percepcion** | FreeZeV2 (8x speedup), Any6D, SamPose, NBV active perception (95 % en escenas ambiguas) | Pipeline reproducible con FoundationPose original + bootstrap CI 95 % |
+        | **Planificacion** | RDT-1B (1.2 B params, bimanual), 𝜋0 (flow matching), Two-Steps Diffusion (2 NFE), On-Device Transformer | Diffusion Policy UNet1D entrenable en M1 Pro en 3.3 min, MSE 0.0022 |
+        | **Control** | VLA models (OpenVLA, 𝜋0.5) — fin-to-end con lenguaje | PBVS clasico en SE(3) — interpretable, formal, sin dependencias |
+        | **Despliegue** | Stacks NVIDIA propietarios (Isaac, Symbotic) | Docker MIT, API REST, Gradio, Streamlit ejecutables en cualquier portatil |
+
+        ## Que NO es novedoso aqui (transparencia)
+
+        - **FoundationPose es de NVIDIA Labs**. No es nuestro.
+        - **Diffusion Policy es de Columbia/Toyota**. No es nuestro.
+        - **PBVS en SE(3)** existe desde los 90.
+        - **Combinar percepcion+planificacion+control** lo hacen todos los pipelines de manipulacion.
+
+        ## Que SI aporta valor diferencial
+
+        1. **Pipeline E2E open-source MIT** que une FP + Diffusion + PBVS — pocos existen.
+        2. **Bootstrap CI 95 % B=1000** en todas las metricas clave — raro en papers de manipulacion.
+        3. **Re-entrenamiento progresivo demostrado empiricamente**: original→extended→ultra (-89 % MSE, -93 % jerk con 10x datos).
+        4. **Robustez cuantificada** con curvas de oclusion {0,30,50,70} % y ruido sigma {0,2,5,10} mm.
+        5. **Validacion E2E live** en CoppeliaSim con cycle p95 sobre 60+ instancias.
+        6. **Entrenamiento Diffusion 100 epochs en M1 Pro MPS en 3.3 min** — accesible sin datacenter.
+        7. **Aplicaciones industriales mapeadas** por sector con metricas viables y empresas referencia.
+
+        ## Limitaciones honestas
+
+        - Solo simulacion (CoppeliaSim), no robot fisico — domain gap sim-to-real no validado.
+        - Requiere CAD model — no funciona con objetos sin modelo (vs SamPose, Any6D).
+        - Single-arm, sin lenguaje natural — vs RDT-1B (bimanual) y 𝜋0 (VLA).
+        - Cycle 6-7 s — superable: metodos on-device 2025 alcanzan 1-3 s.
+        - FoundationPose tiene licencia NC (NVIDIA) — restriccion para uso comercial directo.
+        - Subset BOP-19 evaluado, no challenge completo — no comparable oficialmente con leaderboard.
+
+        ## Aporte de valor — donde marca diferencia
+
+        | Aspecto | TFM | SOTA punta-de-lanza | Industriales |
+        |---|---|---|---|
+        | Hardware | ~2 000 USD (M1 Pro) | 20-200 k USD (cluster GPU) | 15-150 k USD (vendor) |
+        | Codigo | Open-source MIT | Mayoritariamente abierto | Cerrado/propietario |
+        | Rigor estadistico | Bootstrap CI 95 % | Generalmente puntos | N/A publicado |
+        | Latencia | 6-7 s | 1-3 s | < 1 s |
+        | Lenguaje natural | No | Si (VLA) | A veces |
+
+        El nicho: *democratizar bin picking robotico para PYMES y educacion, manteniendo rigor academico.*
+
+        Documento completo: [`docs/INNOVACION_Y_ESTADO_DEL_ARTE.md`](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/blob/main/docs/INNOVACION_Y_ESTADO_DEL_ARTE.md)
+        """)
+
     with gr.Tab("🧠  Como funciona (detalle tecnico)"):
         gr.Markdown("""
         ## Pipeline en 4 etapas
