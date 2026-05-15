@@ -314,20 +314,31 @@ def draw_object(ax, center, color, shape):
 
 
 def render_sequence(scene_idx, scene, result, save_path):
-    """Renderiza la ejecucion secuencial: escena 3D con trayectorias coloreadas por paso."""
-    fig = plt.figure(figsize=(13, 6.5))
-    ax = fig.add_subplot(121, projection="3d")
+    """Renderiza la ejecucion secuencial: escena 3D arriba grande +
+    explicacion abajo (layout vertical, fuentes grandes)."""
+    plt.rcParams.update({
+        "font.size": 16, "axes.titlesize": 18, "axes.labelsize": 15,
+        "xtick.labelsize": 13, "ytick.labelsize": 13, "legend.fontsize": 13,
+    })
+    fig = plt.figure(figsize=(20, 14))
+    gs = fig.add_gridspec(2, 1, height_ratios=[2.0, 1.2], hspace=0.15)
+    fig.suptitle(f'Secuencia #{scene_idx+1}: "{scene["text"]}"',
+                  fontsize=22, fontweight="bold", y=0.985)
+    ax = fig.add_subplot(gs[0], projection="3d")
 
     xs = np.linspace(-0.5, 0.5, 2); ys = np.linspace(-0.5, 0.5, 2)
     xx, yy = np.meshgrid(xs, ys)
     ax.plot_surface(xx, yy, np.full_like(xx, 0.7), alpha=0.08, color="gray")
 
-    # Objetos con etiquetas
+    # Objetos con etiquetas grandes
     for i, obj in enumerate(scene["objects"]):
         draw_object(ax, obj["pos"], obj["color"], obj["shape"])
-        ax.text(obj["pos"][0], obj["pos"][1], obj["pos"][2] + 0.07,
-                  f"#{i+1}\n{obj['color']}\n{obj['shape']}",
-                  ha="center", fontsize=8)
+        ax.text(obj["pos"][0], obj["pos"][1], obj["pos"][2] + 0.10,
+                  f"#{i+1}: {obj['color']} {obj['shape']}",
+                  ha="center", fontsize=13, fontweight="bold",
+                  bbox=dict(boxstyle="round,pad=0.3",
+                              facecolor=COLORS_RGB_HEX[obj["color"]] + "30",
+                              edgecolor=COLORS_RGB_HEX[obj["color"]], linewidth=1.5))
 
     # Trayectorias con colormap por orden
     cmap = plt.cm.plasma
@@ -335,53 +346,54 @@ def render_sequence(scene_idx, scene, result, save_path):
     for k, step in enumerate(result["step_results"]):
         color = cmap(0.15 + 0.7 * k / max(n_steps - 1, 1))
         traj = step.trajectory
-        ax.plot(traj[:, 0], traj[:, 1], traj[:, 2], color=color, linewidth=2.5, alpha=0.9,
-                  label=f"Paso {k+1}: '{step.sub_text[:25]}...' -> #{step.chosen_idx+1}")
-        ax.scatter([traj[-1, 0]], [traj[-1, 1]], [traj[-1, 2]], s=120,
-                       c=[color], marker="*", edgecolor="white", linewidth=1)
+        sub_short = step.sub_text if len(step.sub_text) <= 32 else step.sub_text[:30] + "…"
+        ax.plot(traj[:, 0], traj[:, 1], traj[:, 2], color=color, linewidth=4, alpha=0.9,
+                  label=f"Paso {k+1}: '{sub_short}' → #{step.chosen_idx+1}", zorder=10)
+        ax.scatter([traj[-1, 0]], [traj[-1, 1]], [traj[-1, 2]], s=260,
+                       c=[color], marker="*", edgecolor="white", linewidth=2, zorder=12)
 
-    ax.set_xlabel("X"); ax.set_ylabel("Y"); ax.set_zlabel("Z")
-    ax.set_xlim(-0.5, 0.5); ax.set_ylim(-0.5, 0.5); ax.set_zlim(0.65, 1.1)
-    ax.set_title(f"Secuencia #{scene_idx+1}", fontsize=11)
-    ax.legend(loc="upper left", fontsize=7)
-    ax.grid(True, alpha=0.2)
+    ax.set_xlabel("X (m)", fontsize=15, labelpad=10)
+    ax.set_ylabel("Y (m)", fontsize=15, labelpad=10)
+    ax.set_zlabel("Z (m)", fontsize=15, labelpad=10)
+    ax.set_xlim(-0.5, 0.5); ax.set_ylim(-0.5, 0.5); ax.set_zlim(0.65, 1.18)
+    ax.legend(loc="upper left", fontsize=13, framealpha=0.95)
+    ax.grid(True, alpha=0.3)
+    ax.view_init(elev=22, azim=-45)
 
-    # Texto explicativo
-    ax2 = fig.add_subplot(122)
+    # Texto explicativo grande abajo
+    ax2 = fig.add_subplot(gs[1])
     ax2.set_axis_off()
     text_lines = [
-        f"Instruccion completa:",
+        f"INSTRUCCIÓN COMPLETA",
         f'   "{scene["text"]}"',
         "",
-        f"Sub-pasos parseados ({len(result['parsed_steps'])}):"
+        f"SUB-PASOS PARSEADOS ({len(result['parsed_steps'])})  +  RESULTADO POR PASO",
+        "",
     ]
-    for k, sub in enumerate(result["parsed_steps"]):
-        text_lines.append(f"   {k+1}. \"{sub}\"")
-    text_lines.append("")
-    text_lines.append("Resultado por paso:")
     for k, (step, ok) in enumerate(zip(result["step_results"], result["step_correctness"])):
         obj = scene["objects"][step.chosen_idx]
         expected = scene["target_sequence"][k] if k < len(scene["target_sequence"]) else -1
         exp_obj = scene["objects"][expected] if expected >= 0 else None
         flag = "✓" if ok else "✗"
-        text_lines.append(f"   {flag} Paso {k+1}: eligio #{step.chosen_idx+1} "
-                            f"({obj['color']} {obj['shape']}) "
-                            f"conf={step.confidence:.0%}")
-        if exp_obj:
-            text_lines.append(f"      esperaba #{expected+1} ({exp_obj['color']} {exp_obj['shape']})")
-        text_lines.append(f"      distancia: {step.distance_to_target_cm:.1f} cm")
+        text_lines.append(
+            f"   {flag} Paso {k+1}: '{step.sub_text}'  →  Eligió #{step.chosen_idx+1} "
+            f"({obj['color']} {obj['shape']})   conf {step.confidence:.0%}   "
+            f"dist {step.distance_to_target_cm:.1f} cm"
+        )
     text_lines.append("")
-    flag_overall = "✓ TODOS CORRECTOS" if result["overall_correct"] else "✗ ALGUN PASO FALLO"
-    text_lines.append(f"OVERALL: {flag_overall}")
+    flag_overall = "✓ TODOS CORRECTOS" if result["overall_correct"] else "✗ ALGÚN PASO FALLÓ"
+    text_lines.append(f"RESULTADO OVERALL  →  {flag_overall}")
 
     bg_color = "#f0fdf4" if result["overall_correct"] else "#fee2e2"
     edge_color = "#16a34a" if result["overall_correct"] else "#dc2626"
-    ax2.text(0.02, 0.98, "\n".join(text_lines), transform=ax2.transAxes, fontsize=9,
-              verticalalignment="top", family="monospace",
-              bbox=dict(boxstyle="round,pad=0.5", facecolor=bg_color, edgecolor=edge_color))
+    ax2.text(0.02, 0.97, "\n".join(text_lines), transform=ax2.transAxes,
+              fontsize=14, verticalalignment="top",
+              family="DejaVu Sans", linespacing=1.5,
+              bbox=dict(boxstyle="round,pad=0.8", facecolor=bg_color,
+                          edgecolor=edge_color, linewidth=3))
 
-    plt.tight_layout()
-    plt.savefig(save_path, dpi=120, bbox_inches="tight", facecolor="white")
+    plt.savefig(save_path, dpi=120, bbox_inches="tight",
+                 facecolor="white", pad_inches=0.3)
     plt.close()
 
 

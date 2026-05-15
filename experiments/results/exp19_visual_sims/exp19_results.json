@@ -10,7 +10,7 @@
       "gate_a": 1.720785985526163e-05,
       "gate_b": 0.9999828338623047,
       "correct": true,
-      "distance_to_target_cm": 4.108495036522811
+      "distance_to_target_cm": 7.838258346655312
     },
     {
       "id": 2,
@@ -22,7 +22,7 @@
       "gate_a": 0.9999656677246094,
       "gate_b": 3.428875425015576e-05,
       "correct": true,
-      "distance_to_target_cm": 3.494622057092156
+      "distance_to_target_cm": 2.5273017366597035
     },
     {
       "id": 3,
@@ -34,7 +34,7 @@
       "gate_a": 4.811791586689651e-05,
       "gate_b": 0.9999518394470215,
       "correct": true,
-      "distance_to_target_cm": 5.76996542027114
+      "distance_to_target_cm": 11.235694868240817
     },
     {
       "id": 4,
@@ -46,7 +46,7 @@
       "gate_a": 0.9999551773071289,
       "gate_b": 4.479019844438881e-05,
       "correct": true,
-      "distance_to_target_cm": 2.1406593554853286
+      "distance_to_target_cm": 3.3496722308095714
     },
     {
       "id": 5,
@@ -58,7 +58,7 @@
       "gate_a": 1.912501102196984e-05,
       "gate_b": 0.9999809265136719,
       "correct": true,
-      "distance_to_target_cm": 4.130344119085287
+      "distance_to_target_cm": 4.114646567880569
     },
     {
       "id": 6,
@@ -70,7 +70,7 @@
       "gate_a": 4.880883716396056e-05,
       "gate_b": 0.9999512434005737,
       "correct": true,
-      "distance_to_target_cm": 3.2174667644484742
+      "distance_to_target_cm": 3.3611627431390323
     },
     {
       "id": 7,
@@ -82,7 +82,7 @@
       "gate_a": 0.0003365177835803479,
       "gate_b": 0.9996634721755981,
       "correct": true,
-      "distance_to_target_cm": 6.7830930223185355
+      "distance_to_target_cm": 9.10582998832672
     },
     {
       "id": 8,
@@ -94,7 +94,7 @@
       "gate_a": 0.9993627667427063,
       "gate_b": 0.0006372106145136058,
       "correct": true,
-      "distance_to_target_cm": 5.87290339011008
+      "distance_to_target_cm": 3.396898328318101
     },
     {
       "id": 9,
@@ -106,7 +106,7 @@
       "gate_a": 0.0008828934514895082,
       "gate_b": 0.9991170763969421,
       "correct": true,
-      "distance_to_target_cm": 2.009787319665575
+      "distance_to_target_cm": 5.030802393371179
     },
     {
       "id": 10,
@@ -118,7 +118,7 @@
       "gate_a": 0.9996408224105835,
       "gate_b": 0.0003592036955524236,
       "correct": true,
-      "distance_to_target_cm": 3.7062102420072374
+      "distance_to_target_cm": 4.817680539542491
     },
     {
       "id": 11,
@@ -130,7 +130,7 @@
       "gate_a": 0.010935836471617222,
       "gate_b": 0.9890641570091248,
       "correct": true,
-      "distance_to_target_cm": 5.566267113861546
+      "distance_to_target_cm": 3.1756834971965633
     },
     {
       "id": 12,
@@ -142,7 +142,7 @@
       "gate_a": 3.5918284993385896e-05,
       "gate_b": 0.9999641180038452,
       "correct": true,
-      "distance_to_target_cm": 4.041403972697695
+      "distance_to_target_cm": 6.149865391335152
     }
   ],
   "summary": {

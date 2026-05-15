@@ -123,84 +123,100 @@ def draw_object(ax, center, color, shape):
 
 
 def render_scene(scene, traj, gate_probs, text, target_idx, chosen_idx, save_path):
+    """Layout vertical: 3D arriba (fila completa) + barras + explicacion abajo."""
     plt.rcParams.update({
-        "font.size": 13, "axes.titlesize": 14, "axes.labelsize": 12,
-        "xtick.labelsize": 11, "ytick.labelsize": 11, "legend.fontsize": 11,
+        "font.size": 16, "axes.titlesize": 18, "axes.labelsize": 15,
+        "xtick.labelsize": 13, "ytick.labelsize": 13, "legend.fontsize": 13,
     })
-    fig = plt.figure(figsize=(20, 8))
-    gs = fig.add_gridspec(1, 3, width_ratios=[2.4, 1.4, 1.2], wspace=0.25)
+    fig = plt.figure(figsize=(20, 14))
+    gs = fig.add_gridspec(2, 2, height_ratios=[2.2, 1.0],
+                              width_ratios=[1.3, 1.0],
+                              hspace=0.25, wspace=0.15)
 
-    ax = fig.add_subplot(gs[0, 0], projection="3d")
+    target = scene["objects"][target_idx]
+    chosen = scene["objects"][chosen_idx]
+    ok = chosen_idx == target_idx
+    fig.suptitle(f'Instrucción: "{text}"   (N={scene["n_obj"]} objetos)',
+                  fontsize=22, fontweight="bold", y=0.985)
+
+    # === ESCENA 3D (fila superior, completa) ===
+    ax = fig.add_subplot(gs[0, :], projection="3d")
     xs = np.linspace(-0.5, 0.5, 2); ys = np.linspace(-0.5, 0.5, 2)
     xx, yy = np.meshgrid(xs, ys)
     ax.plot_surface(xx, yy, np.full_like(xx, 0.7), alpha=0.08, color="gray")
     for i, obj in enumerate(scene["objects"]):
         draw_object(ax, obj["pos"], obj["color"], obj["shape"])
-        marker = " ◀" if i == target_idx else ""
-        ax.text(obj["pos"][0], obj["pos"][1], obj["pos"][2] + 0.08,
-                  f"{i+1}: {obj['color']}\n{obj['shape']}{marker}",
-                  ha="center", fontsize=9, fontweight="bold" if i == target_idx else "normal")
-    ax.plot(traj[:, 0], traj[:, 1], traj[:, 2], color="#FF6B35", linewidth=3, alpha=0.85,
-              label="Trayectoria", zorder=10)
-    ax.scatter([traj[0,0]], [traj[0,1]], [traj[0,2]], s=150, c="black", marker="^",
-                  edgecolor="white", linewidth=1.5, label="Inicio", zorder=12)
-    ax.scatter([traj[-1,0]], [traj[-1,1]], [traj[-1,2]], s=180, c="#FF6B35", marker="*",
-                  edgecolor="white", linewidth=1.5, label="Agarre", zorder=12)
-    ax.set_xlabel("X (m)"); ax.set_ylabel("Y (m)"); ax.set_zlabel("Z (m)")
-    ax.set_xlim(-0.5, 0.5); ax.set_ylim(-0.5, 0.5); ax.set_zlim(0.65, 1.15)
-    ax.set_title(f'"{text}"  (N={scene["n_obj"]} objetos)',
-                  fontsize=15, fontweight="bold", pad=15)
-    ax.legend(loc="upper left", fontsize=11, framealpha=0.92)
-    ax.grid(True, alpha=0.25)
+        edge_c = "#16a34a" if i == target_idx else COLORS_RGB_HEX[obj["color"]]
+        lw = 3 if i == target_idx else 1.5
+        ax.text(obj["pos"][0], obj["pos"][1], obj["pos"][2] + 0.10,
+                  f"#{i+1}: {obj['color']} {obj['shape']}",
+                  ha="center", fontsize=14,
+                  fontweight="bold" if i == target_idx else "normal",
+                  bbox=dict(boxstyle="round,pad=0.3",
+                              facecolor=COLORS_RGB_HEX[obj["color"]] + "30",
+                              edgecolor=edge_c, linewidth=lw))
+    ax.plot(traj[:, 0], traj[:, 1], traj[:, 2], color="#FF6B35", linewidth=4,
+              alpha=0.9, label="Trayectoria planificada", zorder=10)
+    ax.scatter([traj[0,0]], [traj[0,1]], [traj[0,2]], s=260, c="black",
+                  marker="^", edgecolor="white", linewidth=2,
+                  label="Posición inicial del robot", zorder=12)
+    ax.scatter([traj[-1,0]], [traj[-1,1]], [traj[-1,2]], s=300, c="#FF6B35",
+                  marker="*", edgecolor="white", linewidth=2,
+                  label="Punto de agarre final", zorder=12)
+    ax.set_xlabel("X (m)", fontsize=15, labelpad=10)
+    ax.set_ylabel("Y (m)", fontsize=15, labelpad=10)
+    ax.set_zlabel("Z (m)", fontsize=15, labelpad=10)
+    ax.set_xlim(-0.5, 0.5); ax.set_ylim(-0.5, 0.5); ax.set_zlim(0.65, 1.18)
+    ax.legend(loc="upper left", fontsize=14, framealpha=0.95)
+    ax.grid(True, alpha=0.3)
+    ax.view_init(elev=22, azim=-45)
 
-    ax2 = fig.add_subplot(gs[0, 1])
+    # === BARRAS DE DECISION (fila inferior izquierda) ===
+    ax2 = fig.add_subplot(gs[1, 0])
     labels = [f"#{i+1}\n{o['color']}\n{o['shape']}" for i, o in enumerate(scene["objects"])]
     colors_bar = [COLORS_RGB_HEX[o["color"]] for o in scene["objects"]]
     probs_n = gate_probs[:scene["n_obj"]]
-    bars = ax2.bar(labels, probs_n, color=colors_bar, edgecolor="black", linewidth=1.8)
-    bars[target_idx].set_edgecolor("#FF6B35")
-    bars[target_idx].set_linewidth(4)
-    ax2.set_ylim(0, 1.15)
-    ax2.set_ylabel("Confianza del gate", fontsize=13)
-    ax2.set_title("Decision (target en naranja)", fontsize=14, fontweight="bold", pad=10)
-    ax2.axhline(0.5, color="gray", linestyle="--", alpha=0.4)
-    ax2.tick_params(axis="x", labelsize=10)
-    ax2.tick_params(axis="y", labelsize=11)
+    bars = ax2.bar(labels, probs_n, color=colors_bar,
+                       edgecolor="black", linewidth=2, width=0.6)
+    bars[target_idx].set_edgecolor("#16a34a")
+    bars[target_idx].set_linewidth(5)
+    ax2.set_ylim(0, 1.18)
+    ax2.set_ylabel("Confianza del gate (softmax)", fontsize=15, labelpad=10)
+    ax2.set_title("Decisión del modelo (target con borde verde)",
+                    fontsize=17, fontweight="bold", pad=12)
+    ax2.axhline(0.5, color="gray", linestyle="--", alpha=0.5, linewidth=1.5)
+    ax2.tick_params(axis="x", labelsize=12)
+    ax2.tick_params(axis="y", labelsize=13)
     for i, v in enumerate(probs_n):
-        ax2.text(i, v + 0.04, f"{v:.0%}", ha="center", fontweight="bold", fontsize=12)
+        ax2.text(i, v + 0.04, f"{v:.0%}",
+                   ha="center", fontweight="bold", fontsize=16,
+                   color="#16a34a" if i == target_idx else "#444")
     ax2.grid(True, alpha=0.3, axis="y")
 
-    ax3 = fig.add_subplot(gs[0, 2])
+    # === EXPLICACION (fila inferior derecha) ===
+    ax3 = fig.add_subplot(gs[1, 1])
     ax3.set_axis_off()
-    target = scene["objects"][target_idx]
-    chosen = scene["objects"][chosen_idx]
-    ok = chosen_idx == target_idx
     info = (
-        f"ESCENA\n\n"
-        f"  N = {scene['n_obj']} objetos\n\n"
-        f"INSTRUCCION\n\n"
-        f'  "{text}"\n\n'
-        f"TARGET ESPERADO\n\n"
-        f"  #{target_idx+1}: {target['color']}\n"
-        f"        {target['shape']}\n\n"
-        f"MODELO ELIGIO\n\n"
-        f"  #{chosen_idx+1}: {chosen['color']}\n"
-        f"        {chosen['shape']}\n"
-        f"  Confianza: {probs_n[chosen_idx]:.1%}\n\n"
-        f"RESULTADO\n\n"
-        f"  {'ACIERTA' if ok else 'ERROR'}\n\n"
-        f"DISTANCIA\n\n"
-        f"  {np.linalg.norm(traj[-1, :3] - target['pos'])*100:.1f} cm"
+        f"INSTRUCCIÓN\n"
+        f'   "{text}"\n\n'
+        f"ESCENA\n"
+        f"   {scene['n_obj']} objetos colocados sobre la mesa\n\n"
+        f"TARGET ESPERADO\n"
+        f"   Objeto #{target_idx+1}  →  {target['color']} {target['shape']}\n\n"
+        f"DECISIÓN DEL MODELO\n"
+        f"   Objeto #{chosen_idx+1}  →  {chosen['color']} {chosen['shape']}\n"
+        f"   Confianza: {probs_n[chosen_idx]:.1%}\n\n"
+        f"DISTANCIA al target  →  {np.linalg.norm(traj[-1, :3] - target['pos'])*100:.1f} cm\n\n"
+        f"RESULTADO  →  {'ACIERTA' if ok else 'ERROR'}"
     )
-    ax3.text(0.0, 0.97, info, transform=ax3.transAxes, fontsize=12,
-              verticalalignment="top", family="monospace", linespacing=1.4,
-              bbox=dict(boxstyle="round,pad=0.8",
+    ax3.text(0.02, 0.97, info, transform=ax3.transAxes, fontsize=15,
+              verticalalignment="top", family="DejaVu Sans", linespacing=1.5,
+              bbox=dict(boxstyle="round,pad=1.0",
                           facecolor="#f0fdf4" if ok else "#fee2e2",
-                          edgecolor="#16a34a" if ok else "#dc2626",
-                          linewidth=2))
+                          edgecolor="#16a34a" if ok else "#dc2626", linewidth=3))
 
-    plt.tight_layout()
-    plt.savefig(save_path, dpi=100, bbox_inches="tight", facecolor="white")
+    plt.savefig(save_path, dpi=120, bbox_inches="tight",
+                 facecolor="white", pad_inches=0.3)
     plt.close()
 
 

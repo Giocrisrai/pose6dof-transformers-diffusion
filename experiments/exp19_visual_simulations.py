@@ -153,112 +153,117 @@ def draw_object(ax, center, color, shape):
 
 
 def render_scene(scene, traj, gate_probs, text, save_path):
-    """Genera figura con la escena 3D + decision del modelo."""
-    # Estilo global mas legible
+    """Genera figura con layout vertical (2 filas): escena 3D arriba grande,
+    decisión + explicación abajo. Fuentes grandes para presentación.
+    """
     plt.rcParams.update({
-        "font.size": 13,
-        "axes.titlesize": 14,
-        "axes.labelsize": 12,
-        "xtick.labelsize": 11,
-        "ytick.labelsize": 11,
-        "legend.fontsize": 11,
+        "font.size": 16,
+        "axes.titlesize": 18,
+        "axes.labelsize": 15,
+        "xtick.labelsize": 13,
+        "ytick.labelsize": 13,
+        "legend.fontsize": 13,
     })
-    fig = plt.figure(figsize=(18, 8))
-    gs = fig.add_gridspec(1, 3, width_ratios=[2.4, 1.1, 1.4], wspace=0.25)
+    # Layout 2 filas: 3D (arriba ancho) + barras + explicación (abajo lado a lado)
+    fig = plt.figure(figsize=(18, 14))
+    gs = fig.add_gridspec(2, 2, height_ratios=[2.2, 1.0],
+                              width_ratios=[1.2, 1.0],
+                              hspace=0.25, wspace=0.15)
 
-    # PANEL A: Escena 3D
-    ax = fig.add_subplot(gs[0, 0], projection="3d")
-    # Mesa
-    xs = np.linspace(-0.5, 0.5, 2)
-    ys = np.linspace(-0.5, 0.5, 2)
-    xx, yy = np.meshgrid(xs, ys)
-    ax.plot_surface(xx, yy, np.full_like(xx, 0.7), alpha=0.1, color="gray")
-
-    # Objetos A y B
-    draw_object(ax, scene["p_a"], scene["c_a"], scene["s_a"])
-    draw_object(ax, scene["p_b"], scene["c_b"], scene["s_b"])
-
-    # Etiquetas
-    ax.text(scene["p_a"][0], scene["p_a"][1], scene["p_a"][2] + 0.08,
-              f"A:\n{scene['c_a']} {scene['s_a']}", ha="center", fontsize=9, fontweight="bold")
-    ax.text(scene["p_b"][0], scene["p_b"][1], scene["p_b"][2] + 0.08,
-              f"B:\n{scene['c_b']} {scene['s_b']}", ha="center", fontsize=9, fontweight="bold")
-
-    # Trayectoria
-    ax.plot(traj[:, 0], traj[:, 1], traj[:, 2], color="#FF6B35", linewidth=3, alpha=0.85,
-              label="Trayectoria planificada", zorder=10)
-    # Inicio
-    ax.scatter([traj[0, 0]], [traj[0, 1]], [traj[0, 2]], s=180, c="black", marker="^",
-                  edgecolor="white", linewidth=1.5, label="Posicion inicial", zorder=12)
-    # Endpoint
-    ax.scatter([traj[-1, 0]], [traj[-1, 1]], [traj[-1, 2]], s=200, c="#FF6B35", marker="*",
-                  edgecolor="white", linewidth=1.5, label="Punto de agarre", zorder=12)
-
-    ax.set_xlabel("X (m)"); ax.set_ylabel("Y (m)"); ax.set_zlabel("Z (m)")
-    ax.set_xlim(-0.5, 0.5); ax.set_ylim(-0.5, 0.5); ax.set_zlim(0.65, 1.15)
-    ax.set_title(f'Instruccion: "{text}"', fontsize=15, pad=15, fontweight="bold")
-    ax.legend(loc="upper left", fontsize=11, framealpha=0.92)
-    ax.grid(True, alpha=0.25)
-
-    # PANEL B: Gate probabilities
-    ax2 = fig.add_subplot(gs[0, 1])
-    labels = [f"A\n{scene['c_a']}\n{scene['s_a']}",
-                f"B\n{scene['c_b']}\n{scene['s_b']}"]
-    colors_bar = [COLORS_RGB_HEX[scene["c_a"]], COLORS_RGB_HEX[scene["c_b"]]]
-    ax2.bar(labels, gate_probs, color=colors_bar, edgecolor="black", linewidth=1.8)
-    ax2.set_ylim(0, 1.15)
-    ax2.set_ylabel("Confianza del gate", fontsize=13)
-    ax2.set_title("Decision del modelo", fontsize=14, fontweight="bold", pad=10)
-    ax2.axhline(0.5, color="gray", linestyle="--", alpha=0.5)
-    ax2.tick_params(axis="x", labelsize=11)
-    ax2.tick_params(axis="y", labelsize=11)
-    for i, v in enumerate(gate_probs):
-        ax2.text(i, v + 0.04, f"{v:.0%}", ha="center", fontweight="bold", fontsize=13)
-    ax2.grid(True, alpha=0.3, axis="y")
-
-    # PANEL C: Explicacion
-    ax3 = fig.add_subplot(gs[0, 2])
-    ax3.set_axis_off()
+    # === FILA 1: TÍTULO (banda superior) ===
     chosen = "A" if gate_probs[0] > gate_probs[1] else "B"
     chosen_color = scene["c_a"] if chosen == "A" else scene["c_b"]
     chosen_shape = scene["s_a"] if chosen == "A" else scene["s_b"]
     target_match = chosen == ("A" if scene["target_idx"] == 0 else "B")
     correct = "ACIERTA" if target_match else "ERROR"
+    fig.suptitle(f'Instrucción: "{text}"',
+                  fontsize=22, fontweight="bold", y=0.985)
 
-    text_box = (
-        f"ATRIBUTOS DE LA ESCENA\n"
-        f"\n"
-        f"  Objeto A : {scene['c_a']} {scene['s_a']}\n"
-        f"  Objeto B : {scene['c_b']} {scene['s_b']}\n"
-        f"\n"
-        f"INSTRUCCION RECIBIDA\n"
-        f"\n"
-        f'  "{text}"\n'
-        f"\n"
-        f"DECISION DEL MODELO\n"
-        f"\n"
-        f"  Eligio   : Objeto {chosen}\n"
-        f"             ({chosen_color} {chosen_shape})\n"
-        f"  Confianza: {max(gate_probs):.1%}\n"
-        f"\n"
+    # === FILA 1 izquierda + derecha: ESCENA 3D ocupa toda la fila ===
+    ax = fig.add_subplot(gs[0, :], projection="3d")
+    xs = np.linspace(-0.5, 0.5, 2); ys = np.linspace(-0.5, 0.5, 2)
+    xx, yy = np.meshgrid(xs, ys)
+    ax.plot_surface(xx, yy, np.full_like(xx, 0.7), alpha=0.1, color="gray")
+    draw_object(ax, scene["p_a"], scene["c_a"], scene["s_a"])
+    draw_object(ax, scene["p_b"], scene["c_b"], scene["s_b"])
+    ax.text(scene["p_a"][0], scene["p_a"][1], scene["p_a"][2] + 0.10,
+              f"A: {scene['c_a']} {scene['s_a']}",
+              ha="center", fontsize=15, fontweight="bold",
+              bbox=dict(boxstyle="round,pad=0.3",
+                          facecolor=COLORS_RGB_HEX[scene["c_a"]] + "30",
+                          edgecolor=COLORS_RGB_HEX[scene["c_a"]], linewidth=1.5))
+    ax.text(scene["p_b"][0], scene["p_b"][1], scene["p_b"][2] + 0.10,
+              f"B: {scene['c_b']} {scene['s_b']}",
+              ha="center", fontsize=15, fontweight="bold",
+              bbox=dict(boxstyle="round,pad=0.3",
+                          facecolor=COLORS_RGB_HEX[scene["c_b"]] + "30",
+                          edgecolor=COLORS_RGB_HEX[scene["c_b"]], linewidth=1.5))
+    ax.plot(traj[:, 0], traj[:, 1], traj[:, 2],
+              color="#FF6B35", linewidth=4, alpha=0.9,
+              label="Trayectoria planificada", zorder=10)
+    ax.scatter([traj[0, 0]], [traj[0, 1]], [traj[0, 2]],
+                  s=260, c="black", marker="^", edgecolor="white",
+                  linewidth=2, label="Posición inicial del robot", zorder=12)
+    ax.scatter([traj[-1, 0]], [traj[-1, 1]], [traj[-1, 2]],
+                  s=300, c="#FF6B35", marker="*", edgecolor="white",
+                  linewidth=2, label="Punto de agarre final", zorder=12)
+    ax.set_xlabel("X (m)", fontsize=15, labelpad=10)
+    ax.set_ylabel("Y (m)", fontsize=15, labelpad=10)
+    ax.set_zlabel("Z (m)", fontsize=15, labelpad=10)
+    ax.set_xlim(-0.5, 0.5); ax.set_ylim(-0.5, 0.5); ax.set_zlim(0.65, 1.18)
+    ax.legend(loc="upper left", fontsize=14, framealpha=0.95)
+    ax.grid(True, alpha=0.3)
+    ax.view_init(elev=22, azim=-45)
+
+    # === FILA 2 izquierda: BARRAS de confianza ===
+    ax2 = fig.add_subplot(gs[1, 0])
+    labels = [f"A: {scene['c_a']} {scene['s_a']}",
+                f"B: {scene['c_b']} {scene['s_b']}"]
+    colors_bar = [COLORS_RGB_HEX[scene["c_a"]], COLORS_RGB_HEX[scene["c_b"]]]
+    bars = ax2.bar(labels, gate_probs, color=colors_bar,
+                       edgecolor="black", linewidth=2.5, width=0.6)
+    target_bar = scene["target_idx"]
+    bars[target_bar].set_edgecolor("#16a34a")
+    bars[target_bar].set_linewidth(5)
+    ax2.set_ylim(0, 1.18)
+    ax2.set_ylabel("Confianza del gate (softmax)", fontsize=15, labelpad=10)
+    ax2.set_title("Decisión del modelo (target con borde verde)",
+                    fontsize=17, fontweight="bold", pad=12)
+    ax2.axhline(0.5, color="gray", linestyle="--", alpha=0.5, linewidth=1.5)
+    ax2.tick_params(axis="x", labelsize=13)
+    ax2.tick_params(axis="y", labelsize=13)
+    for i, v in enumerate(gate_probs):
+        ax2.text(i, v + 0.04, f"{v:.0%}",
+                   ha="center", fontweight="bold", fontsize=20,
+                   color="#16a34a" if i == target_bar else "#444")
+    ax2.grid(True, alpha=0.3, axis="y")
+
+    # === FILA 2 derecha: EXPLICACIÓN ===
+    ax3 = fig.add_subplot(gs[1, 1])
+    ax3.set_axis_off()
+    info = (
+        f"INSTRUCCIÓN\n"
+        f'   "{text}"\n\n'
+        f"OBJETOS EN LA ESCENA\n"
+        f"   A → {scene['c_a']} {scene['s_a']}\n"
+        f"   B → {scene['c_b']} {scene['s_b']}\n\n"
+        f"DECISIÓN DEL MODELO\n"
+        f"   Eligió: Objeto {chosen}  →  {chosen_color} {chosen_shape}\n"
+        f"   Confianza: {max(gate_probs):.1%}\n\n"
         f"TARGET ESPERADO\n"
-        f"\n"
-        f"  Objeto {'A' if scene['target_idx'] == 0 else 'B'}\n"
-        f"\n"
-        f"RESULTADO\n"
-        f"\n"
-        f"  {correct}"
+        f"   Objeto {'A' if scene['target_idx'] == 0 else 'B'}\n\n"
+        f"RESULTADO  →  {correct}"
     )
-    ax3.text(0.0, 0.97, text_box, transform=ax3.transAxes, fontsize=12,
-              verticalalignment="top", family="monospace",
-              linespacing=1.4,
-              bbox=dict(boxstyle="round,pad=0.8",
+    ax3.text(0.02, 0.97, info, transform=ax3.transAxes,
+              fontsize=15, verticalalignment="top",
+              family="DejaVu Sans", linespacing=1.5,
+              bbox=dict(boxstyle="round,pad=1.0",
                           facecolor="#f0fdf4" if target_match else "#fee2e2",
                           edgecolor="#16a34a" if target_match else "#dc2626",
-                          linewidth=2))
+                          linewidth=3))
 
-    plt.tight_layout()
-    plt.savefig(save_path, dpi=110, bbox_inches="tight", facecolor="white")
+    plt.savefig(save_path, dpi=120, bbox_inches="tight", facecolor="white",
+                 pad_inches=0.3)
     plt.close()
 
 
