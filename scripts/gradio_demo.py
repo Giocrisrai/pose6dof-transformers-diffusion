@@ -378,7 +378,8 @@ with gr.Blocks(title="TFM Pose 6-DoF Demo") as demo:
                 btn = gr.Button("▶  Generar trayectorias", variant="primary", size="lg")
 
             with gr.Column(scale=2):
-                output_plot = gr.Plot(label="Trayectorias en 3D")
+                gr.Markdown("### 🎯 Trayectorias en 3D")
+                output_plot = gr.Plot(show_label=False)
                 output_info = gr.Markdown()
 
         preset_btn.click(apply_preset, inputs=[preset], outputs=[pose_x, pose_y, pose_z, rot_x, rot_y, rot_z])
@@ -396,7 +397,8 @@ with gr.Blocks(title="TFM Pose 6-DoF Demo") as demo:
                 cmp_z = gr.Slider(0.5, 1.2, value=0.8, step=0.05, label="Z (m)")
                 cmp_btn = gr.Button("▶  Comparar los 3 modelos", variant="primary", size="lg")
             with gr.Column(scale=2):
-                cmp_plot = gr.Plot(label="3 modelos lado a lado")
+                gr.Markdown("### ⚖️ 3 modelos lado a lado")
+                cmp_plot = gr.Plot(show_label=False)
                 cmp_info = gr.Markdown()
         cmp_btn.click(compare_models, inputs=[cmp_x, cmp_y, cmp_z], outputs=[cmp_plot, cmp_info])
 
@@ -474,7 +476,8 @@ with gr.Blocks(title="TFM Pose 6-DoF Demo") as demo:
                 vla_btn = gr.Button("▶  Interpretar y planificar", variant="primary", size="lg")
 
             with gr.Column(scale=2):
-                vla_plot = gr.Plot(label="Trayectoria seleccionada por el modelo")
+                gr.Markdown("### 📐 Trayectoria seleccionada por el modelo")
+                vla_plot = gr.Plot(show_label=False)
                 vla_info = gr.Markdown()
 
         def vla_predict(pa_x, pa_y, pa_z, color_a, pb_x, pb_y, pb_z, color_b, text):
