@@ -32,67 +32,72 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 # === DESIGN TOKENS (replicando src/utils/plot_style.py) ===
 COLORS = {
-    "primary":  "#0098CD",
-    "primary_dark": "#006B92",
-    "accent":   "#FF6B35",
-    "accent_dark": "#CC5429",
-    "success":  "#16A34A",
-    "success_dark": "#15803D",
-    "warning":  "#F59E0B",
-    "danger":   "#DC2626",
+    "primary":  "#0070A8",        # Azul mas oscuro para mejor contraste con texto blanco
+    "primary_dark": "#004C73",
+    "accent":   "#E55525",        # Naranja mas saturado
+    "accent_dark": "#A33D17",
+    "success":  "#0F7A37",        # Verde mas oscuro
+    "success_dark": "#0B5A29",
+    "warning":  "#B97309",        # Ambar oscuro
+    "danger":   "#A91D1D",
     "ink":      "#0F172A",
-    "ink_soft": "#334155",
-    "muted":    "#64748B",
-    "border":   "#E2E8F0",
+    "ink_soft": "#1E293B",        # Mas oscuro para flechas y bordes
+    "muted":    "#475569",        # Mas oscuro
+    "border":   "#CBD5E1",
     "surface":  "#F8FAFC",
-    "purple":   "#A855F7",
-    "cyan":     "#06B6D4",
-    "teal":     "#14B8A6",
-    "amber":    "#EAB308",
+    "purple":   "#7E22CE",        # Purpura mas oscuro
+    "cyan":     "#0E7490",        # Cyan oscuro (legible con blanco)
+    "teal":     "#0F766E",        # Teal oscuro
+    "amber":    "#A16207",        # Amber muy legible con blanco
 }
 
 COMMON_GRAPH_ATTR = {
     "rankdir": "LR",
     "bgcolor": "white",
-    "pad": "0.5",
+    "pad": "0.6",
     "fontname": "Helvetica",
-    "fontsize": "14",
+    "fontsize": "15",
     "splines": "spline",
     "concentrate": "false",
-    "nodesep": "0.6",
-    "ranksep": "0.8",
+    "nodesep": "0.7",
+    "ranksep": "1.0",
+    "dpi": "150",
 }
 
 COMMON_NODE_ATTR = {
     "shape": "box",
     "style": "rounded,filled",
-    "fontname": "Helvetica",
-    "fontsize": "12",
-    "margin": "0.2,0.15",
-    "penwidth": "2",
+    "fontname": "Helvetica-Bold",
+    "fontsize": "14",
+    "margin": "0.25,0.18",
+    "penwidth": "2.5",
 }
 
 COMMON_EDGE_ATTR = {
-    "fontname": "Helvetica",
-    "fontsize": "10",
-    "color": COLORS["ink_soft"],
-    "penwidth": "1.8",
-    "arrowsize": "0.9",
+    "fontname": "Helvetica-Bold",
+    "fontsize": "12",
+    "color": "#0F172A",
+    "fontcolor": "#0F172A",
+    "penwidth": "2.2",
+    "arrowsize": "1.1",
 }
 
 
 def styled_node(g, name, label, color, text_color="white", subtitle=None):
-    """Caja con titulo + subtitulo opcional en HTML-like."""
+    """Caja con titulo + subtitulo opcional en HTML-like. Siempre BOLD."""
+    # Para todos los nodos usamos HTML-like con bold y tamano consistente
     if subtitle:
         html_label = (
             f"<<table border='0' cellpadding='6'>"
-            f"<tr><td><font face='Helvetica' point-size='13' color='{text_color}'><b>{label}</b></font></td></tr>"
-            f"<tr><td><font face='Helvetica' point-size='10' color='{text_color}'>{subtitle}</font></td></tr>"
+            f"<tr><td><font face='Helvetica-Bold' point-size='15' color='{text_color}'><b>{label}</b></font></td></tr>"
+            f"<tr><td><font face='Helvetica' point-size='11' color='{text_color}'>{subtitle}</font></td></tr>"
             f"</table>>"
         )
-        g.node(name, label=html_label, fillcolor=color, color=color)
     else:
-        g.node(name, label=label, fillcolor=color, color=color, fontcolor=text_color)
+        html_label = (
+            f"<<font face='Helvetica-Bold' point-size='15' color='{text_color}'><b>{label}</b></font>>"
+        )
+    g.node(name, label=html_label, fillcolor=color, color=color)
 
 
 # ============================================================================
@@ -136,8 +141,8 @@ def diag10_pipeline_full():
     with g.subgraph(name="cluster_vla") as c:
         c.attr(label="VLA-lite (exp 4-13)",
                  style="rounded,filled", fillcolor=COLORS["surface"],
-                 color=COLORS["primary"], penwidth="2",
-                 fontname="Helvetica", fontsize="12",
+                 color=COLORS["primary"], penwidth="2.5",
+                 fontname="Helvetica-Bold", fontsize="14",
                  fontcolor=COLORS["primary_dark"], labelloc="t")
         styled_node(c, "user",  "Usuario",          COLORS["muted"],   subtitle="texto en lenguaje natural")
         styled_node(c, "clip_t", "CLIP-text (frozen)", COLORS["purple"], subtitle="512-D embedding")
@@ -174,7 +179,8 @@ def diag11_vla_lite_flow():
     # Inputs
     with g.subgraph(name="cluster_input") as c:
         c.attr(label="ENTRADAS", style="dashed",
-                 color=COLORS["muted"], fontcolor=COLORS["muted"], fontname="Helvetica")
+                 color=COLORS["ink_soft"], fontcolor=COLORS["ink_soft"],
+                 fontname="Helvetica-Bold", fontsize="13")
         styled_node(c, "instr",   "Instruccion",       COLORS["amber"],
                        subtitle="'pick the red sphere'")
         styled_node(c, "scene",   "Escena (RGB)",       COLORS["muted"],
@@ -182,10 +188,10 @@ def diag11_vla_lite_flow():
 
     # CLIP encoders (ambos frozen)
     with g.subgraph(name="cluster_clip") as c:
-        c.attr(label="CLIP (frozen, 150 M params)", style="rounded,filled",
-                 fillcolor="#F3E8FF", color=COLORS["purple"], penwidth="2",
-                 fontname="Helvetica", fontsize="11",
-                 fontcolor="#6B21A8", labelloc="t")
+        c.attr(label="CLIP (frozen · 150 M params)", style="rounded,filled",
+                 fillcolor="#F3E8FF", color=COLORS["purple"], penwidth="2.5",
+                 fontname="Helvetica-Bold", fontsize="13",
+                 fontcolor="#581C87", labelloc="t")
         styled_node(c, "tok",    "CLIPTokenizer",      COLORS["purple"])
         styled_node(c, "text_enc", "CLIPTextModel",     COLORS["purple"],
                        subtitle="output 512-D")
@@ -195,12 +201,12 @@ def diag11_vla_lite_flow():
     # Gate entrenable
     with g.subgraph(name="cluster_gate") as c:
         c.attr(label="MODULOS ENTRENABLES (~150 K params)", style="rounded,filled",
-                 fillcolor="#E0F2F1", color=COLORS["teal"], penwidth="2",
-                 fontname="Helvetica", fontsize="11",
-                 fontcolor="#0F766E", labelloc="t")
-        styled_node(c, "proj_t", "text_proj\n(512 → 64)",  COLORS["teal"])
-        styled_node(c, "proj_v", "vis_proj\n(768 → 64)",   COLORS["teal"])
-        styled_node(c, "score",  "Scorer MLP\n+ softmax",  COLORS["cyan"])
+                 fillcolor="#CCFBF1", color=COLORS["teal"], penwidth="2.5",
+                 fontname="Helvetica-Bold", fontsize="13",
+                 fontcolor="#134E4A", labelloc="t")
+        styled_node(c, "proj_t", "text_proj",  COLORS["teal"], subtitle="512 → 64")
+        styled_node(c, "proj_v", "vis_proj",   COLORS["teal"], subtitle="768 → 64")
+        styled_node(c, "score",  "Scorer MLP", COLORS["cyan"], subtitle="+ softmax")
 
     # Resultado
     styled_node(g, "gates",      "Gates por objeto",    COLORS["success"],
@@ -300,34 +306,41 @@ def diag13_data_flow():
                     "Latencia total p95 &lt; 7 s en M1 Pro</font>>"),
               labelloc="t")
 
-    # Inputs (oval = datos)
-    g.node("rgb",    "RGB image\n(H × W × 3, uint8)",       shape="oval", style="filled",
-              fillcolor="#FEF3C7", color=COLORS["warning"], fontsize="11")
-    g.node("depth",  "Depth image\n(H × W, float32 mm)",    shape="oval", style="filled",
-              fillcolor="#FEF3C7", color=COLORS["warning"], fontsize="11")
-    g.node("text",   "Instruccion\nstring",                  shape="oval", style="filled",
-              fillcolor="#FEF3C7", color=COLORS["warning"], fontsize="11")
-    g.node("cad",    "CAD del objeto\n(.ply mesh)",         shape="oval", style="filled",
-              fillcolor="#FEF3C7", color=COLORS["warning"], fontsize="11")
+    # Helpers para nodos de datos (oval) con HTML-like en BOLD
+    def data_node(name, title, sub, fill="#FEF3C7", border=COLORS["warning"], fcolor="#1E293B"):
+        html = (
+            f"<<table border='0' cellpadding='4'>"
+            f"<tr><td><font face='Helvetica-Bold' point-size='14' color='{fcolor}'><b>{title}</b></font></td></tr>"
+            f"<tr><td><font face='Helvetica' point-size='11' color='{fcolor}'>{sub}</font></td></tr>"
+            f"</table>>"
+        )
+        g.node(name, label=html, shape="oval", style="filled", fillcolor=fill,
+                  color=border, penwidth="2.5")
+
+    # Inputs
+    data_node("rgb",   "RGB image",       "H × W × 3, uint8")
+    data_node("depth", "Depth image",     "H × W, float32 mm")
+    data_node("text",  "Instruccion",     "string")
+    data_node("cad",   "CAD del objeto",  ".ply mesh")
 
     # Procesos (rectangulos con color)
-    styled_node(g, "fp_proc",   "FoundationPose\n~ 4 000 ms",   COLORS["primary"])
-    styled_node(g, "clip_proc", "CLIP encode\n~ 50 ms",          COLORS["purple"])
-    styled_node(g, "gate_proc", "VisualGate\n~ 1 ms",            COLORS["cyan"])
-    styled_node(g, "diff_proc", "Diffusion DDIM-25\n~ 90 ms",    COLORS["teal"])
-    styled_node(g, "pbvs_proc", "PBVS SE(3)\n~ 1 800 ms",        COLORS["accent_dark"])
+    styled_node(g, "fp_proc",   "FoundationPose",   COLORS["primary"],     subtitle="~ 4 000 ms")
+    styled_node(g, "clip_proc", "CLIP encode",       COLORS["purple"],      subtitle="~ 50 ms")
+    styled_node(g, "gate_proc", "VisualGate",        COLORS["cyan"],        subtitle="~ 1 ms")
+    styled_node(g, "diff_proc", "Diffusion DDIM-25", COLORS["teal"],        subtitle="~ 90 ms")
+    styled_node(g, "pbvs_proc", "PBVS SE(3)",        COLORS["accent_dark"], subtitle="~ 1 800 ms")
 
-    # Outputs
-    g.node("pose_out",  "Pose 6-DoF\nR en SO(3), t en mm",  shape="oval", style="filled",
-              fillcolor="#DCFCE7", color=COLORS["success"], fontsize="11")
-    g.node("emb_out",   "CLIP embedding\n512-D / 768-D",      shape="oval", style="filled",
-              fillcolor="#DCFCE7", color=COLORS["success"], fontsize="11")
-    g.node("gates_out", "Gates softmax\nN × float",            shape="oval", style="filled",
-              fillcolor="#DCFCE7", color=COLORS["success"], fontsize="11")
-    g.node("traj_out",  "Trayectoria\n16 × 7 floats",          shape="oval", style="filled",
-              fillcolor="#DCFCE7", color=COLORS["success"], fontsize="11")
-    g.node("ctrl_out",  "Comando articular\n6-DoF joint pos",  shape="oval", style="filled",
-              fillcolor="#DCFCE7", color=COLORS["success"], fontsize="11")
+    # Outputs (verde claro)
+    data_node("pose_out",  "Pose 6-DoF",        "R en SO(3), t en mm",
+              fill="#DCFCE7", border=COLORS["success"])
+    data_node("emb_out",   "CLIP embedding",    "512-D / 768-D",
+              fill="#DCFCE7", border=COLORS["success"])
+    data_node("gates_out", "Gates softmax",     "N × float",
+              fill="#DCFCE7", border=COLORS["success"])
+    data_node("traj_out",  "Trayectoria",       "16 × 7 floats",
+              fill="#DCFCE7", border=COLORS["success"])
+    data_node("ctrl_out",  "Comando articular", "6-DoF joint pos",
+              fill="#DCFCE7", border=COLORS["success"])
 
     # Flujo
     g.edge("rgb", "fp_proc")
