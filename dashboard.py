@@ -739,11 +739,69 @@ elif section == "📦 Per-Object":
 
 elif section == "🎬 Video":
     st.title("Demo del pipeline E2E")
+
+    st.markdown(
+        "Este video muestra el **ciclo completo de bin picking** en simulacion "
+        "CoppeliaSim sobre el robot Ragnar (cinematica delta) con piezas del "
+        "dataset YCB-Video. La camara cenital reproduce una linea de produccion "
+        "tipo conveyor."
+    )
+
+    st.markdown("### Lo que vas a ver en el video")
+    colA, colB, colC = st.columns(3)
+    with colA:
+        st.markdown(
+            "**1. Percepcion 6-DoF**\n\n"
+            "FoundationPose recibe RGB-D + CAD y devuelve la pose `(R, t)` en "
+            "**~ 3.8 s**. El HUD lateral marca *FASE ACTUAL: PERCEPCION* y la "
+            "latencia acumulada."
+        )
+    with colB:
+        st.markdown(
+            "**2. Planificacion Diffusion**\n\n"
+            "Diffusion Policy genera **10 trayectorias multimodales** "
+            "condicionadas a la pose en **~ 90 ms (DDIM-25)**. El HUD pasa "
+            "a *PLANIFICACION DIFFUSION*."
+        )
+    with colC:
+        st.markdown(
+            "**3. Ejecucion + control**\n\n"
+            "Una trayectoria se ejecuta en CoppeliaSim (**~ 1.2 s**) cerrando "
+            "el lazo con PBVS en SE(3). El HUD muestra TOTAL ciclo y el "
+            "veredicto **H3 PASA** si el total < 10 s."
+        )
+
+    st.markdown("### Que demuestra (vinculo con las 3 hipotesis del TFM)")
+    st.markdown(
+        "- **H1** *(precision de pose)*: el cubo virtual de FoundationPose se "
+        "superpone correctamente con la pieza real -> AUC ADD-S = 0.908 YCB-V "
+        "/ 0.957 T-LESS.\n"
+        "- **H2** *(planificacion multimodal)*: cada ejecucion genera multiples "
+        "trayectorias alternativas, no una sola -> diversidad emergente sin "
+        "modos colapsados.\n"
+        "- **H3** *(viabilidad sin GPU dedicada)*: el HUD lateral muestra TOTAL "
+        "ciclo < 10 s ejecutado en MacBook Pro M1 Pro + Colab T4."
+    )
+
+    st.markdown("---")
+    st.markdown("### Reproduccion completa (pantalla completa recomendado)")
     video_path = REPO / "experiments/results/pipeline_e2e/demo_v2.mp4"
     if video_path.exists():
         st.video(str(video_path))
+        st.caption(
+            "Demo v2 — Robot Ragnar (delta) en CoppeliaSim Edu V4.10 sobre "
+            "escena `pickAndPlaceDemo`. Pulsa el icono de pantalla completa "
+            "para ver todos los detalles del HUD."
+        )
+
+    st.markdown("---")
+    st.subheader("Resumen visual en una sola imagen")
     img = load_image("experiments/results/pipeline_e2e/highlights_v2/composite_v2_3phases.png")
-    if img: st.image(img, caption="Composite v2: 3 fases del bin picking")
+    if img:
+        st.image(img, caption=(
+            "Composite v2: las 3 fases (percepcion -> planificacion -> "
+            "ejecucion) en un solo cuadro. Util para slides de defensa."
+        ), use_container_width=True)
 
 elif section == "📚 Recursos":
     st.title("Recursos y entregables")

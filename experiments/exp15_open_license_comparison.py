@@ -263,27 +263,64 @@ def main():
 def plot_pareto(results):
     import matplotlib.pyplot as plt
 
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    # Nuestra opcion seleccionada: FreeZeV2 (Apache-2.0, mejor open-license)
+    OUR_CHOICE = "freezev2"
+
+    fig, axes = plt.subplots(1, 2, figsize=(15, 6))
     for ax, (ds_name, ds_results) in zip(axes, results["datasets"].items()):
         for method, m_res in ds_results.items():
-            x = m_res["noise_t_mm_std"]  # proxy de "openness/risk"
+            x = m_res["noise_t_mm_std"]
             y = m_res["auc_adds_50mm"]["point"]
             ci_lo = m_res["auc_adds_50mm"]["lo"]
             ci_hi = m_res["auc_adds_50mm"]["hi"]
-            color = "#35876B" if m_res["commercializable"] else "#FF6B35"
+            is_ours = (method == OUR_CHOICE)
+            color = "#0F7A37" if m_res["commercializable"] else "#A33D17"
             marker = "o" if m_res["commercializable"] else "X"
-            ax.errorbar(x, y, yerr=[[y-ci_lo], [ci_hi-y]],
-                          fmt=marker, markersize=12, capsize=5,
-                          color=color, label=f"{method} ({m_res['license']})")
-            ax.annotate(method, (x, y), xytext=(8, 5), textcoords="offset points",
-                            fontsize=9)
-        ax.set_xlabel("Ruido translacion calibrado (mm)")
-        ax.set_ylabel("AUC ADD-S @50 mm")
-        ax.set_title(f"Pareto licencia × performance — {ds_name.upper()}")
-        ax.axhline(0.85, color="red", linestyle="--", alpha=0.5, linewidth=1)
-        ax.text(0.05, 0.86, "Umbral 0.85", color="red", fontsize=9, transform=ax.get_yaxis_transform())
+            ms = 22 if is_ours else 13
+            lw = 2.5 if is_ours else 1.5
+
+            ax.errorbar(x, y, yerr=[[y - ci_lo], [ci_hi - y]],
+                        fmt=marker, markersize=ms, capsize=6,
+                        color=color, ecolor=color, elinewidth=lw,
+                        markeredgecolor='white' if is_ours else color,
+                        markeredgewidth=2.5 if is_ours else 0.5,
+                        label=f"{method} ({m_res['license']})",
+                        zorder=5 if is_ours else 3)
+
+            # Anillo dorado para destacar nuestra opcion
+            if is_ours:
+                ax.scatter([x], [y], s=520, facecolors='none',
+                           edgecolors='#EAB308', linewidths=3, zorder=4)
+                ax.annotate(
+                    f"  NUESTRA OPCION\n  {method} (Apache-2.0)",
+                    (x, y), xytext=(18, -8), textcoords="offset points",
+                    fontsize=11, fontweight='bold', color='#0F7A37',
+                    bbox=dict(boxstyle='round,pad=0.4', fc='#FEF3C7',
+                              ec='#EAB308', lw=1.5))
+            else:
+                ax.annotate(method, (x, y), xytext=(10, 6),
+                            textcoords="offset points",
+                            fontsize=10, color='#1E293B', fontweight='bold')
+
+        ax.set_xlabel("Ruido traslacion calibrado (mm) — proxy de incertidumbre",
+                      fontsize=11, fontweight='bold')
+        ax.set_ylabel("AUC ADD-S @ 50 mm", fontsize=11, fontweight='bold')
+        ax.set_title(f"Pareto licencia x performance — {ds_name.upper()}",
+                     fontsize=13, fontweight='bold', color='#0F172A', pad=12)
+        ax.axhline(0.85, color='#A91D1D', linestyle='--', alpha=0.7, linewidth=1.5)
+        ax.text(0.02, 0.855, "Umbral aceptable 0.85", color='#A91D1D',
+                fontsize=10, fontweight='bold',
+                transform=ax.get_yaxis_transform())
         ax.grid(True, alpha=0.3)
-        ax.legend(fontsize=8, loc="lower left")
+        ax.legend(fontsize=9, loc="lower left", framealpha=0.95,
+                  title="Metodo (licencia)", title_fontsize=10)
+        for spine_name in ('top', 'right'):
+            ax.spines[spine_name].set_visible(False)
+
+    fig.suptitle(
+        "Nuestra eleccion: FreeZeV2 (Apache-2.0) — solo -3 pp AUC vs FoundationPose (NC), "
+        "compatible con uso comercial.",
+        fontsize=11, color='#475569', style='italic', y=-0.02)
 
     plt.tight_layout()
     out_png = OUTPUT / "fig_pareto.png"
