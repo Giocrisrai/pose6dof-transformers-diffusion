@@ -29,18 +29,110 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# CSS custom
+# CSS custom — tema profesional cohesionado
 st.markdown("""
 <style>
-    .metric-card {
-        background-color: #f5f5dc;
-        padding: 15px;
-        border-radius: 10px;
-        margin: 5px;
+    /* Tema principal */
+    .stApp {
+        background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
     }
-    .h1-status {
-        font-size: 18px;
-        font-weight: bold;
+
+    /* Headers con peso visual */
+    h1 {
+        color: #0F172A !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.025em;
+        margin-bottom: 0.5rem !important;
+    }
+    h2 {
+        color: #0F172A !important;
+        font-weight: 700 !important;
+        border-bottom: 3px solid #0098CD;
+        padding-bottom: 0.4rem;
+        margin-top: 1.8rem !important;
+    }
+    h3 {
+        color: #334155 !important;
+        font-weight: 600 !important;
+        margin-top: 1.2rem !important;
+    }
+
+    /* Tarjetas de metricas con sombra */
+    [data-testid="stMetric"] {
+        background: #FFFFFF;
+        padding: 1.1rem 1.3rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+        border-left: 4px solid #0098CD;
+        transition: transform 0.15s ease-out;
+    }
+    [data-testid="stMetric"]:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(15, 23, 42, 0.10), 0 2px 4px rgba(15, 23, 42, 0.06);
+    }
+    [data-testid="stMetricLabel"] {
+        color: #64748B !important;
+        font-weight: 500 !important;
+        font-size: 0.85rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    [data-testid="stMetricValue"] {
+        color: #0F172A !important;
+        font-weight: 800 !important;
+        font-size: 1.8rem !important;
+    }
+
+    /* Sidebar mas elegante */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #0F172A 0%, #1E293B 100%);
+    }
+    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] div {
+        color: #F1F5F9 !important;
+    }
+    [data-testid="stSidebar"] hr {
+        border-color: #334155 !important;
+    }
+
+    /* Botones primarios */
+    .stButton button {
+        background: linear-gradient(135deg, #0098CD 0%, #006B92 100%);
+        color: white !important;
+        border: none;
+        font-weight: 600;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 152, 205, 0.20);
+    }
+    .stButton button:hover {
+        box-shadow: 0 4px 8px rgba(0, 152, 205, 0.30);
+        transform: translateY(-1px);
+    }
+
+    /* Info/success/warning con estilo cohesionado */
+    [data-testid="stAlert"] {
+        border-radius: 10px;
+        border-left-width: 5px;
+    }
+
+    /* Tablas con look profesional */
+    [data-testid="stTable"], [data-testid="stDataFrame"] {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+    }
+
+    /* Code blocks */
+    pre, code {
+        font-family: 'JetBrains Mono', 'DejaVu Sans Mono', monospace !important;
+        border-radius: 8px !important;
+    }
+
+    /* Eliminar el padding superior excesivo */
+    .block-container {
+        padding-top: 2rem !important;
+        max-width: 1400px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -85,8 +177,6 @@ def load_image(path: str):
 
 if section == "📊 Resumen":
     st.title("Resumen ejecutivo")
-
-    col1, col2, col3 = st.columns(3)
     st.markdown(
         "**¿Qué es esto?** Un sistema que permite a un brazo robótico ver un objeto, "
         "decidir cómo cogerlo y planificar el movimiento — todo en menos de 7 s y sin "
@@ -96,10 +186,15 @@ if section == "📊 Resumen":
         "(YCB-Video, T-LESS)."
     )
 
+    # Figura hero: arquitectura del pipeline
+    hero_pipeline = REPO / "docs/figures_hero/01_pipeline_architecture.png"
+    if hero_pipeline.exists():
+        st.image(str(hero_pipeline), use_container_width=True)
+
     col1, col2, col3 = st.columns(3)
     col1.metric("Páginas TFM", "63")
-    col2.metric("Experimentos", "13", "+12 vs entrega 1")
-    col3.metric("Tests pasando", "123", "✓")
+    col2.metric("Experimentos", "26", "+25 vs entrega 1")
+    col3.metric("Tests pasando", "173", "✓ CI verde")
 
     col4, col5, col6 = st.columns(3)
     col4.metric("AUC ADD-S YCB-V", "0.908", "[CI 95% 0.901–0.916]")
@@ -118,7 +213,14 @@ if section == "📊 Resumen":
         st.image(img, caption="Pipeline TFM: FoundationPose + Diffusion Policy + CoppeliaSim")
 
 elif section == "🔬 Exploraciones post-TFM":
-    st.title("4 contribuciones novedosas sobre el TFM entregado")
+    st.title("13 contribuciones novedosas sobre el TFM entregado")
+
+    # Figura hero: dashboard de exploraciones
+    hero_explor = REPO / "docs/figures_hero/02_exploraciones_dashboard.png"
+    if hero_explor.exists():
+        st.image(str(hero_explor), use_container_width=True)
+        st.markdown("---")
+
     st.markdown(
         "Tras entregar el TFM se planificaron y ejecutaron 5 exploraciones con "
         "criterios numéricos de éxito. **Las 4 se mergearon a `main`** porque "
