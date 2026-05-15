@@ -60,10 +60,25 @@ st.markdown("""
         color: #0F172A !important;
     }
     .stApp table th { background: #F1F5F9 !important; font-weight: 700 !important; }
-    /* Excepcion: el sidebar mantiene texto claro porque es oscuro */
-    [data-testid="stSidebar"] *,
-    [data-testid="stSidebar"] p, [data-testid="stSidebar"] li,
-    [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {
+    /* Excepcion: el sidebar mantiene texto claro porque es oscuro.
+       Especificidad alta para ganar sobre .stApp .stMarkdown p (0,2,1) */
+    .stApp [data-testid="stSidebar"] *,
+    .stApp [data-testid="stSidebar"] p,
+    .stApp [data-testid="stSidebar"] li,
+    .stApp [data-testid="stSidebar"] span,
+    .stApp [data-testid="stSidebar"] label,
+    .stApp [data-testid="stSidebar"] strong,
+    .stApp [data-testid="stSidebar"] b,
+    .stApp [data-testid="stSidebar"] .stMarkdown,
+    .stApp [data-testid="stSidebar"] .stMarkdown p,
+    .stApp [data-testid="stSidebar"] .stMarkdown li,
+    .stApp [data-testid="stSidebar"] .stMarkdown span,
+    .stApp [data-testid="stSidebar"] .stMarkdown strong,
+    .stApp [data-testid="stSidebar"] [data-testid="stMarkdownContainer"],
+    .stApp [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p,
+    .stApp [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] li,
+    .stApp [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] span,
+    .stApp [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] strong {
         color: #F1F5F9 !important;
     }
 
