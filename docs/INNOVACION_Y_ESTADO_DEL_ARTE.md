@@ -228,8 +228,8 @@ Para quien quiera **reproducir** y obtener métricas equivalentes:
 
 - Pocos TFMs incluyen evaluación BOP-19 con CIs bootstrap.
 - Pocos TFMs entregan código MIT + Docker + API REST + Gradio + Streamlit
-  + 171 tests + 17 experimentos commiteados + tutorial Jupyter + paquete
-  PyPI propio.
+  + 173 tests + 26 experimentos commiteados + tutorial Jupyter + paquete
+  PyPI publicado oficialmente.
 - Pocos TFMs van más allá del paper a producto desplegable.
 
 ---
@@ -274,10 +274,12 @@ Lo que está vivo y funcionando ahora mismo:
 **Resultados verificados en vivo (mayo 2026)**:
 - API REST `POST /e2e` con n=5 instancias YCB-V: p95 = 5 076 ms (margen 4 924 ms)
 - API REST `POST /e2e` con n=5 instancias T-LESS: p95 = 6 117 ms (margen 3 883 ms)
-- 171 tests pasando (123 del TFM + 48 de exploraciones)
-- 5 modelos Diffusion en disco (original 4 MB · extended 2.93 MB · ultra
-  5.15 MB · ultra_fast 5.16 MB distillado · clip 5.6 MB con VLA-lite) listos
-  para inferencia
+- 173 tests pasando (123 del TFM + 50 de exploraciones)
+- 10 modelos Diffusion en disco (original 4 MB · extended 2.93 MB · ultra
+  5.15 MB · ultra_fast 5.16 MB distillado · clip 5.6 MB color · clip_shapes
+  5.6 MB color+forma · clip_multi 5.6 MB multi-objeto · clip_size 5.6 MB
+  con tamaño · clip_image 6.36 MB visual grounding · clip_spatial 5.61 MB
+  razonamiento espacial) listos para inferencia
 
 ---
 
@@ -312,9 +314,11 @@ cumplen los criterios. Documentación completa: [`docs/PLAN_EXPLORACIONES_POST_T
    en training: CLIP aporta comprensión real del lenguaje, no plantilla
    memorizada. Validado con 900 frases (exp 17).
 
-**Total acumulado**: 171 tests · 7 modelos Diffusion · 1 paquete PyPI ·
-4 hallazgos metodológicos · 8 documentos de cierre · 22 simulaciones
-visuales 3D (12 de N=2 + 10 de N=2..5) · 1 doc de extrapolación industrial.
+**Total acumulado**: 173 tests · 10 modelos Diffusion · **1 paquete PyPI
+publicado oficialmente** (`pip install bop-bootstrap-ci`) · 4 hallazgos
+metodológicos · 13 documentos de cierre · 30+ simulaciones visuales 3D
+(12 exp19 + 10 exp21 + 8 exp23) · 1 doc de extrapolación industrial ·
+1 roadmap post-TFM.
 
 **Extrapolación industrial documentada**: el pipeline multi-atributo del
 exp 6 escala directamente a logística (Amazon, DHL), reciclaje (AMP, TOMRA),

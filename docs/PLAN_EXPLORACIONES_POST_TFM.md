@@ -223,8 +223,9 @@ sobre escenas multi-objeto). Bootstrap CI sobre ello.
 | 13 | Razonamiento espacial (leftmost/closest/highest) | ✅ **Éxito → mergeada** ([detalle](exploraciones/13_spatial_reasoning.md)) | 0.5 |
 
 **Resumen final**: 13/13 exploraciones cumplen criterios. ~9 días totales invertidos.
-171 tests pasando · 10 modelos Diffusion · 1 paquete PyPI · 4 hallazgos metodológicos
-corregidos honestamente · 13 documentos de cierre · 22 simulaciones visuales generadas.
+173 tests pasando · 10 modelos Diffusion · **paquete `bop-bootstrap-ci 0.1.0`
+publicado oficialmente en PyPI** · 4 hallazgos metodológicos corregidos
+honestamente · 13 documentos de cierre · 30+ simulaciones visuales generadas.
 
 **Roadmap industrial completo en simulación**: las 3 extensiones del documento
 [`docs/EXTRAPOLACION_INDUSTRIAL.md`](EXTRAPOLACION_INDUSTRIAL.md) corto plazo

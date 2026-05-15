@@ -621,7 +621,7 @@ elif section == "📚 Recursos":
     ```
 
     ### Reproducibilidad
-    - 171 tests pasando (`pytest tests/ packages/bop_bootstrap_ci/tests/`)
+    - 173 tests pasando (`pytest tests/ packages/bop_bootstrap_ci/tests/`)
     - 12 experimentos commiteados con resultados
     - RUN_CARD trazable hasta commit
     - Bootstrap CI 95% B=1000, semilla 42

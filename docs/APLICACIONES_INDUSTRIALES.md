@@ -256,7 +256,7 @@ Posibilidad de publicar en Hugging Face Spaces para que la comunidad pueda proba
 | Dashboard | `dashboard.py` | Métricas + resultados |
 | CLI experiments | `scripts/run_experiment.py` | Reproducir todos los experimentos |
 | Docker GPU | `docker/inference-gpu.Dockerfile` | Deployment industrial |
-| Pesos entrenados | `data/models/` | 5 modelos Diffusion (original/extended/ultra/ultra_fast/clip) + configs FP |
+| Pesos entrenados | `data/models/` | 10 modelos Diffusion (original/extended/ultra/ultra_fast + 6 VLA-lite: clip, clip_shapes, clip_multi, clip_size, clip_image, clip_spatial) + configs FP |
 | Pipeline open-license | `src/perception/checkpoint_adapter.py` | FreeZeV2 viable a −3 pp AUC (exp 15) |
 | VLA-lite con CLIP | `data/models/diffusion_policy_clip.pth` | "pick the red object" → 98.6 % selection acc (exp 16) |
 | Paquete PyPI | `packages/bop_bootstrap_ci/` | `pip install bop-bootstrap-ci` con bootstrap CI 95 % |

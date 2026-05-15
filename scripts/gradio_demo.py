@@ -666,8 +666,9 @@ Esta es la exploracion #4 del TFM: VLA-lite con coste 1000x menor que RDT-1B / p
 
         ## Total acumulado
 
-        - **171 tests** pasando (123 TFM + 48 exploraciones)
-        - **5 modelos Diffusion** entrenados (original, extended, ultra, ultra_fast, clip)
+        - **173 tests** pasando (123 TFM + 50 exploraciones)
+        - **10 modelos Diffusion** entrenados (original, extended, ultra, ultra_fast,
+          clip, clip_shapes, clip_multi, clip_size, clip_image, clip_spatial)
         - **1 paquete PyPI** listo para publicar
         - **4 hallazgos metodologicos** corregidos honestamente
         - **5 documentos de cierre** en `docs/exploraciones/` con criterios y limitaciones
@@ -799,7 +800,7 @@ Esta es la exploracion #4 del TFM: VLA-lite con coste 1000x menor que RDT-1B / p
 
         [github.com/Giocrisrai/pose6dof-transformers-diffusion](https://github.com/Giocrisrai/pose6dof-transformers-diffusion)
 
-        - 171 tests pasando (123 TFM + 48 de exploraciones)
+        - 173 tests pasando (123 TFM + 50 de exploraciones)
         - 13 experimentos commiteados con resultados reproducibles
         - Docker, API REST FastAPI, este demo Gradio y dashboard Streamlit incluidos
         """)
