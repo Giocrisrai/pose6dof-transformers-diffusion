@@ -229,12 +229,58 @@ import gradio as gr
 
 CUSTOM_CSS = """
 .gradio-container { font-family: 'Inter', -apple-system, system-ui, sans-serif; }
-.hero { background: linear-gradient(135deg, #0098CD 0%, #35876B 100%);
+
+/* === GARANTIZAR LEGIBILIDAD: todo el texto en color oscuro === */
+.gradio-container,
+.gradio-container .prose,
+.gradio-container p,
+.gradio-container li,
+.gradio-container span,
+.gradio-container td,
+.gradio-container th,
+.gradio-container label {
+    color: #0F172A !important;
+}
+.gradio-container h1, .gradio-container h2,
+.gradio-container h3, .gradio-container h4 {
+    color: #0F172A !important;
+    font-weight: 700 !important;
+}
+.gradio-container .prose strong,
+.gradio-container .prose b { color: #0F172A !important; font-weight: 700; }
+.gradio-container .prose code {
+    background: #F1F5F9 !important; color: #0F172A !important;
+    padding: 2px 6px; border-radius: 4px; font-size: 0.92em;
+}
+/* Tablas con bordes y fondo claro pero texto oscuro */
+.gradio-container table {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+}
+.gradio-container table th {
+    background: #F8FAFC !important;
+    color: #0F172A !important;
+    font-weight: 700 !important;
+    border-bottom: 2px solid #CBD5E1 !important;
+}
+.gradio-container table td {
+    color: #1E293B !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+}
+
+/* === Hero con texto blanco SOBRE el degradado === */
+.hero { background: linear-gradient(135deg, #0070A8 0%, #0F766E 100%);
         color: white; padding: 30px; border-radius: 12px; margin-bottom: 12px; }
-.hero h1 { color: white !important; font-size: 2.0rem; margin: 0 0 8px 0; }
-.hero p { color: rgba(255,255,255,0.95) !important; font-size: 1.05rem; margin: 0; }
-.callout { background: #f1f5f9; border-left: 4px solid #0098CD;
-           padding: 12px 16px; border-radius: 6px; margin: 10px 0; }
+.hero h1, .hero h1 * { color: #FFFFFF !important; font-size: 2.0rem;
+                        margin: 0 0 8px 0; font-weight: 800 !important; }
+.hero p, .hero p * { color: #FFFFFF !important;
+                      font-size: 1.05rem; margin: 0; opacity: 0.96; }
+
+.callout { background: #F1F5F9; border-left: 4px solid #0070A8;
+           padding: 14px 18px; border-radius: 6px; margin: 10px 0;
+           color: #0F172A !important; }
+.callout, .callout * { color: #0F172A !important; }
+.callout b, .callout strong { color: #0F172A !important; font-weight: 700; }
 """
 
 with gr.Blocks(title="TFM Pose 6-DoF Demo") as demo:

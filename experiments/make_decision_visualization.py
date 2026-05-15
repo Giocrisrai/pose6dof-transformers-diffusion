@@ -186,26 +186,57 @@ def build_decision_card(pred, dataset, model, scheduler, device):
     axD.set_title("4. CICLO COMPLETO (timeline)",
                   fontsize=11, fontweight='bold', color='#1D3557', pad=10)
     phases = [
-        ("FoundationPose\n(Transformer)", fp_ms, '#FF6B35'),
-        ("Diffusion Policy\n(planificacion)", diff_ms, '#35876B'),
-        ("Simulacion\n(CoppeliaSim)", NOMINAL_SIM_MS, '#1D3557'),
+        ("FoundationPose (Transformer)",   fp_ms,           '#0070A8'),
+        ("Diffusion Policy (planning)",    diff_ms,         '#0F766E'),
+        ("Simulacion (CoppeliaSim)",       NOMINAL_SIM_MS,  '#A33D17'),
     ]
+    bar_y = 0
     cumulative = 0
+    # Decidir donde poner el texto: dentro si la barra es ancha, sino con leader line
+    label_threshold_ms = max(800, total_ms * 0.08)  # 8 % del ancho total o 800 ms
+    leader_y_above = 0.45  # posicion vertical de etiquetas externas
+    leader_y_below = -0.45
+    use_above = True
     for label, dur, c in phases:
-        axD.barh(0, dur, left=cumulative, color=c, edgecolor='white', linewidth=2, height=0.5)
-        axD.text(cumulative + dur/2, 0, f"{label}\n{dur:.0f} ms",
-                 ha='center', va='center', fontsize=9, fontweight='bold', color='white')
+        axD.barh(bar_y, dur, left=cumulative, color=c,
+                  edgecolor='white', linewidth=2, height=0.45, zorder=2)
+        center_x = cumulative + dur / 2
+        if dur >= label_threshold_ms:
+            # Etiqueta dentro de la barra (cabe)
+            axD.text(center_x, bar_y, f"{label}\n{dur:.0f} ms",
+                      ha='center', va='center', fontsize=10,
+                      fontweight='bold', color='white', zorder=3)
+        else:
+            # Etiqueta externa con linea conectora
+            ty = leader_y_above if use_above else leader_y_below
+            axD.annotate(
+                f"{label}\n{dur:.0f} ms",
+                xy=(center_x, bar_y + (0.22 if use_above else -0.22)),
+                xytext=(center_x, ty),
+                ha='center', va='bottom' if use_above else 'top',
+                fontsize=10, fontweight='bold', color=c,
+                arrowprops=dict(arrowstyle='-', color=c, lw=1.2),
+                zorder=4,
+            )
+            use_above = not use_above
         cumulative += dur
-    axD.axvline(10000, color='red', linestyle='--', linewidth=2, alpha=0.7)
-    axD.text(10000, 0.6, '  Limite H3 (10 s)', fontsize=9, color='red')
-    axD.text(cumulative + 200, 0, f"  TOTAL: {total_ms:.0f} ms",
-             fontsize=11, fontweight='bold', va='center',
-             color='green' if total_ms < 10000 else 'red')
-    axD.set_xlim(0, max(11000, cumulative * 1.15))
-    axD.set_ylim(-0.6, 0.9)
-    axD.set_xlabel('Tiempo (ms)')
+
+    # Limite H3 + total con buen margen
+    axD.axvline(10000, color='#A91D1D', linestyle='--', linewidth=2, alpha=0.85)
+    axD.text(10000, 0.72, 'Limite H3 (10 s)', fontsize=10, color='#A91D1D',
+              fontweight='bold', ha='center')
+    axD.text(cumulative + 200, bar_y,
+              f"TOTAL  {total_ms:.0f} ms",
+              fontsize=12, fontweight='bold', va='center',
+              color='#0F7A37' if total_ms < 10000 else '#A91D1D')
+
+    axD.set_xlim(-200, max(11500, cumulative * 1.20))
+    axD.set_ylim(-0.95, 0.95)
+    axD.set_xlabel('Tiempo (ms)', fontsize=10)
     axD.set_yticks([])
     axD.grid(True, axis='x', alpha=0.3)
+    for spine in ('top', 'right', 'left'):
+        axD.spines[spine].set_visible(False)
 
     fig.suptitle(f"Decision del pipeline para 1 instancia  ·  "
                  f"{dataset.upper()} obj_id={obj_id}  ·  {obj_name}",

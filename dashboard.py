@@ -35,6 +35,36 @@ st.markdown("""
     /* Tema principal */
     .stApp {
         background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
+        color: #0F172A;
+    }
+
+    /* === GARANTIZAR LEGIBILIDAD DEL CUERPO DE TEXTO ===
+       Streamlit a veces hereda color claro del sistema; forzamos
+       explicitamente texto oscuro sobre fondo claro en todo el body. */
+    .stApp, .stApp p, .stApp li, .stApp span, .stApp div, .stApp label,
+    .stApp .stMarkdown, .stApp .stMarkdown p, .stApp .stMarkdown li,
+    .stApp .stMarkdown ul, .stApp .stMarkdown ol,
+    .stApp .stMarkdown span, .stApp .stMarkdown strong, .stApp .stMarkdown b,
+    .stApp .stText, .stApp .stCaption,
+    .stApp [data-testid="stMarkdownContainer"],
+    .stApp [data-testid="stMarkdownContainer"] p,
+    .stApp [data-testid="stMarkdownContainer"] li,
+    .stApp [data-testid="stMarkdownContainer"] span,
+    .stApp [data-testid="stMarkdownContainer"] strong,
+    .stApp [data-testid="stExpander"] p,
+    .stApp [data-testid="stExpander"] li {
+        color: #0F172A !important;
+    }
+    /* Tablas legibles */
+    .stApp table, .stApp table td, .stApp table th {
+        color: #0F172A !important;
+    }
+    .stApp table th { background: #F1F5F9 !important; font-weight: 700 !important; }
+    /* Excepcion: el sidebar mantiene texto claro porque es oscuro */
+    [data-testid="stSidebar"] *,
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] li,
+    [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {
+        color: #F1F5F9 !important;
     }
 
     /* Headers con peso visual */

@@ -1,129 +1,174 @@
 #!/usr/bin/env python3
-"""Genera el diagrama de arquitectura del pipeline TFM.
+"""Genera el diagrama de arquitectura del pipeline TFM con Graphviz.
 
-Bloques: Imagen RGB-D -> FoundationPose (Transformer) -> Pose 6-DoF SE(3)
-                     -> Diffusion Policy -> Trayectoria multimodal
-                     -> CoppeliaSim + Ragnar -> Pick&Place
-Marca SE(3)/SO(3) como interfaz matematica entre componentes.
+Reemplaza la version matplotlib previa (textos cortados, etiquetas
+superpuestas en las flechas) por una version con layout automatico,
+flechas tipadas y tipografia legible al proyectar.
+
+Bloques: Imagen RGB-D + CAD -> FoundationPose (Transformer)
+       -> SE(3) / SO(3) interfaz matematica
+       -> Diffusion Policy (UNet1D + DDIM)
+       -> Trayectoria 16 pasos
+       -> CoppeliaSim + Ragnar (validacion E2E)
 
 Salida: experiments/results/pipeline_e2e/fig_pipeline_arquitectura.png
 """
+from __future__ import annotations
 import os
 from pathlib import Path
 
-import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
-from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
+DOT_BIN = "/opt/homebrew/bin"
+if DOT_BIN not in os.environ.get("PATH", ""):
+    os.environ["PATH"] = f"{DOT_BIN}:{os.environ.get('PATH', '')}"
+
+import graphviz
 
 REPO = Path(__file__).resolve().parents[1]
-OUT = REPO / "experiments/results/pipeline_e2e/fig_pipeline_arquitectura.png"
-OUT.parent.mkdir(parents=True, exist_ok=True)
+OUT_DIR = REPO / "experiments/results/pipeline_e2e"
+OUT_DIR.mkdir(parents=True, exist_ok=True)
+OUT_STEM = OUT_DIR / "fig_pipeline_arquitectura"  # graphviz anade .png
 
-fig, ax = plt.subplots(figsize=(15, 8))
-ax.set_xlim(0, 16)
-ax.set_ylim(0, 9)
-ax.set_aspect('equal')
-ax.axis('off')
+# Paleta consistente con scripts/make_diagrams.py y src/utils/plot_style.py
+C = {
+    "input":      "#1E4E8C",   # azul profundo para entrada
+    "perception": "#0070A8",   # azul percepcion
+    "math":       "#7E22CE",   # purpura interfaz matematica
+    "planning":   "#0F766E",   # teal planificacion
+    "execution":  "#A33D17",   # naranja ejecucion
+    "output":     "#A16207",   # ambar validacion
+    "ink":        "#0F172A",
+    "ink_soft":   "#1E293B",
+    "border":     "#CBD5E1",
+    "surface":    "#F8FAFC",
+}
 
-# Colores
-COLOR_INPUT = '#E8F4F8'
-COLOR_PERCEPTION = '#0098CD'
-COLOR_PLANNING = '#35876B'
-COLOR_EXECUTION = '#E66B00'
-COLOR_OUTPUT = '#FFE4B5'
-COLOR_MATH = '#FFE4E1'
-COLOR_DARK = '#2C3E50'
 
-def block(x, y, w, h, text, fc, fs=11, bold=False):
-    box = FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.08",
-                          facecolor=fc, edgecolor=COLOR_DARK, linewidth=1.5)
-    ax.add_patch(box)
-    weight = 'bold' if bold else 'normal'
-    ax.text(x + w/2, y + h/2, text, ha='center', va='center',
-            fontsize=fs, weight=weight, wrap=True)
+def html_node(label: str, subtitle: str, ts: int = 16, ss: int = 12,
+              color: str = "white") -> str:
+    return (
+        f"<<table border='0' cellpadding='6'>"
+        f"<tr><td><font face='Helvetica-Bold' point-size='{ts}' color='{color}'>"
+        f"<b>{label}</b></font></td></tr>"
+        f"<tr><td><font face='Helvetica' point-size='{ss}' color='{color}'>"
+        f"{subtitle}</font></td></tr>"
+        f"</table>>"
+    )
 
-def arrow(x1, y1, x2, y2, label='', label_y_off=0.3, color=COLOR_DARK):
-    arr = FancyArrowPatch((x1, y1), (x2, y2),
-                          arrowstyle='->,head_width=0.4,head_length=0.6',
-                          color=color, linewidth=1.8, mutation_scale=15)
-    ax.add_patch(arr)
-    if label:
-        midx = (x1 + x2) / 2
-        midy = (y1 + y2) / 2 + label_y_off
-        ax.text(midx, midy, label, ha='center', va='bottom',
-                fontsize=9, style='italic', color=color,
-                bbox=dict(boxstyle='round,pad=0.25', facecolor='white',
-                          edgecolor='none', alpha=0.85))
 
-# --- Titulo ---
-ax.text(8, 8.5, 'Pipeline TFM: FoundationPose + Diffusion Policy para Bin Picking 6-DoF',
-        ha='center', va='center', fontsize=15, weight='bold', color=COLOR_DARK)
-ax.text(8, 8.05, 'Marco matemático unificado SE(3) / SO(3) + SDEs',
-        ha='center', va='center', fontsize=11, style='italic', color=COLOR_DARK)
+def build():
+    g = graphviz.Digraph("pipeline_tfm", format="png")
+    g.attr(rankdir="LR", bgcolor="white", pad="0.7",
+           nodesep="0.7", ranksep="1.1", splines="spline", dpi="160")
+    g.attr("node", shape="box", style="rounded,filled",
+           fontname="Helvetica-Bold", fontsize="14",
+           margin="0.28,0.20", penwidth="2.6")
+    g.attr("edge", fontname="Helvetica-Bold", fontsize="12",
+           color=C["ink"], fontcolor=C["ink"], penwidth="2.4", arrowsize="1.15")
 
-# --- Fila 1: ENTRADA ---
-block(0.3, 6.0, 2.4, 1.2, 'Imagen RGB-D\n(640×480)\n+ Modelo CAD', COLOR_INPUT, fs=10)
-block(0.3, 4.4, 2.4, 1.2, 'Datasets BOP\nT-LESS / YCB-V\n(subset BOP-19)', COLOR_INPUT, fs=10)
+    g.attr(label=(
+        "<<font face='Helvetica-Bold' point-size='22' color='#0F172A'>"
+        "<b>Pipeline TFM: FoundationPose + Diffusion Policy para Bin Picking 6-DoF</b>"
+        "</font><br/>"
+        "<font face='Helvetica-Oblique' point-size='13' color='#475569'>"
+        "Marco matematico unificado SE(3) / SO(3) + SDEs</font>>"
+    ), labelloc="t")
 
-# --- PERCEPCION (azul) ---
-block(3.4, 4.8, 3.5, 2.4,
-      'FoundationPose\n(Wen et al., CVPR 2024)\n\nTransformer\ncross-attention 2D-3D\n+ ICP neural', COLOR_PERCEPTION, fs=10, bold=True)
-arrow(2.7, 6.6, 3.4, 6.0, 'RGB-D')
-arrow(2.7, 5.0, 3.4, 5.5, 'GT pose')
+    # --- Entradas (cluster izquierdo) ---
+    with g.subgraph(name="cluster_in") as c:
+        c.attr(label="ENTRADAS", style="rounded,dashed",
+               color=C["ink_soft"], fontcolor=C["ink_soft"],
+               fontname="Helvetica-Bold", fontsize="13", labelloc="t")
+        c.node("rgbd", label=html_node("Imagen RGB-D + CAD", "640 × 480 · .ply mesh"),
+               fillcolor=C["input"], color=C["input"])
+        c.node("bop", label=html_node("Datasets BOP", "T-LESS · YCB-V · subset BOP-19"),
+               fillcolor=C["input"], color=C["input"])
 
-# --- INTERFAZ MATEMATICA SE(3) ---
-block(7.2, 5.5, 1.5, 1.0, 'SE(3) / SO(3)\nGrupo de Lie',
-      COLOR_MATH, fs=10, bold=True)
-arrow(6.9, 6.0, 7.2, 6.0, 'R, t')
+    # --- Percepcion ---
+    g.node("fp", label=html_node(
+        "FoundationPose",
+        "Wen et al. CVPR 2024<br/>Transformer cross-attn 2D-3D + ICP neural"),
+        fillcolor=C["perception"], color=C["perception"])
 
-# --- PLANIFICACION (verde) ---
-block(9.0, 4.8, 3.5, 2.4,
-      'Diffusion Policy\n(Chi et al., RSS 2023)\n\nDDPM scheduler\n+ ConditionalUNet1D\nSDE inversa', COLOR_PLANNING, fs=10, bold=True)
-arrow(8.7, 6.0, 9.0, 6.0, 'cond')
+    # --- Interfaz matematica ---
+    g.node("se3", label=html_node(
+        "SE(3) / SO(3)", "Grupo de Lie · T = (R, t)"),
+        fillcolor=C["math"], color=C["math"])
 
-# --- TRAYECTORIA ---
-block(13.0, 5.5, 2.7, 1.0, 'Trayectoria 7-DoF\n(horizon=16, DDIM 25)',
-      COLOR_OUTPUT, fs=10)
-arrow(12.5, 6.0, 13.0, 6.0, 'a₀…a₁₅')
+    # --- Planificacion ---
+    g.node("diff", label=html_node(
+        "Diffusion Policy",
+        "Chi et al. RSS 2023<br/>ConditionalUNet1D + DDIM-25 · SDE inversa"),
+        fillcolor=C["planning"], color=C["planning"])
 
-# --- Fila 2: EJECUCION (naranja) ---
-block(5.5, 1.8, 5.0, 2.0,
-      'CoppeliaSim Edu V4.10\nEscena pickAndPlaceDemo\n\nRobot Ragnar (delta)\nSimulación física stepped', COLOR_EXECUTION, fs=10, bold=True)
-arrow(14.4, 5.4, 10.5, 3.7, 'trayectoria', color=COLOR_DARK)
+    # --- Salida de planificacion ---
+    g.node("traj", label=html_node(
+        "Trayectoria 7-DoF", "horizon = 16 · DDIM 25 pasos"),
+        fillcolor=C["output"], color=C["output"], shape="folder")
 
-# --- VALIDACION ---
-block(11.5, 1.8, 4.0, 2.0,
-      'Validación E2E\n\nH1: AUC ADD-S\nH2: score multimodal\nH3: cycle p95 < 10s\n[Bootstrap CI 95%]', COLOR_OUTPUT, fs=10)
-arrow(10.5, 2.8, 11.5, 2.8, 'metricas')
+    # --- Ejecucion ---
+    g.node("sim", label=html_node(
+        "CoppeliaSim Edu V4.10",
+        "Robot Ragnar (delta) · simulacion fisica stepped"),
+        fillcolor=C["execution"], color=C["execution"])
 
-# --- TFM aporte ---
-block(0.3, 1.8, 5.0, 2.0,
-      'Aporte TFM original\n\n• Integración formal SE(3)+SDEs\n• Reproducción SOTA sin GPU dedicada\n• Bootstrap CI 95% B=1000\n• Validación visual reproducible',
-      '#F5F5DC', fs=9, bold=False)
-arrow(2.8, 3.8, 5.5, 3.8, '', color=COLOR_DARK)
+    # --- Validacion E2E ---
+    g.node("val", label=html_node(
+        "Validacion E2E",
+        "H1 AUC ADD-S · H2 score multimodal<br/>H3 cycle p95 &lt; 10 s · Bootstrap CI 95 %"),
+        fillcolor=C["output"], color=C["output"])
 
-# --- Math under FoundationPose ---
-ax.text(5.15, 4.4, r'output: $T \in \mathrm{SE}(3) = \mathrm{SO}(3) \ltimes \mathbb{R}^3$',
-        ha='center', va='center', fontsize=9, style='italic')
+    # --- Aporte TFM (caja informativa) ---
+    g.node("aporte", label=(
+        "<<table border='0' cellpadding='4'>"
+        "<tr><td align='center'><font face='Helvetica-Bold' point-size='14' color='#0F172A'>"
+        "<b>Aporte TFM original</b></font></td></tr>"
+        "<tr><td align='left'><font face='Helvetica' point-size='11' color='#1E293B'>"
+        "• Integracion formal SE(3) + SDEs<br align='left'/>"
+        "• Reproduccion SOTA sin GPU dedicada<br align='left'/>"
+        "• Bootstrap CI 95 % (B = 1000)<br align='left'/>"
+        "• Validacion visual reproducible</font></td></tr>"
+        "</table>>"
+    ), fillcolor=C["surface"], color=C["ink_soft"], shape="note", penwidth="2.0")
 
-# --- Math under Diffusion ---
-ax.text(10.75, 4.4, r'$dx = f(x,t)dt + g(t)\,d\bar{w}$ (SDE inversa)',
-        ha='center', va='center', fontsize=9, style='italic')
+    # --- Conexiones del flujo principal ---
+    g.edge("rgbd", "fp", label="RGB-D")
+    g.edge("bop",  "fp", label="GT pose", style="dashed")
+    g.edge("fp",   "se3", label="R, t")
+    g.edge("se3",  "diff", label="cond")
+    g.edge("diff", "traj", label="a0 ... aN")
+    g.edge("traj", "sim",  label="trayectoria")
+    g.edge("sim",  "val",  label="metricas")
 
-# --- Leyenda colores ---
-legend_elements = [
-    mpatches.Patch(facecolor=COLOR_INPUT, edgecolor=COLOR_DARK, label='Entrada'),
-    mpatches.Patch(facecolor=COLOR_PERCEPTION, edgecolor=COLOR_DARK, label='Percepción (Transformer)'),
-    mpatches.Patch(facecolor=COLOR_MATH, edgecolor=COLOR_DARK, label='Interfaz matemática'),
-    mpatches.Patch(facecolor=COLOR_PLANNING, edgecolor=COLOR_DARK, label='Planificación (Diffusion)'),
-    mpatches.Patch(facecolor=COLOR_EXECUTION, edgecolor=COLOR_DARK, label='Ejecución (Simulación)'),
-    mpatches.Patch(facecolor=COLOR_OUTPUT, edgecolor=COLOR_DARK, label='Salida / Validación'),
-]
-ax.legend(handles=legend_elements, loc='lower center', ncol=6, fontsize=9,
-          bbox_to_anchor=(0.5, -0.02), frameon=False)
+    # Conexion informativa del aporte
+    g.edge("aporte", "sim", style="dotted", arrowhead="none",
+           color=C["ink_soft"], penwidth="1.5")
 
-plt.tight_layout()
-plt.savefig(OUT, dpi=180, bbox_inches='tight', facecolor='white')
-plt.close()
-print(f"[OK] Diagrama generado: {OUT}")
-print(f"     Tamaño: {os.path.getsize(OUT)/1024:.0f} KB")
+    # --- Leyenda como cluster inferior ---
+    with g.subgraph(name="cluster_legend") as L:
+        L.attr(label="Leyenda", style="rounded", color=C["border"],
+               fontcolor=C["ink_soft"], fontname="Helvetica-Bold",
+               fontsize="12", labelloc="t")
+        items = [
+            ("L1", "Entrada",                   C["input"]),
+            ("L2", "Percepcion (Transformer)",  C["perception"]),
+            ("L3", "Interfaz matematica",       C["math"]),
+            ("L4", "Planificacion (Diffusion)", C["planning"]),
+            ("L5", "Ejecucion (Simulacion)",    C["execution"]),
+            ("L6", "Salida / Validacion",       C["output"]),
+        ]
+        for nid, txt, col in items:
+            L.node(nid, label=(
+                f"<<font face='Helvetica-Bold' point-size='12' color='white'>"
+                f"<b>{txt}</b></font>>"
+            ), fillcolor=col, color=col, shape="box",
+                    style="rounded,filled", margin="0.18,0.10")
+        # Invisibles para forzar orden horizontal
+        for a, b in zip([i[0] for i in items], [i[0] for i in items[1:]]):
+            L.edge(a, b, style="invis")
+
+    g.render(str(OUT_STEM), format="png", cleanup=True)
+    print(f"[OK] Diagrama generado: {OUT_STEM}.png")
+
+
+if __name__ == "__main__":
+    build()
