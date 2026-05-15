@@ -33,30 +33,31 @@ OUT.mkdir(parents=True, exist_ok=True)
 # ============================================================================
 def fig01_pipeline_architecture():
     apply_style("presentation")
-    fig, ax = plt.subplots(figsize=(18, 9))
-    ax.set_xlim(0, 18); ax.set_ylim(0, 9)
-    ax.set_aspect("equal")
+    # Lienzo mas grande para que quepa todo con margen
+    fig, ax = plt.subplots(figsize=(22, 11))
+    ax.set_xlim(0, 22); ax.set_ylim(0, 11)
     ax.axis("off")
 
-    # Title
     fig.suptitle("Pipeline de Bin Picking 6-DoF — Arquitectura completa",
-                  fontsize=22, fontweight="bold", y=0.97, color=COLORS["ink"])
-    ax.text(9, 8.3, "Camara RGB-D → Pose 6-DoF → Trayectoria multimodal → Control PBVS → Brazo robotico",
-              ha="center", fontsize=14, style="italic", color=COLORS["muted"])
+                  fontsize=24, fontweight="bold", y=0.97, color=COLORS["ink"])
+    ax.text(11, 10.0,
+              "Camara RGB-D  →  Pose 6-DoF  →  Trayectoria multimodal  →  Control PBVS  →  Brazo robotico",
+              ha="center", fontsize=15, style="italic", color=COLORS["muted"])
 
-    # Stages: (x_center, y_center, w, h, label, color, sublabel)
+    # Stages mas anchas (text-friendly): w=3.0 vs 2.4
+    pipeline_y = 5.5
     stages = [
-        (1.5, 4.5, 2.2, 2.2, "Cámara\nRGB-D", COLORS["muted"], "Input"),
-        (4.5, 4.5, 2.4, 2.2, "FoundationPose\n+ FreeZeV2", COLORS["primary"], "Percepción 6-DoF"),
-        (8, 4.5, 2.4, 2.2, "Diffusion\nPolicy", COLORS["cat_2"], "Planificación"),
-        (11.5, 4.5, 2.4, 2.2, "PBVS\nSE(3)", COLORS["accent"], "Control fino"),
-        (15, 4.5, 2.2, 2.2, "Brazo\nrobótico", COLORS["ink"], "Output"),
+        (2.0,  pipeline_y, 2.8, 2.4, "Camara\nRGB-D",          COLORS["muted"],   "Input"),
+        (6.0,  pipeline_y, 3.2, 2.4, "FoundationPose\n+ FreeZeV2", COLORS["primary"], "Percepcion 6-DoF"),
+        (10.5, pipeline_y, 3.2, 2.4, "Diffusion\nPolicy",      COLORS["cat_2"],   "Planificacion"),
+        (14.5, pipeline_y, 2.8, 2.4, "PBVS\nSE(3)",            COLORS["accent"],  "Control fino"),
+        (18.5, pipeline_y, 2.8, 2.4, "Brazo\nrobotico",        COLORS["ink"],     "Output"),
     ]
     for (cx, cy, w, h, label, color, sublabel) in stages:
-        # Caja con sombra
-        shadow = FancyBboxPatch((cx - w/2 + 0.07, cy - h/2 - 0.07), w, h,
+        # Sombra
+        shadow = FancyBboxPatch((cx - w/2 + 0.08, cy - h/2 - 0.08), w, h,
                                   boxstyle="round,pad=0.05,rounding_size=0.2",
-                                  facecolor="#00000010", edgecolor="none", zorder=1)
+                                  facecolor="#00000015", edgecolor="none", zorder=1)
         ax.add_patch(shadow)
         # Caja principal
         box = FancyBboxPatch((cx - w/2, cy - h/2), w, h,
@@ -64,67 +65,71 @@ def fig01_pipeline_architecture():
                                 facecolor=color, edgecolor=color, linewidth=2, zorder=2)
         ax.add_patch(box)
         ax.text(cx, cy + 0.15, label, ha="center", va="center",
-                  fontsize=14, fontweight="bold", color="white", zorder=3)
-        # Etiqueta inferior
-        ax.text(cx, cy - h/2 - 0.4, sublabel, ha="center", fontsize=11,
+                  fontsize=16, fontweight="bold", color="white", zorder=3,
+                  linespacing=1.3)
+        # Etiqueta inferior (mas espacio)
+        ax.text(cx, cy - h/2 - 0.5, sublabel, ha="center", fontsize=12,
                   color=COLORS["muted"], style="italic")
 
-    # Flechas
+    # Flechas entre etapas (mas largas porque hay mas espacio horizontal)
     for i in range(len(stages) - 1):
         x1 = stages[i][0] + stages[i][2]/2
         x2 = stages[i+1][0] - stages[i+1][2]/2
-        ax.annotate("", xy=(x2 - 0.05, 4.5), xytext=(x1 + 0.05, 4.5),
-                       arrowprops=dict(arrowstyle="->", lw=2.5,
+        ax.annotate("", xy=(x2 - 0.05, pipeline_y), xytext=(x1 + 0.05, pipeline_y),
+                       arrowprops=dict(arrowstyle="->", lw=3,
                                             color=COLORS["ink_soft"], shrinkA=0, shrinkB=0))
 
-    # Datos abajo: salida de cada etapa
+    # Outputs intermedios (debajo del pipeline, con mas espacio)
+    outputs_y = 3.0
     outputs = [
-        (4.5, 2.5, "RGB + Depth\n640×480"),
-        (8, 2.5, "R ∈ SO(3)\nt ∈ R³ (mm)"),
-        (11.5, 2.5, "Trayectoria\n16 × 7"),
-        (15, 2.5, "Comando\nJoint pos"),
+        (6.0,  "RGB + Depth\n640 x 480 px"),
+        (10.5, "R en SO(3)\nt en mm"),
+        (14.5, "Trayectoria\n16 pasos x 7"),
+        (18.5, "Comando\nJoint pos"),
     ]
-    for (cx, cy, label) in outputs:
-        ax.text(cx, cy, label, ha="center", va="center", fontsize=11,
-                  color=COLORS["ink_soft"], family="DejaVu Sans Mono",
-                  bbox=dict(boxstyle="round,pad=0.5", facecolor=COLORS["surface"],
-                              edgecolor=COLORS["border"], linewidth=1))
+    for (cx, label) in outputs:
+        ax.text(cx, outputs_y, label, ha="center", va="center", fontsize=12,
+                  color=COLORS["ink_soft"], linespacing=1.5,
+                  family="DejaVu Sans",
+                  bbox=dict(boxstyle="round,pad=0.6", facecolor=COLORS["surface"],
+                              edgecolor=COLORS["border"], linewidth=1.5))
 
     # Capa VLA-lite añadida (exploraciones)
-    vla_box = FancyBboxPatch((4.5, 0.4), 6, 1.0,
+    vla_box = FancyBboxPatch((6.0, 1.0), 9.0, 1.1,
                               boxstyle="round,pad=0.05,rounding_size=0.15",
                               facecolor=COLORS["primary_light"],
-                              edgecolor=COLORS["primary"], linewidth=2, zorder=1)
+                              edgecolor=COLORS["primary"], linewidth=2.5, zorder=1)
     ax.add_patch(vla_box)
-    ax.text(7.5, 0.9, "🗣 VLA-lite (exp 4-13)  →  'pick the leftmost red sphere'",
-              ha="center", va="center", fontsize=12, fontweight="bold",
+    ax.text(10.5, 1.55,
+              "VLA-lite (exp 4-13)   'pick the leftmost red sphere'",
+              ha="center", va="center", fontsize=14, fontweight="bold",
               color=COLORS["primary_dark"])
 
-    # Metricas globales arriba derecha
-    metrics_box = FancyBboxPatch((0.3, 7.0), 4.5, 1.1,
+    # Metricas globales — arriba izquierda (mas ancho, mas legible)
+    metrics_box = FancyBboxPatch((0.3, 8.4), 5.5, 1.3,
                                    boxstyle="round,pad=0.05,rounding_size=0.15",
                                    facecolor=COLORS["success_light"],
-                                   edgecolor=COLORS["success"], linewidth=2, zorder=1)
+                                   edgecolor=COLORS["success"], linewidth=2.5, zorder=1)
     ax.add_patch(metrics_box)
-    ax.text(2.55, 7.85, "RESULTADOS VALIDADOS", ha="center", fontsize=10,
+    ax.text(3.05, 9.40, "RESULTADOS VALIDADOS", ha="center", fontsize=12,
               fontweight="bold", color=COLORS["success_dark"])
-    ax.text(2.55, 7.45, "AUC ADD-S 0.91 YCBV / 0.96 TLESS",
-              ha="center", fontsize=11, color=COLORS["ink"])
-    ax.text(2.55, 7.15, "Cycle p95 < 7 s  ·  173 tests passing",
-              ha="center", fontsize=10, color=COLORS["ink_soft"])
+    ax.text(3.05, 9.00, "AUC ADD-S 0.91 YCB-V  /  0.96 T-LESS",
+              ha="center", fontsize=12, color=COLORS["ink"])
+    ax.text(3.05, 8.65, "Cycle p95 < 7 s   ·   173 tests passing",
+              ha="center", fontsize=11, color=COLORS["ink_soft"])
 
-    # Hardware abajo derecha
-    hw_box = FancyBboxPatch((13.2, 7.0), 4.5, 1.1,
+    # Hardware — arriba derecha
+    hw_box = FancyBboxPatch((16.2, 8.4), 5.5, 1.3,
                               boxstyle="round,pad=0.05,rounding_size=0.15",
                               facecolor=COLORS["accent_light"],
-                              edgecolor=COLORS["accent"], linewidth=2, zorder=1)
+                              edgecolor=COLORS["accent"], linewidth=2.5, zorder=1)
     ax.add_patch(hw_box)
-    ax.text(15.45, 7.85, "HARDWARE", ha="center", fontsize=10,
+    ax.text(18.95, 9.40, "HARDWARE", ha="center", fontsize=12,
               fontweight="bold", color=COLORS["accent_dark"])
-    ax.text(15.45, 7.45, "Apple M1 Pro + MPS",
-              ha="center", fontsize=11, color=COLORS["ink"])
-    ax.text(15.45, 7.15, "~2 000 USD  vs  150 000 USD industrial",
-              ha="center", fontsize=10, color=COLORS["ink_soft"])
+    ax.text(18.95, 9.00, "Apple M1 Pro + MPS", ha="center", fontsize=12,
+              color=COLORS["ink"])
+    ax.text(18.95, 8.65, "~2 000 USD  vs  150 000 USD industrial",
+              ha="center", fontsize=11, color=COLORS["ink_soft"])
 
     fig.savefig(OUT / "01_pipeline_architecture.png", dpi=140, bbox_inches="tight",
                  facecolor="white", pad_inches=0.4)
@@ -202,18 +207,20 @@ def fig02_exploraciones_dashboard():
                                 boxstyle="round,pad=0.05,rounding_size=0.2",
                                 facecolor="white", edgecolor=color, linewidth=2.5, zorder=2)
         ax.add_patch(card)
-        # Banda superior coloreada
-        band = patches.Rectangle((x + 0.08, y - 0.5), box_w - 0.16, 0.4,
+        # Banda superior coloreada (mas alta para que el texto respire)
+        band_h = 0.55
+        band = patches.Rectangle((x + 0.08, y - band_h - 0.05), box_w - 0.16, band_h,
                                     facecolor=color, edgecolor="none", zorder=3)
         ax.add_patch(band)
-        ax.text(x + box_w/2, y - 0.3, title, ha="center", va="center",
-                  fontsize=11, fontweight="bold", color="white", zorder=4)
-        # Metrica grande
-        ax.text(x + box_w/2, y - 1.3, metric, ha="center", va="center",
-                  fontsize=26, fontweight="bold", color=dark, zorder=4)
-        # Subtitulo
-        ax.text(x + box_w/2, y - 2.0, sub, ha="center", va="center",
-                  fontsize=11, color=COLORS["muted"], style="italic", zorder=4)
+        ax.text(x + box_w/2, y - band_h/2 - 0.05, title, ha="center", va="center",
+                  fontsize=12, fontweight="bold", color="white", zorder=4)
+        # Metrica grande (centrada en el resto de la card)
+        ax.text(x + box_w/2, y - band_h - (box_h - band_h)/2 + 0.15, metric,
+                  ha="center", va="center",
+                  fontsize=28, fontweight="bold", color=dark, zorder=4)
+        # Subtitulo (parte baja del card)
+        ax.text(x + box_w/2, y - box_h + 0.30, sub, ha="center", va="center",
+                  fontsize=12, color=COLORS["muted"], style="italic", zorder=4)
 
     # Footer resumen
     footer_box = FancyBboxPatch((0.5, 0.4), 19.0, 1.5,
@@ -238,85 +245,88 @@ def fig02_exploraciones_dashboard():
 def fig03_roadmap_timeline():
     apply_style("presentation")
 
+    # Texto mas corto y compacto para que quepa
     stages = [
-        ("Hoy", "TFM + 13 exploraciones validadas en simulación",
-          "✓ Cerrado", COLORS["success"]),
-        ("3-6 m", "Etapa 1: Robot físico (cobot UR/Kinova)",
-          "~10-20 k EUR", COLORS["primary"]),
-        ("+2-3 m", "Etapa 2: Sim-to-real domain randomization",
-          "~2 k EUR (cloud)", COLORS["cat_2"]),
-        ("+2-4 m", "Etapa 3: Aprendizaje a partir de demos",
-          "~0 EUR", COLORS["cat_7"]),
-        ("+3 m", "Etapa 4: MVP producto desplegable",
-          "~50 k EUR", COLORS["accent"]),
-        ("+6 m", "Etapa 5: Planta piloto con cliente",
-          "~50 k EUR", COLORS["warning"]),
-        ("+6 m", "Etapa 6: Certificación CE / ISO 15066",
-          "~30 k EUR", COLORS["cat_6"]),
-        ("~2 años", "Etapa 7: Spin-off comercial",
-          "Total ~200 k EUR", COLORS["cat_4"]),
+        ("Hoy",     "TFM + 13 exploraciones",          "Cerrado en simulacion",  COLORS["success"]),
+        ("3-6 m",   "Etapa 1\nRobot fisico",            "~10-20 k EUR",            COLORS["primary"]),
+        ("+2-3 m",  "Etapa 2\nSim-to-real",             "~2 k EUR (cloud)",        COLORS["cat_2"]),
+        ("+2-4 m",  "Etapa 3\nDemos humanas",           "~0 EUR (trabajo)",        COLORS["cat_7"]),
+        ("+3 m",    "Etapa 4\nMVP producto",            "~50 k EUR",               COLORS["accent"]),
+        ("+6 m",    "Etapa 5\nPlanta piloto",           "~50 k EUR",               COLORS["warning"]),
+        ("+6 m",    "Etapa 6\nCertif. CE / ISO",        "~30 k EUR",               COLORS["cat_6"]),
+        ("~2 anos", "Etapa 7\nSpin-off SaaS",           "Total ~200 k EUR",        COLORS["cat_4"]),
     ]
 
-    fig, ax = plt.subplots(figsize=(18, 10))
-    ax.set_xlim(0, 18); ax.set_ylim(0, 10)
+    # Layout vertical mas amplio para evitar solapamientos
+    fig, ax = plt.subplots(figsize=(22, 12))
+    ax.set_xlim(0, 22); ax.set_ylim(0, 12)
     ax.axis("off")
 
-    fig.suptitle("Roadmap post-TFM — De simulación a producto comercial",
-                  fontsize=22, fontweight="bold", y=0.97, color=COLORS["ink"])
-    ax.text(9, 8.8, "Etapa 0 cerrada en simulación. Etapas 1-7 requieren hardware físico, financiación y certificación.",
-              ha="center", fontsize=13, style="italic", color=COLORS["muted"])
+    fig.suptitle("Roadmap post-TFM — De simulacion a producto comercial",
+                  fontsize=24, fontweight="bold", y=0.97, color=COLORS["ink"])
+    ax.text(11, 10.7,
+              "Etapa 0 cerrada en simulacion. Etapas 1-7 requieren hardware, financiacion y certificacion.",
+              ha="center", fontsize=14, style="italic", color=COLORS["muted"])
 
-    # Linea horizontal del timeline
-    ax.plot([1, 17], [4.5, 4.5], color=COLORS["border"], linewidth=4, zorder=1)
+    # Linea horizontal del timeline (mas baja para dejar espacio)
+    line_y = 6.0
+    ax.plot([1.5, 20.5], [line_y, line_y], color=COLORS["border"], linewidth=4, zorder=1)
 
     n = len(stages)
-    x_positions = np.linspace(1.2, 16.8, n)
+    x_positions = np.linspace(2.0, 20.0, n)
+    card_w = 2.4   # mas ancho para que quepa el texto
+    card_h = 2.3   # mas alto
 
     for i, ((time, title, cost, color), x) in enumerate(zip(stages, x_positions)):
-        y_box = 6.0 if i % 2 == 0 else 3.0
-        y_box_h = 1.6
+        # Alternar arriba/abajo con MAS separacion vertical
+        y_box = 8.0 if i % 2 == 0 else 4.0
         # Circulo en linea
-        circle = patches.Circle((x, 4.5), 0.28, facecolor=color,
-                                  edgecolor="white", linewidth=3, zorder=3)
+        circle = patches.Circle((x, line_y), 0.32, facecolor=color,
+                                   edgecolor="white", linewidth=3, zorder=3)
         ax.add_patch(circle)
-        ax.text(x, 4.5, str(i), ha="center", va="center",
-                  fontsize=14, fontweight="bold", color="white", zorder=4)
-        # Linea de conexion
+        ax.text(x, line_y, str(i), ha="center", va="center",
+                  fontsize=15, fontweight="bold", color="white", zorder=4)
+        # Linea de conexion al card
         if i % 2 == 0:
-            ax.plot([x, x], [4.78, y_box - y_box_h/2 - 0.05],
+            ax.plot([x, x], [line_y + 0.34, y_box - card_h/2 - 0.05],
                       color=color, linewidth=2, linestyle="--", alpha=0.6)
         else:
-            ax.plot([x, x], [4.22, y_box + y_box_h/2 + 0.05],
+            ax.plot([x, x], [line_y - 0.34, y_box + card_h/2 + 0.05],
                       color=color, linewidth=2, linestyle="--", alpha=0.6)
-        # Caja de info
-        card = FancyBboxPatch((x - 1.0, y_box - y_box_h/2), 2.0, y_box_h,
+        # Card
+        card = FancyBboxPatch((x - card_w/2, y_box - card_h/2), card_w, card_h,
                                  boxstyle="round,pad=0.05,rounding_size=0.15",
                                  facecolor="white", edgecolor=color, linewidth=2.5,
                                  zorder=2)
         ax.add_patch(card)
-        # Tiempo
-        ax.text(x, y_box + y_box_h/2 - 0.30, time, ha="center", fontsize=11,
-                  fontweight="bold", color=color)
+        # Tiempo (banda superior del card)
+        ax.text(x, y_box + card_h/2 - 0.35, time, ha="center", va="center",
+                  fontsize=14, fontweight="bold", color=color)
         # Titulo
-        ax.text(x, y_box + 0.10, title.replace("Etapa", "E."),
-                  ha="center", va="center", fontsize=10, color=COLORS["ink"],
-                  wrap=True)
-        # Coste
-        ax.text(x, y_box - y_box_h/2 + 0.30, cost, ha="center", fontsize=9,
-                  color=COLORS["muted_soft"], style="italic")
+        ax.text(x, y_box - 0.05, title, ha="center", va="center",
+                  fontsize=12, color=COLORS["ink"], linespacing=1.3)
+        # Coste (banda inferior, con margen)
+        ax.text(x, y_box - card_h/2 + 0.32, cost, ha="center", va="center",
+                  fontsize=11, color=COLORS["muted"], style="italic")
 
-    # Etiqueta final
-    ax.text(17.3, 4.5, "→", fontsize=24, color=COLORS["muted"], va="center")
-    ax.text(17.7, 4.5, "Producto\nspin-off", fontsize=11, color=COLORS["ink_soft"],
-              fontweight="bold", va="center", ha="left")
+    # Flecha final mas pequeña, sin solapar
+    ax.annotate("", xy=(21.4, line_y), xytext=(20.5, line_y),
+                   arrowprops=dict(arrowstyle="->", lw=3, color=COLORS["ink_soft"]))
+    ax.text(21.6, line_y, "Producto\ncomercial",
+              fontsize=12, color=COLORS["ink_soft"], fontweight="bold",
+              va="center", ha="left")
 
-    # Leyenda inferior
-    legend_box = FancyBboxPatch((0.5, 0.6), 17.0, 1.0,
+    # Leyenda inferior — texto mas legible
+    legend_box = FancyBboxPatch((0.5, 0.6), 21.0, 1.5,
                                    boxstyle="round,pad=0.05,rounding_size=0.15",
                                    facecolor=COLORS["surface"],
                                    edgecolor=COLORS["border"], linewidth=1.5)
     ax.add_patch(legend_box)
-    ax.text(9, 1.1, "Detalle completo: docs/ROADMAP_POSTTFM.md  ·  Inversión inicial muy baja: ~10-20 k EUR para validar en robot físico",
+    ax.text(11, 1.5,
+              "Detalle completo: docs/ROADMAP_POSTTFM.md",
+              ha="center", fontsize=14, fontweight="bold", color=COLORS["ink"])
+    ax.text(11, 0.95,
+              "Inversion inicial muy baja: ~10-20 k EUR para validar el sistema en robot fisico",
               ha="center", fontsize=12, color=COLORS["ink_soft"])
 
     fig.savefig(OUT / "03_roadmap_timeline.png", dpi=140, bbox_inches="tight",
