@@ -191,6 +191,12 @@ if section == "📊 Resumen":
     if hero_pipeline.exists():
         st.image(str(hero_pipeline), use_container_width=True)
 
+    # Diagrama Graphviz: pipeline detallado con flechas
+    diag_pipeline = REPO / "docs/figures_hero/10_pipeline_full.png"
+    if diag_pipeline.exists():
+        with st.expander("🔍 Diagrama detallado del pipeline (Graphviz)", expanded=False):
+            st.image(str(diag_pipeline), use_container_width=True)
+
     col1, col2, col3 = st.columns(3)
     col1.metric("Páginas TFM", "63")
     col2.metric("Experimentos", "26", "+25 vs entrega 1")
@@ -219,7 +225,14 @@ elif section == "🔬 Exploraciones post-TFM":
     hero_explor = REPO / "docs/figures_hero/02_exploraciones_dashboard.png"
     if hero_explor.exists():
         st.image(str(hero_explor), use_container_width=True)
-        st.markdown("---")
+
+    # Diagrama Graphviz: dependencias entre exploraciones
+    diag_workflow = REPO / "docs/figures_hero/12_exploraciones_workflow.png"
+    if diag_workflow.exists():
+        with st.expander("🔗 Dependencias entre exploraciones (DAG)", expanded=False):
+            st.image(str(diag_workflow), use_container_width=True)
+            st.caption("Cada flecha indica que el resultado de una exploración se reutiliza en la siguiente.")
+    st.markdown("---")
 
     st.markdown(
         "Tras entregar el TFM se planificaron y ejecutaron 5 exploraciones con "

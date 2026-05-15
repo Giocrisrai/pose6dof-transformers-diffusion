@@ -396,6 +396,12 @@ with gr.Blocks(title="TFM Pose 6-DoF Demo") as demo:
                 'TextGroundedGate que decide entre los objetos. <b>Selection accuracy 98.6 %</b> '
                 'sobre escenas multi-objeto.</div>')
 
+        with gr.Accordion("📐 Flujo end-to-end del modulo VLA-lite", open=False):
+            _diag_vla = REPO / "docs/figures_hero/11_vla_lite_flow.png"
+            if _diag_vla.exists():
+                gr.Image(str(_diag_vla), show_label=False, container=False,
+                         show_download_button=False)
+
         with gr.Row():
             with gr.Column(scale=1):
                 gr.Markdown("### Escena: 2 objetos con colores distintos")
@@ -737,29 +743,17 @@ Esta es la exploracion #4 del TFM: VLA-lite con coste 1000x menor que RDT-1B / p
         """)
 
     with gr.Tab("🧠  Como funciona (detalle tecnico)"):
+        gr.Markdown("## Pipeline en 4 etapas")
+        _diag_pipeline = REPO / "docs/figures_hero/10_pipeline_full.png"
+        if _diag_pipeline.exists():
+            gr.Image(str(_diag_pipeline), label="Pipeline E2E (camara → comando articular)",
+                     show_label=False, container=False, show_download_button=False)
         gr.Markdown("""
-        ## Pipeline en 4 etapas
+        > Diagrama con flechas tipadas: entradas (camara, CAD) → percepcion (FoundationPose) →
+        > planificacion (Diffusion Policy) → control (PBVS en SE(3)) → robot real.
 
-        ```
-        camara RGB-D                                           brazo robotico
-              │                                                       ▲
-              ▼                                                       │
-        ┌──────────────────┐   T_obj ∈ SE(3)   ┌──────────────────┐  │
-        │  FoundationPose  │ ─────────────────▶│ Diffusion Policy │  │
-        │   (Transformer   │   pose 6-DoF      │   (UNet1D +      │  │
-        │   cross-attn     │                   │   DDIM sampling) │  │
-        │   2D-3D)         │                   │                  │  │
-        └──────────────────┘                   └──────────────────┘  │
-                                                    │                │
-                                                    ▼                │
-                                          trayectoria 16 pasos       │
-                                                    │                │
-                                                    ▼                │
-                                          ┌──────────────────┐       │
-                                          │  PBVS en SE(3)   │───────┘
-                                          │  (log/exp Lie)   │
-                                          └──────────────────┘
-        ```
+        Si prefieres ver el detalle de **tipos y dimensiones** del flujo de datos, mira
+        tambien el diagrama [`13_data_flow.png`](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/blob/main/docs/figures_hero/13_data_flow.png).
 
         ### Etapa 1 — FoundationPose (Wen et al. CVPR 2024)
 
