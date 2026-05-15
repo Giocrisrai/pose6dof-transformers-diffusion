@@ -60,6 +60,36 @@ st.markdown("""
         color: #0F172A !important;
     }
     .stApp table th { background: #F1F5F9 !important; font-weight: 700 !important; }
+
+    /* === EXCEPCION: bloques de codigo tienen fondo oscuro ===
+       Aqui forzamos texto CLARO. Especificidad maxima para ganar
+       sobre la regla global anterior. */
+    .stApp pre, .stApp pre *, .stApp pre code, .stApp pre code *,
+    .stApp [data-testid="stCodeBlock"], .stApp [data-testid="stCodeBlock"] *,
+    .stApp [data-testid="stCodeBlock"] code,
+    .stApp [data-testid="stCodeBlock"] code *,
+    .stApp .stCode, .stApp .stCode *,
+    .stApp .highlight, .stApp .highlight *,
+    .stApp .highlight .o, .stApp .highlight .n,
+    .stApp .highlight .k, .stApp .highlight .s,
+    .stApp .highlight .p, .stApp .highlight .nb {
+        color: #E2E8F0 !important;
+    }
+    .stApp pre, .stApp [data-testid="stCodeBlock"], .stApp .stCode {
+        background: #0F172A !important;
+        border-radius: 8px !important;
+        padding: 12px 16px !important;
+    }
+    /* Inline code (entre backticks) — fondo claro y texto oscuro */
+    .stApp p code, .stApp li code,
+    .stApp [data-testid="stMarkdownContainer"] p code,
+    .stApp [data-testid="stMarkdownContainer"] li code {
+        background: #F1F5F9 !important;
+        color: #0F172A !important;
+        padding: 1px 6px !important;
+        border-radius: 4px !important;
+        font-size: 0.9em !important;
+    }
     /* Excepcion: el sidebar mantiene texto claro porque es oscuro.
        Especificidad alta para ganar sobre .stApp .stMarkdown p (0,2,1) */
     .stApp [data-testid="stSidebar"] *,
