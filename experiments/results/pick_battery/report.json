@@ -15,10 +15,10 @@
       "object_end": [
         0.46,
         -0.1,
-        0.025
+        0.292
       ],
-      "object_moved_m": 0.265,
-      "object_manipulated": true,
+      "object_moved_m": 0.002,
+      "object_manipulated": false,
       "mp4_path": "experiments/results/pick_battery/base/demo.mp4",
       "frames_dir": "experiments/results/pick_battery/base/frames"
     },
@@ -37,10 +37,10 @@
       "object_end": [
         0.46,
         -0.1,
-        0.025
+        0.292
       ],
-      "object_moved_m": 0.265,
-      "object_manipulated": true,
+      "object_moved_m": 0.002,
+      "object_manipulated": false,
       "mp4_path": "experiments/results/pick_battery/easy/demo.mp4",
       "frames_dir": "experiments/results/pick_battery/easy/frames"
     },
@@ -59,10 +59,10 @@
       "object_end": [
         0.46,
         -0.1,
-        0.025
+        0.292
       ],
-      "object_moved_m": 0.265,
-      "object_manipulated": true,
+      "object_moved_m": 0.002,
+      "object_manipulated": false,
       "mp4_path": "experiments/results/pick_battery/hard/demo.mp4",
       "frames_dir": "experiments/results/pick_battery/hard/frames"
     }
