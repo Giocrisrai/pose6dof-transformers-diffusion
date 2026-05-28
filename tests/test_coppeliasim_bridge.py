@@ -95,3 +95,84 @@ class TestBridgeStepping:
         bridge.connect(retries=1)
 
         assert bridge.get_simulation_time() == 5.42
+
+
+class TestBridgeConnect:
+    """Tests de connect/disconnect con retries."""
+
+    def test_connect_success(self, mock_remote_api, mock_sim):
+        bridge = CoppeliaSimBridge()
+        bridge.connect(retries=1)
+
+        assert bridge._connected is True
+        assert bridge._sim is mock_sim
+
+    def test_connect_pings_after_connection(self, mock_remote_api, mock_sim):
+        """Tras conectar, hace ping con getSimulationTime."""
+        bridge = CoppeliaSimBridge()
+        bridge.connect(retries=1)
+
+        # getSimulationTime debe haberse llamado al menos una vez (ping)
+        assert mock_sim.getSimulationTime.called
+
+    def test_connect_retries_then_succeeds(self, monkeypatch, mock_client):
+        """Si el primer intento falla, reintenta y eventualmente conecta."""
+        attempts = [0]
+
+        def flaky_client_factory(host, port):
+            attempts[0] += 1
+            if attempts[0] < 3:
+                raise ConnectionError("addon ZMQ aún no listo")
+            return mock_client
+
+        monkeypatch.setattr(
+            "coppeliasim_zmqremoteapi_client.RemoteAPIClient",
+            flaky_client_factory,
+        )
+
+        bridge = CoppeliaSimBridge()
+        bridge.connect(retries=5, retry_delay_s=0.01)
+
+        assert attempts[0] == 3
+        assert bridge._connected is True
+
+    def test_connect_retries_then_fails(self, monkeypatch):
+        """Si todos los intentos fallan, levanta ConnectionError."""
+        def always_fails(host, port):
+            raise ConnectionError("addon ZMQ no responde")
+
+        monkeypatch.setattr(
+            "coppeliasim_zmqremoteapi_client.RemoteAPIClient",
+            always_fails,
+        )
+
+        bridge = CoppeliaSimBridge()
+        with pytest.raises(ConnectionError):
+            bridge.connect(retries=2, retry_delay_s=0.01)
+
+    def test_connect_import_error(self, monkeypatch):
+        """Si el paquete no está instalado, levanta ImportError."""
+        # Simular import error patcheando el módulo
+        import sys
+
+        original_module = sys.modules.get("coppeliasim_zmqremoteapi_client")
+        sys.modules["coppeliasim_zmqremoteapi_client"] = None  # ImportError al hacer from-import
+
+        try:
+            bridge = CoppeliaSimBridge()
+            with pytest.raises(ImportError):
+                bridge.connect(retries=1)
+        finally:
+            if original_module is not None:
+                sys.modules["coppeliasim_zmqremoteapi_client"] = original_module
+            else:
+                sys.modules.pop("coppeliasim_zmqremoteapi_client", None)
+
+    def test_disconnect_clears_state(self, mock_remote_api):
+        bridge = CoppeliaSimBridge()
+        bridge.connect(retries=1)
+        bridge.disconnect()
+
+        assert bridge._connected is False
+        assert bridge._sim is None
+        assert bridge._client is None

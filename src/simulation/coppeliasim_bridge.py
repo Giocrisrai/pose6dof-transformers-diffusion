@@ -117,41 +117,73 @@ class CoppeliaSimBridge:
         self._tip_handle = None
         self._object_handles: Dict[str, int] = {}
 
-    def connect(self):
+    def connect(
+        self,
+        retries: int = 3,
+        retry_delay_s: float = 1.0,
+        strict: bool = False,
+    ):
         """Connect to CoppeliaSim via ZMQ Remote API.
 
+        Args:
+            retries: número de intentos si la conexión falla (default 3).
+            retry_delay_s: espera entre reintentos en segundos (default 1.0).
+            strict: si True, _init_handles() levanta RuntimeError si faltan
+                handles esperados. Default False para no romper consumidores
+                que cargan escenas genéricas (smoke test con pickAndPlaceDemo).
+
         Raises:
-            ImportError: If coppeliasim_zmqremoteapi_client not installed
-            ConnectionError: If CoppeliaSim is not running
+            ImportError: si coppeliasim_zmqremoteapi_client no está instalado.
+            ConnectionError: si CoppeliaSim no responde tras `retries` intentos.
         """
+        import time as _time
+
         try:
             from coppeliasim_zmqremoteapi_client import RemoteAPIClient
         except ImportError:
             logger.error(
-                "Install: pip install coppeliasim-zmqremoteapi-client\n"
-                "Or run CoppeliaSim with the ZMQ plugin enabled."
+                "Install: pip install coppeliasim-zmqremoteapi-client"
             )
             raise ImportError(
                 "coppeliasim_zmqremoteapi_client not found. "
                 "Install with: pip install coppeliasim-zmqremoteapi-client"
             )
 
-        try:
-            self._client = RemoteAPIClient(self.host, self.port)
-            self._sim = self._client.require("sim")
-            self._connected = True
-            logger.info(f"Connected to CoppeliaSim at {self.host}:{self.port}")
+        last_error = None
+        for attempt in range(1, max(retries, 1) + 1):
+            try:
+                self._client = RemoteAPIClient(self.host, self.port)
+                self._sim = self._client.require("sim")
+                # Ping para validar que el server responde
+                _ = self._sim.getSimulationTime()
+                self._connected = True
+                version = self._sim.getInt32Param(self._sim.intparam_program_version)
+                logger.info(
+                    f"Connected to CoppeliaSim at {self.host}:{self.port} "
+                    f"(version {version}, attempt {attempt}/{retries})"
+                )
+                self._init_handles(strict=strict)
+                return
+            except Exception as e:
+                last_error = e
+                logger.warning(
+                    f"connect attempt {attempt}/{retries} failed: {e}"
+                )
+                if attempt < retries:
+                    _time.sleep(retry_delay_s)
 
-            # Get object handles
-            self._init_handles()
-        except Exception as e:
-            raise ConnectionError(
-                f"Cannot connect to CoppeliaSim at {self.host}:{self.port}. "
-                f"Make sure CoppeliaSim is running with ZMQ plugin. Error: {e}"
-            )
+        raise ConnectionError(
+            f"Cannot connect to CoppeliaSim at {self.host}:{self.port} "
+            f"after {retries} attempts. Make sure CoppeliaSim is running "
+            f"with ZMQ plugin enabled. Last error: {last_error}"
+        )
 
-    def _init_handles(self):
-        """Initialize handles for scene objects."""
+    def _init_handles(self, strict: bool = False):
+        """Initialize handles for scene objects.
+
+        Args:
+            strict: si True, levanta RuntimeError si faltan handles esperados.
+        """
         sim = self._sim
 
         # Robot joints
@@ -187,6 +219,18 @@ class CoppeliaSimBridge:
         except Exception:
             logger.warning("Tip/TCP not found in scene")
 
+        if strict:
+            critical_missing = []
+            if not self._joint_handles:
+                critical_missing.append("joints")
+            if self._camera_rgb_handle is None:
+                critical_missing.append("rgb_camera")
+            if critical_missing:
+                raise RuntimeError(
+                    f"strict=True pero faltan handles críticos: {critical_missing}. "
+                    f"La escena cargada no tiene los objetos esperados."
+                )
+
         logger.info(
             f"Handles: {len(self._joint_handles)} joints, "
             f"camera={'OK' if self._camera_rgb_handle else 'NONE'}, "
@@ -195,6 +239,11 @@ class CoppeliaSimBridge:
 
     def disconnect(self):
         """Disconnect from CoppeliaSim."""
+        if self._client is not None and hasattr(self._client, "shutdown"):
+            try:
+                self._client.shutdown()
+            except Exception as e:
+                logger.warning(f"shutdown del cliente falló: {e}")
         self._connected = False
         self._client = None
         self._sim = None
