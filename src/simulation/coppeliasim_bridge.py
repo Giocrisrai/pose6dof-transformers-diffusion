@@ -216,6 +216,59 @@ class CoppeliaSimBridge:
         self._check_connected()
         self._client.step()
 
+    def set_stepping(self, enabled: bool) -> None:
+        """Activa/desactiva modo stepped.
+
+        En stepped mode, la simulación solo avanza cuando se llama step().
+        Útil para sincronizar capturas RGB-D con el estado físico.
+        """
+        self._check_connected()
+        self._sim.setStepping(enabled)
+
+    def get_simulation_state(self) -> int:
+        """Devuelve el estado actual de la simulación.
+
+        Valores típicos:
+            0  = simulation_stopped
+            8  = simulation_paused
+            17 = simulation_advancing_running
+        """
+        self._check_connected()
+        return self._sim.getSimulationState()
+
+    def get_simulation_time(self) -> float:
+        """Devuelve el tiempo de simulación actual en segundos."""
+        self._check_connected()
+        return self._sim.getSimulationTime()
+
+    def load_scene(self, scene_path, close_current: bool = True) -> None:
+        """Carga una escena .ttt.
+
+        Args:
+            scene_path: Ruta al archivo .ttt (str o Path).
+            close_current: Si True (default), cierra la escena actual antes
+                de cargar la nueva.
+
+        Raises:
+            FileNotFoundError: si scene_path no existe.
+        """
+        from pathlib import Path as _Path
+        self._check_connected()
+        scene_path = _Path(scene_path)
+        if not scene_path.exists():
+            raise FileNotFoundError(f"Escena no encontrada: {scene_path}")
+        if close_current:
+            self._sim.closeScene()
+        self._sim.loadScene(str(scene_path))
+        # Re-inicializar handles porque la escena cambió
+        self._init_handles()
+        logger.info(f"Escena cargada: {scene_path.name}")
+
+    def close_scene(self) -> None:
+        """Cierra la escena actual."""
+        self._check_connected()
+        self._sim.closeScene()
+
     # ── Camera ────────────────────────────────────────────────
 
     def capture_rgbd(self) -> Tuple[np.ndarray, np.ndarray]:
