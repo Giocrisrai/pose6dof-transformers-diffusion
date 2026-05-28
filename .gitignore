@@ -87,3 +87,6 @@ packages/*/.coverage
 experiments/results/pick_battery/*/frames/
 experiments/results/pick_demo/frames/
 experiments/results/pick_with_fp_pose/frames/
+
+# Datasets de Iter1 retrain (regenerables con collect_diffusion_dataset.py)
+data/datasets/sim_pick_v1/
