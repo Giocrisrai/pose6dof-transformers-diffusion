@@ -113,9 +113,14 @@ def main():
     weights_path = REPO / "data/models/diffusion_policy_grasp.pth"
     if weights_path.exists():
         ckpt = torch.load(weights_path, map_location=device, weights_only=True)
-        # Pueden venir como state_dict directo o anidados
-        if "model" in ckpt:
-            planner.load_state_dict(ckpt["model"])
+        # Pueden venir como state_dict directo o anidados bajo varias claves
+        if isinstance(ckpt, dict):
+            for key in ("model_state_dict", "model", "state_dict"):
+                if key in ckpt:
+                    planner.load_state_dict(ckpt[key])
+                    break
+            else:
+                planner.load_state_dict(ckpt)
         else:
             planner.load_state_dict(ckpt)
         print(f"  Pesos cargados: {weights_path.name}")
