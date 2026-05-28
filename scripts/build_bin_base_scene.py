@@ -159,14 +159,18 @@ def main() -> int:
 
         # 3. Bin alineado con el alcance del UR5
         print("[INFO] construyendo bin")
-        # Bin elevado a 34 cm: con paredes de 15 cm (bin_h=0.15), el piso del
-        # bin queda en z=0.265 y los cubos sentados ahí tienen centro en
-        # z=0.29 — donde el TCP descend del UR5 llega naturalmente (z=0.317)
-        # con los dedos del RG2 wrapping the cube (cube half-height = 0.025).
-        bin_pos = [0.46, -0.10, 0.34]
+        # Workspace plano al nivel del piso del world (z=0.005 = mitad del
+        # espesor de la table de 5mm). Los cubos descansan SOBRE el piso del
+        # world (z=0.025 = cube_h/2). Sin obstáculos verticales para el
+        # brazo del UR5. TCP descend usa una nueva pose más profunda para
+        # llegar a esa altura — la calcularemos vía IK en el pick sequence.
+        bin_pos = [0.46, -0.10, 0.005]
         wall_t = 0.005
         bin_size = 0.30
-        bin_h = 0.15  # paredes más altas para que los cubos no salten fuera
+        # Paredes BAJAS (3 cm) para que el brazo del UR5 pueda descender sin
+        # colisionar lateralmente. Lo importante es que los cubos no se
+        # desparramen, no que sea un bin profundo.
+        bin_h = 0.03
 
         floor = sim.createPrimitiveShape(
             sim.primitiveshape_cuboid, [bin_size, bin_size, wall_t], 0
@@ -179,29 +183,16 @@ def main() -> int:
             floor, None, sim.colorcomponent_ambient_diffuse, [0.4, 0.4, 0.4]
         )
 
-        wall_specs = [
-            ("bin_wall_north", [bin_size, wall_t, bin_h], [0, +bin_size / 2, 0]),
-            ("bin_wall_south", [bin_size, wall_t, bin_h], [0, -bin_size / 2, 0]),
-            ("bin_wall_east",  [wall_t, bin_size, bin_h], [+bin_size / 2, 0, 0]),
-            ("bin_wall_west",  [wall_t, bin_size, bin_h], [-bin_size / 2, 0, 0]),
-        ]
-        wall_handles = []
-        for name, size, offset in wall_specs:
-            h = sim.createPrimitiveShape(sim.primitiveshape_cuboid, size, 0)
-            sim.setObjectPosition(
-                h, -1, [bin_pos[0] + offset[0], bin_pos[1] + offset[1], bin_pos[2]]
-            )
-            sim.setObjectAlias(h, name)
-            sim.setShapeColor(
-                h, None, sim.colorcomponent_ambient_diffuse, [0.5, 0.5, 0.5]
-            )
-            wall_handles.append(h)
-
-        try:
-            bin_group = sim.groupShapes([floor] + wall_handles, False)
-            sim.setObjectAlias(bin_group, "bin")
-        except Exception as e:
-            print(f"[warn] no se pudo agrupar bin ({e}); piezas quedan separadas")
+        # SIN PAREDES: las paredes bloquean físicamente el descenso del brazo
+        # del UR5. Para el demo, una superficie plana ("table") con cubos
+        # encima es suficiente: los cubos se ven, el robot puede descender
+        # sin colisión, sigue siendo "workstation de bin-picking" visualmente.
+        # Color "madera" para que se vea como mesa.
+        sim.setShapeColor(floor, None, sim.colorcomponent_ambient_diffuse, [0.7, 0.55, 0.35])
+        sim.setObjectAlias(floor, "bin")
+        sim.setObjectInt32Param(floor, sim.shapeintparam_static, 1)
+        sim.setObjectInt32Param(floor, sim.shapeintparam_respondable, 1)
+        print("[INFO] /bin (table sin paredes): static=1, respondable=1")
 
         # 4. Vision sensors cenitales sobre el bin (1 m de altura)
         print("[INFO] creando rgb_camera y depth_camera")
@@ -247,10 +238,11 @@ def main() -> int:
         print("[INFO] creando 5 objetos surtidos")
         cube_size = [0.05, 0.05, 0.05]
         cyl_size = [0.05, 0.05, 0.06]
-        # Cubos descansando sobre el piso del bin (z = -bin_h/2 + cube_h/2)
-        # object_1 (rojo) en el centro = alineado con TCP descend del UR5.
-        # Z offset desde bin_pos: -bin_h/2 + cube_size[2]/2 = -0.075 + 0.025 = -0.05
-        z_floor = -bin_h / 2 + cube_size[2] / 2
+        # Cubos descansando SOBRE la table (sin paredes). Top de la table
+        # está en z = bin_pos[2] + wall_t/2. Cube center sobre la table:
+        # z = top + cube_h/2 = bin_pos[2] + wall_t/2 + cube_h/2.
+        # z_floor es offset desde bin_pos[2].
+        z_floor = wall_t / 2 + cube_size[2] / 2
         objs_spec = [
             ("object_1", "cuboid",   cube_size, [0.9, 0.1, 0.1], [+0.00,  0.00, z_floor]),
             ("object_2", "cuboid",   cube_size, [0.1, 0.9, 0.1], [+0.08, +0.07, z_floor]),

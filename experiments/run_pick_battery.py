@@ -43,7 +43,7 @@ OUTPUT_DIR = REPO / "experiments" / "results" / "pick_battery"
 
 # Si el objeto se movió > este threshold, se considera "manipulated":
 # el robot lo desplazó (sea por grasp exitoso o por contacto).
-MOVE_THRESHOLD_M = 0.02
+MOVE_THRESHOLD_M = 0.30  # un grasp+deposit exitoso mueve el cubo >30 cm
 
 
 def run_scenario(sc: Scenario) -> dict:
@@ -74,6 +74,7 @@ def run_scenario(sc: Scenario) -> dict:
         "object_end": [round(p, 3) for p in result.obj_end_pos],
         "object_moved_m": round(result.obj_moved_m, 3),
         "object_manipulated": result.obj_moved_m > MOVE_THRESHOLD_M,
+        "grasp_success": result.grasp_success,
         "mp4_path": str(compiled.relative_to(REPO)) if compiled else None,
         "frames_dir": str(frames_dir.relative_to(REPO)),
     }

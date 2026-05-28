@@ -6,19 +6,20 @@
       "difficulty": "easy",
       "description": "Escena base, 5 objetos surtidos, iluminaci\u00f3n nominal",
       "n_tweaks": 0,
-      "n_frames": 655,
+      "n_frames": 870,
       "object_start": [
         0.46,
         -0.1,
-        0.29
+        0.033
       ],
       "object_end": [
-        0.46,
-        -0.1,
+        -0.351,
+        -0.25,
         0.025
       ],
-      "object_moved_m": 0.265,
+      "object_moved_m": 0.824,
       "object_manipulated": true,
+      "grasp_success": true,
       "mp4_path": "experiments/results/pick_battery/base/demo.mp4",
       "frames_dir": "experiments/results/pick_battery/base/frames"
     },
@@ -28,19 +29,20 @@
       "difficulty": "easy",
       "description": "Colores acentuados + luz fuerte",
       "n_tweaks": 4,
-      "n_frames": 655,
+      "n_frames": 870,
       "object_start": [
         0.46,
         -0.1,
-        0.29
+        0.033
       ],
       "object_end": [
-        0.46,
-        -0.1,
+        -0.39,
+        -0.255,
         0.025
       ],
-      "object_moved_m": 0.265,
+      "object_moved_m": 0.864,
       "object_manipulated": true,
+      "grasp_success": true,
       "mp4_path": "experiments/results/pick_battery/easy/demo.mp4",
       "frames_dir": "experiments/results/pick_battery/easy/frames"
     },
@@ -50,19 +52,20 @@
       "difficulty": "hard",
       "description": "Iluminaci\u00f3n baja + objetos ocultos (simula oclusi\u00f3n)",
       "n_tweaks": 3,
-      "n_frames": 655,
+      "n_frames": 870,
       "object_start": [
         0.46,
         -0.1,
-        0.29
+        0.033
       ],
       "object_end": [
-        0.46,
-        -0.1,
+        -0.374,
+        -0.244,
         0.025
       ],
-      "object_moved_m": 0.265,
+      "object_moved_m": 0.847,
       "object_manipulated": true,
+      "grasp_success": true,
       "mp4_path": "experiments/results/pick_battery/hard/demo.mp4",
       "frames_dir": "experiments/results/pick_battery/hard/frames"
     }
