@@ -349,3 +349,72 @@ class TestBridgeApplyScenario:
         # No debe intentar cargar bin_base.ttt (apply_scenario no lo hace)
         bridge.apply_scenario({"id": "base", "scene": "bin_base.ttt"})
         bridge._sim.loadScene.assert_not_called()
+
+
+class TestBridgeMisc:
+    """Tests de la propiedad sim (escape hatch) y mejoras a is_grasping."""
+
+    def test_sim_property_exposes_underlying_sim(self, mock_remote_api, mock_sim):
+        """bridge.sim devuelve el objeto sim crudo para escape hatch."""
+        bridge = CoppeliaSimBridge()
+        bridge.connect(retries=1)
+
+        assert bridge.sim is mock_sim
+
+    def test_sim_property_raises_if_not_connected(self):
+        bridge = CoppeliaSimBridge()
+
+        with pytest.raises(RuntimeError, match="not connected|sin conexión"):
+            _ = bridge.sim
+
+    def test_is_grasping_warns_if_gripper_missing(self, mock_remote_api, caplog):
+        """is_grasping loguea warning si _gripper_handle es None."""
+        import logging
+        bridge = CoppeliaSimBridge()
+        bridge.connect(retries=1)
+        bridge._gripper_handle = None
+
+        with caplog.at_level(logging.WARNING):
+            result = bridge.is_grasping()
+
+        assert result is False
+        assert any("gripper" in r.message.lower() for r in caplog.records)
+
+
+@pytest.mark.integration
+class TestBridgeIntegration:
+    """Integration tests — requieren CoppeliaSim corriendo en :23000.
+
+    Se skipean automáticamente si no hay servidor. Para correr:
+        pytest -m integration tests/test_coppeliasim_bridge.py -v
+    """
+
+    @pytest.fixture
+    def live_bridge(self):
+        bridge = CoppeliaSimBridge()
+        try:
+            bridge.connect(retries=1, retry_delay_s=0.1)
+        except (ConnectionError, ImportError) as e:
+            pytest.skip(f"CoppeliaSim no disponible en :23000 ({e})")
+        yield bridge
+        bridge.disconnect()
+
+    def test_live_connect_returns_version(self, live_bridge):
+        """La conexión live devuelve una versión > 0."""
+        version = live_bridge._sim.getInt32Param(
+            live_bridge._sim.intparam_program_version
+        )
+        assert version > 0
+
+    def test_live_get_simulation_state(self, live_bridge):
+        """get_simulation_state devuelve un int válido."""
+        state = live_bridge.get_simulation_state()
+        assert isinstance(state, int)
+        assert state in (0, 8, 16, 17)  # stopped, paused, running variants
+
+    def test_live_load_bin_base_if_present(self, live_bridge):
+        """Si bin_base.ttt existe, carga sin error y los handles se inicializan."""
+        scene = Path("data/scenes/bin_base.ttt")
+        if not scene.exists():
+            pytest.skip("data/scenes/bin_base.ttt no generada todavía (Task 6)")
+        live_bridge.load_scene(scene)

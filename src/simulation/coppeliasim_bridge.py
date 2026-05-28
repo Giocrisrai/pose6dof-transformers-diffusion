@@ -485,9 +485,16 @@ class CoppeliaSimBridge:
         self._sim.setJointTargetVelocity(self._gripper_handle, vel)
 
     def is_grasping(self) -> bool:
-        """Check if gripper is holding an object (force threshold)."""
+        """Check if gripper is holding an object (force threshold).
+
+        Returns False y loguea warning si no hay gripper en la escena.
+        """
         self._check_connected()
         if self._gripper_handle is None:
+            logger.warning(
+                "is_grasping: gripper no definido en escena "
+                "(handle '/gripper' no encontrado) → devuelve False por compatibilidad"
+            )
             return False
         force = self._sim.getJointForce(self._gripper_handle)
         return abs(force) > 0.5  # N
@@ -718,6 +725,24 @@ class CoppeliaSimBridge:
         return False
 
     # ── Helpers ────────────────────────────────────────────────
+
+    @property
+    def sim(self):
+        """Escape hatch: acceso directo al objeto sim crudo de la ZMQ API.
+
+        Úsese solo para operaciones que el bridge NO envuelve (por ejemplo
+        createVisionSensor, handleVisionSensor cuando se crean sensores
+        dinámicamente). Para flujo normal, usar los métodos públicos del
+        bridge.
+
+        Raises:
+            RuntimeError: si el bridge no está conectado.
+        """
+        if not self._connected or self._sim is None:
+            raise RuntimeError(
+                "Bridge sin conexión. Llamar connect() o usar 'with CoppeliaSimBridge() as bridge:'"
+            )
+        return self._sim
 
     def _check_connected(self):
         if not self._connected:
