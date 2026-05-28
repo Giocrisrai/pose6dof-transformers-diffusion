@@ -55,6 +55,28 @@ class SimpleDDPMScheduler:
         x_t = np.sqrt(alpha_bar_t) * x_0 + np.sqrt(1 - alpha_bar_t) * eps
         return x_t, eps
 
+    def add_noise_batch(self, x_0, t):
+        """Versión batch de add_noise. Acepta torch tensors.
+
+        Args:
+            x_0: (B, horizon, action_dim) tensor torch (clean data).
+            t:   (B,) tensor torch long (timestep por batch element).
+
+        Returns:
+            x_t: (B, horizon, action_dim) tensor noisy data.
+            eps: (B, horizon, action_dim) tensor noise applied.
+        """
+        import torch
+        device = x_0.device
+        # alpha_bar es numpy de shape (T,); indexamos por t.
+        alpha_bar_np = self.alpha_bar[t.cpu().numpy()]  # (B,)
+        alpha_bar = torch.tensor(alpha_bar_np, dtype=torch.float32, device=device)
+        # broadcast a (B, 1, 1)
+        alpha_bar = alpha_bar.view(-1, 1, 1)
+        eps = torch.randn_like(x_0)
+        x_t = torch.sqrt(alpha_bar) * x_0 + torch.sqrt(1.0 - alpha_bar) * eps
+        return x_t, eps
+
     def remove_noise(self, x_t: np.ndarray, eps_pred: np.ndarray, t: int) -> np.ndarray:
         """Reverse process: one denoising step.
 
