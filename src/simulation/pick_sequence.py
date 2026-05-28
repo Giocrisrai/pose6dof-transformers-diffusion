@@ -55,6 +55,7 @@ class PickResult:
     deposit_plausible: bool            # deposit_error_m < 0.30 m
     grasp_plausible: bool              # tip_grasp_proximity_m < 0.05 m
     ik_converged: bool
+    pose_source: str                   # 'scene_groundtruth' | 'foundation_pose_ckpt' | etc
     mp4_path: Optional[Path]
     frames_dir: Path
 
@@ -180,11 +181,25 @@ def run_pick_sequence(
     bridge: CoppeliaSimBridge,
     frames_dir: Path,
     target_object: str = "/object_1",
+    pose_override_xyz: Optional[list[float]] = None,
+    pose_source: str = "scene_groundtruth",
 ) -> PickResult:
     """Ejecuta pick-and-place completo con IK + attach del cubo al gripper.
 
     Pre-condición: escena ya cargada, sim NO iniciada. La función configura
     el robot, arranca/detiene la simulación, y captura frames.
+
+    Args:
+        bridge: conexión a CoppeliaSim.
+        frames_dir: carpeta donde guardar PNGs por step.
+        target_object: handle path del objeto a recoger (default /object_1).
+        pose_override_xyz: si se pasa, usar esta pose XYZ como target del pick
+            (en mundo) en vez de la pose ground-truth del objeto en la escena.
+            Útil para simular "el pipeline detectó el objeto en esta pose"
+            con outputs reales de FoundationPose (ver
+            docs/INTEGRATION_PIPELINE.md — brecha A).
+        pose_source: etiqueta declarativa para el report (e.g. 'foundation_pose_ckpt',
+            'scene_groundtruth'). Se incluye en PickResult.
     """
     frames_dir.mkdir(parents=True, exist_ok=True)
     for old in frames_dir.glob("*.png"):
@@ -205,7 +220,18 @@ def run_pick_sequence(
     bridge.start_simulation()
 
     obj_h = sim.getObject(target_object)
-    obj_start = list(sim.getObjectPosition(obj_h, -1))
+    obj_groundtruth = list(sim.getObjectPosition(obj_h, -1))
+    # obj_start es el target XYZ del pick. Si pose_override_xyz se pasa
+    # (e.g., output real de FoundationPose), se usa eso. Si no, ground truth.
+    if pose_override_xyz is not None:
+        obj_start = list(pose_override_xyz)
+        logger.info(
+            f"  pick target: pose_override={[round(p, 3) for p in obj_start]} "
+            f"(source: {pose_source}, GT real era {[round(p, 3) for p in obj_groundtruth]})"
+        )
+    else:
+        obj_start = obj_groundtruth
+        logger.info(f"  pick target: ground_truth={[round(p, 3) for p in obj_start]}")
     tip_h = sim.getObject("/tip")
 
     counter = [0]
@@ -341,6 +367,7 @@ def run_pick_sequence(
         deposit_plausible=deposit_plausible,
         grasp_plausible=grasp_plausible,
         ik_converged=ik_converged,
+        pose_source=pose_source,
         mp4_path=None,
         frames_dir=frames_dir,
     )
