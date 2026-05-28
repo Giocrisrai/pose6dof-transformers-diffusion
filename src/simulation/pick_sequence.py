@@ -81,7 +81,11 @@ def set_gripper(bridge: CoppeliaSimBridge, open_: bool) -> None:
     )
 
 
-def _capture_frame(bridge, frames_dir: Path, idx: int) -> None:
+def _capture_frame(bridge, frames_dir, idx: int) -> None:
+    """Captura un frame del rgb_camera. Si frames_dir es None, no-op
+    (modo collection rápida sin overhead de PNG)."""
+    if frames_dir is None:
+        return
     from PIL import Image
     sim = bridge.sim
     sim.handleVisionSensor(bridge._camera_rgb_handle)
@@ -179,7 +183,7 @@ def _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
 
 def run_pick_sequence(
     bridge: CoppeliaSimBridge,
-    frames_dir: Path,
+    frames_dir: Optional[Path],
     target_object: str = "/object_1",
     pose_override_xyz: Optional[list[float]] = None,
     pose_source: str = "scene_groundtruth",
@@ -201,9 +205,10 @@ def run_pick_sequence(
         pose_source: etiqueta declarativa para el report (e.g. 'foundation_pose_ckpt',
             'scene_groundtruth'). Se incluye en PickResult.
     """
-    frames_dir.mkdir(parents=True, exist_ok=True)
-    for old in frames_dir.glob("*.png"):
-        old.unlink()
+    if frames_dir is not None:
+        frames_dir.mkdir(parents=True, exist_ok=True)
+        for old in frames_dir.glob("*.png"):
+            old.unlink()
 
     # Constantes (extraídas como nombrados, antes magic numbers)
     GRIPPER_OPEN_SETTLE_STEPS = 20
