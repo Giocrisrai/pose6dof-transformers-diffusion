@@ -117,6 +117,28 @@ class CoppeliaSimBridge:
         self._tip_handle = None
         self._object_handles: Dict[str, int] = {}
 
+    def __enter__(self):
+        """Context manager: conecta y devuelve self."""
+        self.connect()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager: cleanup garantizado.
+
+        Si la simulación está corriendo, la detiene. Desactiva stepping.
+        Errores durante cleanup se loguean pero no se propagan; no suprime
+        excepciones del with body.
+        """
+        if self._connected and self._sim is not None:
+            try:
+                if self.get_simulation_state() != self._sim.simulation_stopped:
+                    self.stop_simulation()
+                self.set_stepping(False)
+            except Exception as e:
+                logger.warning(f"cleanup en __exit__ falló: {e}")
+        self.disconnect()
+        return False  # no suprime excepciones del body
+
     def connect(
         self,
         retries: int = 3,

@@ -169,3 +169,55 @@ class TestBridgeConnect:
         assert bridge._connected is False
         assert bridge._sim is None
         assert bridge._client is None
+
+
+class TestBridgeContextManager:
+    """Tests del context manager (__enter__ / __exit__)."""
+
+    def test_with_statement_connects_and_disconnects(self, mock_remote_api):
+        bridge = CoppeliaSimBridge()
+        with bridge as b:
+            assert b is bridge
+            assert b._connected is True
+
+        assert bridge._connected is False
+
+    def test_exit_stops_simulation_if_running(self, mock_remote_api, mock_sim):
+        mock_sim.getSimulationState.return_value = 17  # running
+
+        with CoppeliaSimBridge():
+            pass
+
+        mock_sim.stopSimulation.assert_called_once()
+        mock_sim.setStepping.assert_any_call(False)
+
+    def test_exit_skips_stop_if_already_stopped(self, mock_remote_api, mock_sim):
+        mock_sim.getSimulationState.return_value = 0  # stopped
+
+        with CoppeliaSimBridge():
+            pass
+
+        mock_sim.stopSimulation.assert_not_called()
+
+    def test_exit_propagates_exceptions(self, mock_remote_api):
+        with pytest.raises(ValueError, match="user error"):
+            with CoppeliaSimBridge():
+                raise ValueError("user error")
+
+    def test_exit_cleans_up_even_on_exception(self, mock_remote_api, mock_sim):
+        mock_sim.getSimulationState.return_value = 17
+
+        with pytest.raises(ValueError):
+            with CoppeliaSimBridge():
+                raise ValueError("boom")
+
+        mock_sim.stopSimulation.assert_called_once()
+
+    def test_exit_does_not_raise_if_cleanup_fails(self, mock_remote_api, mock_sim):
+        """Si stopSimulation falla en __exit__, se loguea warning pero no propaga."""
+        mock_sim.getSimulationState.return_value = 17
+        mock_sim.stopSimulation.side_effect = RuntimeError("sim crashed")
+
+        # No debe levantar
+        with CoppeliaSimBridge():
+            pass
