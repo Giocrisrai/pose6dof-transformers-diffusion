@@ -339,6 +339,9 @@ class CoppeliaSimBridge:
         scene_path = Path(scene_path)
         if not scene_path.exists():
             raise FileNotFoundError(f"Escena no encontrada: {scene_path}")
+        # Siempre absolutizar antes de pasarle el path a CoppeliaSim — el server
+        # resuelve paths relativos contra su propio CWD, no el del cliente Python.
+        scene_path = scene_path.resolve()
         if close_current:
             self._sim.closeScene()
         self._sim.loadScene(str(scene_path))
