@@ -159,10 +159,14 @@ def main() -> int:
 
         # 3. Bin alineado con el alcance del UR5
         print("[INFO] construyendo bin")
-        bin_pos = [0.5, 0.0, 0.05]  # 50 cm en frente del robot, base a 5 cm
+        # Bin elevado a 34 cm: con paredes de 15 cm (bin_h=0.15), el piso del
+        # bin queda en z=0.265 y los cubos sentados ahí tienen centro en
+        # z=0.29 — donde el TCP descend del UR5 llega naturalmente (z=0.317)
+        # con los dedos del RG2 wrapping the cube (cube half-height = 0.025).
+        bin_pos = [0.46, -0.10, 0.34]
         wall_t = 0.005
         bin_size = 0.30
-        bin_h = 0.10
+        bin_h = 0.15  # paredes más altas para que los cubos no salten fuera
 
         floor = sim.createPrimitiveShape(
             sim.primitiveshape_cuboid, [bin_size, bin_size, wall_t], 0
@@ -210,14 +214,16 @@ def main() -> int:
             0.0, 0.0, 0.0, 0.0, 0.0,  # padding
         ]
 
+        # Cámara cenital sobre el bin (1.2 m altura — alta para que entren
+        # robot + bin en el frame).
         rgb_h = sim.createVisionSensor(options, int_params, float_params)
         sim.setObjectAlias(rgb_h, "rgb_camera")
-        sim.setObjectPosition(rgb_h, -1, [bin_pos[0], bin_pos[1], 1.0])
+        sim.setObjectPosition(rgb_h, -1, [bin_pos[0] - 0.20, bin_pos[1] + 0.20, 1.30])
         sim.setObjectOrientation(rgb_h, -1, [math.pi, 0.0, 0.0])
 
         depth_h = sim.createVisionSensor(options, int_params, float_params)
         sim.setObjectAlias(depth_h, "depth_camera")
-        sim.setObjectPosition(depth_h, -1, [bin_pos[0], bin_pos[1], 1.0])
+        sim.setObjectPosition(depth_h, -1, [bin_pos[0] - 0.20, bin_pos[1] + 0.20, 1.30])
         sim.setObjectOrientation(depth_h, -1, [math.pi, 0.0, 0.0])
 
         # 5. Luz: reutilizar default (CoppeliaSim no expone addLight vía ZMQ)
@@ -241,12 +247,16 @@ def main() -> int:
         print("[INFO] creando 5 objetos surtidos")
         cube_size = [0.05, 0.05, 0.05]
         cyl_size = [0.05, 0.05, 0.06]
+        # Cubos descansando sobre el piso del bin (z = -bin_h/2 + cube_h/2)
+        # object_1 (rojo) en el centro = alineado con TCP descend del UR5.
+        # Z offset desde bin_pos: -bin_h/2 + cube_size[2]/2 = -0.075 + 0.025 = -0.05
+        z_floor = -bin_h / 2 + cube_size[2] / 2
         objs_spec = [
-            ("object_1", "cuboid",   cube_size, [0.9, 0.1, 0.1], [-0.08,  0.05, 0.05]),
-            ("object_2", "cuboid",   cube_size, [0.1, 0.9, 0.1], [+0.08, -0.05, 0.05]),
-            ("object_3", "cuboid",   cube_size, [0.1, 0.1, 0.9], [+0.05, +0.08, 0.05]),
-            ("object_4", "cylinder", cyl_size,  [0.7, 0.7, 0.7], [-0.05, -0.07, 0.05]),
-            ("object_5", "cylinder", cyl_size,  [0.9, 0.8, 0.1], [+0.00,  0.00, 0.05]),
+            ("object_1", "cuboid",   cube_size, [0.9, 0.1, 0.1], [+0.00,  0.00, z_floor]),
+            ("object_2", "cuboid",   cube_size, [0.1, 0.9, 0.1], [+0.08, +0.07, z_floor]),
+            ("object_3", "cuboid",   cube_size, [0.1, 0.1, 0.9], [-0.08, +0.08, z_floor]),
+            ("object_4", "cylinder", cyl_size,  [0.7, 0.7, 0.7], [+0.08, -0.07, z_floor]),
+            ("object_5", "cylinder", cyl_size,  [0.9, 0.8, 0.1], [-0.08, -0.07, z_floor]),
         ]
         for alias, shape, size, color, offset in objs_spec:
             ptype = (
@@ -265,6 +275,7 @@ def main() -> int:
                 ],
             )
             sim.setShapeColor(h, None, sim.colorcomponent_ambient_diffuse, color)
+            # Dinámicos + responsable a colisiones: el gripper puede agarrarlos.
             sim.setObjectInt32Param(h, sim.shapeintparam_static, 0)
             sim.setObjectInt32Param(h, sim.shapeintparam_respondable, 1)
 
