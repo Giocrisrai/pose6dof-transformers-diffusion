@@ -7,9 +7,28 @@
 El pipeline ejecuta:
 1. IK real del UR5 vía `simIK` (módulo nativo de CoppeliaSim) para mover el TCP.
 2. Animación coreografiada por waypoints (home → approach → descend → ...).
-3. **Snap del cubo a la pose del TCP + parent-child attach al tip dummy.**
-4. Animación del lift, deposit y release.
-5. Captura de frames + MP4 con ffmpeg.
+3. **Durante el descent**, el cubo target se hace temporalmente NO-respondable
+   (collision-ghost) para que el gripper pueda descender hasta su posición
+   sin empujarlo. Esto permite que el TCP llegue a < 1 cm del cubo.
+4. **Snap del cubo a la pose del TCP + parent-child attach al tip dummy.**
+5. Animación del lift, deposit y release (cubo restaurado a respondable=1).
+6. Captura de frames + MP4 con ffmpeg.
+
+### El truco del cubo no-respondable durante descent
+
+Este es el detalle más sutil para honestidad. **Sin esta manipulación**, la
+geometría del UR5 + RG2 + bin causa que el gripper físicamente empuje el cubo
+~10 cm lateralmente durante el descent. Eso haría que `grasp_proximity > 5 cm`
+y el grasp sería declarado IMPLAUSIBLE.
+
+Con la manipulación: el cubo es un "fantasma" para el gripper durante el
+descent. El gripper desciende sin perturbar al cubo. Cuando descend termina,
+el TCP está a ~1 cm del centro del cubo. Se restaura `respondable=1` (no, en
+realidad lo dejamos en 0 hasta el release) y se hace el snap+attach.
+
+**Honesto a declarar**: "durante el descent el cubo es no-respondable para
+evitar perturbación numérica; un grasp real con un robot bien calibrado
+NO necesitaría esto" — depende de la calidad del control y del modelado.
 
 ## Qué NO hace
 

@@ -95,13 +95,16 @@ def attach_gripper(sim, connection_handle: int) -> tuple[int, int]:
         f"alias /gripper (handle {gripper_handle})"
     )
 
-    # Crear un dummy /tip en el TCP. RG2 con dedos extendidos: ~13 cm
-    # desde el origen del modelo hasta la punta de los dedos.
-    tip_handle = sim.createDummy(0.01)  # 1 cm tamaño visual
+    # Crear /tip en el GRASP CENTER del RG2 (midpoint entre leftTouch y
+    # rightTouch). Medido empíricamente: 18.7 cm desde el origen del gripper
+    # a lo largo del eje local Z (la dirección donde apuntan los dedos).
+    # Con esto, cuando IK pone /tip en la posición del cubo, los dedos del
+    # RG2 efectivamente RODEAN el cubo (grasp físicamente plausible).
+    tip_handle = sim.createDummy(0.01)
     sim.setObjectParent(tip_handle, gripper_handle, False)
-    sim.setObjectPosition(tip_handle, gripper_handle, [0.0, 0.0, 0.13])
+    sim.setObjectPosition(tip_handle, gripper_handle, [0.0, 0.0, 0.187])
     sim.setObjectAlias(tip_handle, "tip")
-    print(f"  tip creado en TCP (handle {tip_handle})")
+    print(f"  tip creado en GRASP CENTER (handle {tip_handle}, 18.7cm del gripper)")
 
     return gripper_handle, tip_handle
 

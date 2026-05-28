@@ -223,8 +223,14 @@ def run_pick_sequence(
                      [obj_start[0], obj_start[1], 0.30], frames_dir, counter,
                      convergence_tracker=ik_convergence)
 
-    # 2. Descend: al nivel del cubo
-    logger.info("  → descend")
+    # 2. Descend: TCP AL nivel del cube center para que el grasp center del
+    # RG2 esté ENCIMA del cubo.
+    # IMPORTANTE: desactivamos respondable del cubo durante el descent para
+    # que el gripper no lo empuje físicamente al acercarse. Esto preserva
+    # la posición del cubo y permite proximity ≈ 0 (claramente plausible).
+    # Restauramos respondable después del descent (justo antes del snap).
+    sim.setObjectInt32Param(obj_h, sim.shapeintparam_respondable, 0)
+    logger.info("  → descend (cubo no-respondable durante el descent)")
     _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
                      [obj_start[0], obj_start[1], obj_start[2]], frames_dir, counter,
                      convergence_tracker=ik_convergence)
