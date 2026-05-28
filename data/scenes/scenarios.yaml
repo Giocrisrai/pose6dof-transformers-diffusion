@@ -1,0 +1,32 @@
+# Manifiesto de escenarios para run_scenario_battery.py
+#
+# Cada entrada se ejecuta una vez: load_scene(scene) → apply_scenario(tweaks)
+# → start_simulation → pipeline → stop_simulation.
+#
+# Tipos de tweak: color, light, visibility (ver data/scenes/README.md).
+
+scenarios:
+  - id: base
+    scene: bin_base.ttt
+    description: "Escena base, 5 objetos surtidos, iluminación nominal"
+    difficulty: easy
+
+  - id: easy
+    scene: bin_base.ttt
+    description: "Colores acentuados + luz fuerte"
+    difficulty: easy
+    tweaks:
+      - { type: color,      target: "/object_1", rgb: [0.95, 0.10, 0.10] }
+      - { type: color,      target: "/object_2", rgb: [0.10, 0.95, 0.10] }
+      - { type: color,      target: "/object_3", rgb: [0.10, 0.10, 0.95] }
+      - { type: light,      target: "/Light",    intensity: 1.2 }
+
+  - id: hard
+    # cambiará a bin_hard.ttt cuando se modele una variante con oclusión real
+    scene: bin_base.ttt
+    description: "Iluminación baja + objetos ocultos (simula oclusión)"
+    difficulty: hard
+    tweaks:
+      - { type: light,      target: "/Light",    intensity: 0.3 }
+      - { type: visibility, target: "/object_4", visible: false }
+      - { type: visibility, target: "/object_5", visible: false }
