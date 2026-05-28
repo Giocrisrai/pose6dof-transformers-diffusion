@@ -534,6 +534,121 @@ class CoppeliaSimBridge:
         self._sim.setObjectPosition(handle, -1, pos)
         self._sim.setObjectQuaternion(handle, -1, quat)
 
+    def set_object_color(self, name: str, rgb) -> None:
+        """Cambia el color shape de un objeto.
+
+        Args:
+            name: handle path (ej. "/object_1").
+            rgb: tupla o lista de 3 floats en [0,1].
+
+        Raises:
+            ValueError: si rgb no tiene exactamente 3 componentes.
+        """
+        self._check_connected()
+        rgb = list(rgb)
+        if len(rgb) != 3:
+            raise ValueError(f"rgb debe tener 3 componentes, recibió {len(rgb)}")
+        handle = self._sim.getObject(name)
+        self._sim.setShapeColor(
+            handle,
+            None,
+            self._sim.colorcomponent_ambient_diffuse,
+            rgb,
+        )
+        logger.debug(f"color {name} → {rgb}")
+
+    def set_light_intensity(self, light_name: str, intensity: float) -> None:
+        """Cambia la intensidad de una luz.
+
+        Args:
+            light_name: handle path (ej. "/Light").
+            intensity: float ≥ 0, típicamente 0.0–1.5.
+        """
+        self._check_connected()
+        if intensity < 0:
+            raise ValueError(f"intensity debe ser ≥ 0, recibió {intensity}")
+        handle = self._sim.getObject(light_name)
+        # setLightParameters(handle, state, ambient_or_None, diffuse, specular)
+        self._sim.setLightParameters(
+            handle,
+            1,                                      # state: on
+            None,                                   # ambient: usa default
+            [intensity, intensity, intensity],      # diffuse
+            [intensity * 0.2, intensity * 0.2, intensity * 0.2],  # specular tenue
+        )
+        logger.debug(f"light {light_name} → intensity {intensity}")
+
+    def set_object_visibility(self, name: str, visible: bool) -> None:
+        """Oculta/muestra un objeto cambiando su visibility layer.
+
+        Args:
+            name: handle path.
+            visible: True muestra (layer 1), False oculta (layer 0).
+        """
+        self._check_connected()
+        handle = self._sim.getObject(name)
+        layer = 1 if visible else 0
+        self._sim.setObjectInt32Param(
+            handle,
+            self._sim.objintparam_visibility_layer,
+            layer,
+        )
+        logger.debug(f"visibility {name} → {visible}")
+
+    def apply_scenario(self, scenario: dict) -> None:
+        """Aplica los tweaks de un scenario en orden.
+
+        Asume que la escena ya fue cargada por el caller (vía load_scene).
+        Las claves `id` y `scene` del dict se ignoran.
+
+        Args:
+            scenario: dict con campo opcional `tweaks` (lista de dicts con
+                `type` ∈ {color, light, visibility} y campos específicos).
+
+        Raises:
+            ValueError: si un tweak tiene type desconocido o campos faltantes.
+        """
+        self._check_connected()
+        tweaks = scenario.get("tweaks", [])
+        scenario_id = scenario.get("id", "<sin-id>")
+
+        for i, tweak in enumerate(tweaks):
+            ttype = tweak.get("type")
+            target = tweak.get("target")
+            if target is None:
+                raise ValueError(
+                    f"scenario {scenario_id} tweak[{i}]: missing required field 'target'"
+                )
+
+            if ttype == "color":
+                rgb = tweak.get("rgb")
+                if rgb is None:
+                    raise ValueError(
+                        f"scenario {scenario_id} tweak[{i}]: color tweak missing 'rgb'"
+                    )
+                self.set_object_color(target, rgb)
+            elif ttype == "light":
+                intensity = tweak.get("intensity")
+                if intensity is None:
+                    raise ValueError(
+                        f"scenario {scenario_id} tweak[{i}]: light tweak missing 'intensity'"
+                    )
+                self.set_light_intensity(target, intensity)
+            elif ttype == "visibility":
+                visible = tweak.get("visible")
+                if visible is None:
+                    raise ValueError(
+                        f"scenario {scenario_id} tweak[{i}]: visibility tweak missing 'visible'"
+                    )
+                self.set_object_visibility(target, visible)
+            else:
+                raise ValueError(
+                    f"scenario {scenario_id} tweak[{i}]: unknown type '{ttype}' "
+                    f"(esperado: color, light, visibility)"
+                )
+
+        logger.info(f"scenario {scenario_id}: {len(tweaks)} tweaks aplicados")
+
     def randomize_object_poses(
         self,
         names: List[str],

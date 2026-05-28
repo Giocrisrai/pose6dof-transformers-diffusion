@@ -221,3 +221,131 @@ class TestBridgeContextManager:
         # No debe levantar
         with CoppeliaSimBridge():
             pass
+
+
+class TestBridgeTweaks:
+    """Tests de tweaks visuales: color, light, visibility."""
+
+    def test_set_object_color(self, mock_remote_api, mock_sim):
+        bridge = CoppeliaSimBridge()
+        bridge.connect(retries=1)
+        bridge.set_object_color("/object_1", (0.9, 0.1, 0.1))
+
+        mock_sim.getObject.assert_any_call("/object_1")
+        # setShapeColor(handle, None, colorcomponent_ambient_diffuse, rgb_list)
+        assert mock_sim.setShapeColor.called
+        args, _ = mock_sim.setShapeColor.call_args
+        assert args[2] == mock_sim.colorcomponent_ambient_diffuse
+        assert list(args[3]) == [0.9, 0.1, 0.1]
+
+    def test_set_light_intensity(self, mock_remote_api, mock_sim):
+        bridge = CoppeliaSimBridge()
+        bridge.connect(retries=1)
+        bridge.set_light_intensity("/Light", 1.2)
+
+        mock_sim.getObject.assert_any_call("/Light")
+        assert mock_sim.setLightParameters.called
+        args, _ = mock_sim.setLightParameters.call_args
+        # signature: (handle, state, ambient_or_None, diffuse, specular)
+        assert args[1] == 1  # state on
+        assert list(args[3]) == [1.2, 1.2, 1.2]
+
+    def test_set_object_visibility_hidden(self, mock_remote_api, mock_sim):
+        bridge = CoppeliaSimBridge()
+        bridge.connect(retries=1)
+        bridge.set_object_visibility("/object_1", visible=False)
+
+        mock_sim.setObjectInt32Param.assert_called_once()
+        args, _ = mock_sim.setObjectInt32Param.call_args
+        assert args[1] == mock_sim.objintparam_visibility_layer
+        assert args[2] == 0  # layer 0 = hidden
+
+    def test_set_object_visibility_visible(self, mock_remote_api, mock_sim):
+        bridge = CoppeliaSimBridge()
+        bridge.connect(retries=1)
+        bridge.set_object_visibility("/object_1", visible=True)
+
+        args, _ = mock_sim.setObjectInt32Param.call_args
+        assert args[2] == 1  # layer 1 = visible (default)
+
+
+class TestBridgeApplyScenario:
+    """Tests de apply_scenario."""
+
+    def test_apply_scenario_no_tweaks(self, mock_remote_api):
+        bridge = CoppeliaSimBridge()
+        bridge.connect(retries=1)
+        bridge.apply_scenario({"id": "base", "scene": "bin_base.ttt"})  # sin tweaks → no-op
+
+        # No debe haber llamado setShapeColor, setLightParameters, setObjectInt32Param
+        bridge._sim.setShapeColor.assert_not_called()
+        bridge._sim.setLightParameters.assert_not_called()
+        bridge._sim.setObjectInt32Param.assert_not_called()
+
+    def test_apply_scenario_color_tweak(self, mock_remote_api, mock_sim):
+        bridge = CoppeliaSimBridge()
+        bridge.connect(retries=1)
+        bridge.apply_scenario({
+            "id": "easy",
+            "scene": "bin_base.ttt",
+            "tweaks": [
+                {"type": "color", "target": "/object_1", "rgb": [0.9, 0.1, 0.1]},
+            ],
+        })
+
+        assert mock_sim.setShapeColor.called
+
+    def test_apply_scenario_light_tweak(self, mock_remote_api, mock_sim):
+        bridge = CoppeliaSimBridge()
+        bridge.connect(retries=1)
+        bridge.apply_scenario({
+            "id": "hard",
+            "scene": "bin_base.ttt",
+            "tweaks": [
+                {"type": "light", "target": "/Light", "intensity": 0.3},
+            ],
+        })
+
+        assert mock_sim.setLightParameters.called
+
+    def test_apply_scenario_visibility_tweak(self, mock_remote_api, mock_sim):
+        bridge = CoppeliaSimBridge()
+        bridge.connect(retries=1)
+        bridge.apply_scenario({
+            "id": "hard",
+            "scene": "bin_base.ttt",
+            "tweaks": [
+                {"type": "visibility", "target": "/object_5", "visible": False},
+            ],
+        })
+
+        assert mock_sim.setObjectInt32Param.called
+
+    def test_apply_scenario_unknown_tweak_type_raises(self, mock_remote_api):
+        bridge = CoppeliaSimBridge()
+        bridge.connect(retries=1)
+
+        with pytest.raises(ValueError, match="unknown"):
+            bridge.apply_scenario({
+                "id": "bad",
+                "tweaks": [{"type": "unknown_type", "target": "/x"}],
+            })
+
+    def test_apply_scenario_missing_field_raises(self, mock_remote_api):
+        bridge = CoppeliaSimBridge()
+        bridge.connect(retries=1)
+
+        with pytest.raises(ValueError, match="missing|required"):
+            bridge.apply_scenario({
+                "id": "bad",
+                "tweaks": [{"type": "color", "target": "/x"}],  # falta rgb
+            })
+
+    def test_apply_scenario_ignores_id_and_scene(self, mock_remote_api):
+        """Las claves id y scene del dict se ignoran; solo se procesan tweaks."""
+        bridge = CoppeliaSimBridge()
+        bridge.connect(retries=1)
+
+        # No debe intentar cargar bin_base.ttt (apply_scenario no lo hace)
+        bridge.apply_scenario({"id": "base", "scene": "bin_base.ttt"})
+        bridge._sim.loadScene.assert_not_called()
