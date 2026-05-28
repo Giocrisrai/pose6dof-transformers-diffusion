@@ -185,12 +185,20 @@ def run_pick_sequence(
     _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
                      [obj_start[0], obj_start[1], obj_start[2]], frames_dir, counter)
 
-    # 3. Grasp: cerrar gripper + ATTACH cubo al tip
-    # Técnica estándar en sims comerciales (Pickit, Cognex, etc) — evita
-    # tuning fino de friction y garantiza el grasp para demos.
-    logger.info("  → grasp_close + attach")
+    # 3. Grasp: cerrar gripper + ATTACH cubo CENTRADO en el tip
+    # NOTA crítica: durante el descent el gripper FÍSICAMENTE puede empujar
+    # el cubo lateralmente. Si attacháramos con keepInPlace=True el cubo
+    # quedaría con offset del tip → en el lift/deposit se ve flotando.
+    # Por eso: snap del cubo a la pose del tip (centrado en el gripper)
+    # ANTES del attach. Visualmente el cubo aparece firmemente en el gripper.
+    logger.info("  → grasp_close + attach (cubo centrado en el tip)")
     sim.setObjectInt32Param(obj_h, sim.shapeintparam_respondable, 0)
     sim.setObjectInt32Param(obj_h, sim.shapeintparam_static, 1)
+    # Snap del cubo al world position del tip, después attach con
+    # keepInPlace=True para que CoppeliaSim recompute el offset relativo
+    # como (0,0,0). Así el cubo viaja CENTRADO en el tip.
+    tip_pos = sim.getObjectPosition(tip_h, -1)
+    sim.setObjectPosition(obj_h, -1, tip_pos)
     sim.setObjectParent(obj_h, tip_h, True)
     set_gripper(bridge, False)
     for _ in range(40):
@@ -208,11 +216,18 @@ def run_pick_sequence(
     _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
                      [-0.30, -0.30, 0.30], frames_dir, counter)
 
-    # 6. Release: detach + abrir gripper + restaurar física
-    logger.info("  → release + detach")
+    # 6. Release: detach + restaurar física + resetear velocidad
+    # El cubo hereda la velocidad del tip durante el deposit (era hijo del
+    # tip). Sin reset, al soltar conserva esa velocidad y vuela 1m+ por
+    # inercia. resetDynamicObject pone velocidad lineal y angular a 0.
+    logger.info("  → release + detach + velocity reset")
     sim.setObjectParent(obj_h, -1, True)
     sim.setObjectInt32Param(obj_h, sim.shapeintparam_respondable, 1)
     sim.setObjectInt32Param(obj_h, sim.shapeintparam_static, 0)
+    try:
+        sim.resetDynamicObject(obj_h)
+    except Exception as e:
+        logger.warning(f"resetDynamicObject falló: {e}")
     set_gripper(bridge, True)
     for _ in range(60):
         bridge.step()
