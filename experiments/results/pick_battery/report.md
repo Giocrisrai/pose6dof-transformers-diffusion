@@ -15,6 +15,6 @@ El "grasp" usa la técnica de snap+attach (cubo se teletransporta al TCP y se pa
 
 | id | diff | frames | grasp_prox | grasp_OK | moved | deposit_err | deposit_OK | ik_ok | video |
 |---|---|---:|---:|:-:|---:|---:|:-:|:-:|---|
-| base | easy | 870 | 10.4cm | ✗ | 80.9cm | 9.0cm | ✓ | ✓ | `experiments/results/pick_battery/base/demo.mp4` |
-| easy | easy | 870 | 10.2cm | ✗ | 78.4cm | 9.0cm | ✓ | ✓ | `experiments/results/pick_battery/easy/demo.mp4` |
-| hard | hard | 870 | 10.7cm | ✗ | 84.9cm | 8.7cm | ✓ | ✓ | `experiments/results/pick_battery/hard/demo.mp4` |
+| base | easy | 870 | 0.8cm | ✓ | 75.6cm | 5.0cm | ✓ | ✓ | `experiments/results/pick_battery/base/demo.mp4` |
+| easy | easy | 870 | 0.8cm | ✓ | 76.8cm | 6.3cm | ✓ | ✓ | `experiments/results/pick_battery/easy/demo.mp4` |
+| hard | hard | 870 | 0.8cm | ✓ | 75.7cm | 4.3cm | ✓ | ✓ | `experiments/results/pick_battery/hard/demo.mp4` |

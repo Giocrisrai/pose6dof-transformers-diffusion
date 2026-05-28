@@ -13,8 +13,8 @@
         0.033
       ],
       "object_end": [
-        -0.34,
-        -0.22,
+        -0.28,
+        -0.254,
         0.025
       ],
       "deposit_target": [
@@ -22,11 +22,11 @@
         -0.3,
         0.3
       ],
-      "object_moved_m": 0.809,
-      "tip_grasp_proximity_m": 0.104,
-      "deposit_error_m": 0.09,
+      "object_moved_m": 0.756,
+      "tip_grasp_proximity_m": 0.008,
+      "deposit_error_m": 0.05,
       "obj_displaced": true,
-      "grasp_plausible": false,
+      "grasp_plausible": true,
       "deposit_plausible": true,
       "ik_converged": true,
       "mp4_path": "experiments/results/pick_battery/base/demo.mp4",
@@ -45,8 +45,8 @@
         0.033
       ],
       "object_end": [
-        -0.316,
-        -0.212,
+        -0.295,
+        -0.238,
         0.025
       ],
       "deposit_target": [
@@ -54,11 +54,11 @@
         -0.3,
         0.3
       ],
-      "object_moved_m": 0.784,
-      "tip_grasp_proximity_m": 0.102,
-      "deposit_error_m": 0.09,
+      "object_moved_m": 0.768,
+      "tip_grasp_proximity_m": 0.008,
+      "deposit_error_m": 0.063,
       "obj_displaced": true,
-      "grasp_plausible": false,
+      "grasp_plausible": true,
       "deposit_plausible": true,
       "ik_converged": true,
       "mp4_path": "experiments/results/pick_battery/easy/demo.mp4",
@@ -77,8 +77,8 @@
         0.033
       ],
       "object_end": [
-        -0.343,
-        -0.376,
+        -0.279,
+        -0.262,
         0.025
       ],
       "deposit_target": [
@@ -86,11 +86,11 @@
         -0.3,
         0.3
       ],
-      "object_moved_m": 0.849,
-      "tip_grasp_proximity_m": 0.107,
-      "deposit_error_m": 0.087,
+      "object_moved_m": 0.757,
+      "tip_grasp_proximity_m": 0.008,
+      "deposit_error_m": 0.043,
       "obj_displaced": true,
-      "grasp_plausible": false,
+      "grasp_plausible": true,
       "deposit_plausible": true,
       "ik_converged": true,
       "mp4_path": "experiments/results/pick_battery/hard/demo.mp4",
