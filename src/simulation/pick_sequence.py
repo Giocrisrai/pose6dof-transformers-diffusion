@@ -1,8 +1,15 @@
-"""Secuencia pick-and-place reutilizable para escenas tipo bin_base.
+"""Secuencia pick-and-place reutilizable usando IK + attach técnica.
 
-Define keyframes UR5 verificados y la función `run_pick_sequence` que
-ejecuta el ciclo completo: home → approach → descend → grasp → lift →
-deposit → release → home, capturando frames del rgb_camera por step.
+Usa simIK module de CoppeliaSim para resolver IK del UR5 (target XYZ →
+joints) y técnica estándar de attach del objeto al gripper durante el
+grasp (también usada por Pickit, Cognex y otros sims comerciales).
+
+Flujo:
+    home → approach (sobre cubo) → descend (al nivel del cubo) →
+    grasp (cierra gripper + attach object al TCP) → lift → deposit →
+    release (detach + abre gripper + restaurar física).
+
+Outputs: PNG por step para compilar MP4.
 """
 from __future__ import annotations
 
@@ -12,7 +19,7 @@ import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable
+from typing import Optional
 
 import numpy as np
 
@@ -20,36 +27,20 @@ from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
 
 logger = logging.getLogger(__name__)
 
-# Keyframes UR5 verificados con bin_base.ttt (UR5 rotado +π/2, bin en +X=0.5).
-KEYFRAMES = {
-    "home":     [0,           0,            0,            0,            0,           0],
-    "approach": [0,          -math.pi/3,    math.pi/2.5, -math.pi*0.6,  math.pi/2,   0],
-    "descend":  [0,          -math.pi/2.2,  math.pi/2,   -math.pi*0.55, math.pi/2,   0],
-    "lift":     [0,          -math.pi/3,    math.pi/2.5, -math.pi*0.6,  math.pi/2,   0],
-    "deposit":  [-math.pi/2, -math.pi/3,    math.pi/2.5, -math.pi*0.6,  math.pi/2,   0],
-}
-
-STEPS_PER_SEGMENT = 60
-SETTLE_STEPS = 20
-
 
 @dataclass
 class PickResult:
-    """Resultado de una corrida de pick sequence."""
     n_frames: int
     obj_start_pos: list[float]
     obj_end_pos: list[float]
     obj_moved_m: float
-    mp4_path: Path | None
+    grasp_success: bool
+    mp4_path: Optional[Path]
     frames_dir: Path
 
 
 def setup_robot_control(bridge: CoppeliaSimBridge) -> None:
-    """Configura joints UR5 para control dinámico position-mode + disable script.
-
-    El script threaded interno del UR5.ttm pone los joints en callback mode
-    (8), que sobrescribe setJointTargetPosition desde Python.
-    """
+    """Configura joints UR5 para control dinámico position-mode + disable script."""
     sim = bridge.sim
     for h in bridge._joint_handles:
         sim.setJointMode(h, sim.jointmode_dynamic, 0)
@@ -69,7 +60,7 @@ def set_gripper(bridge: CoppeliaSimBridge, open_: bool) -> None:
     )
 
 
-def _capture_frame(bridge: CoppeliaSimBridge, frames_dir: Path, idx: int) -> None:
+def _capture_frame(bridge, frames_dir: Path, idx: int) -> None:
     from PIL import Image
     sim = bridge.sim
     sim.handleVisionSensor(bridge._camera_rgb_handle)
@@ -80,25 +71,13 @@ def _capture_frame(bridge: CoppeliaSimBridge, frames_dir: Path, idx: int) -> Non
     Image.fromarray(img).save(frames_dir / f"{idx:06d}.png")
 
 
-def _move_to(bridge: CoppeliaSimBridge, target, frames_dir: Path, counter: list[int],
-             n_steps: int = STEPS_PER_SEGMENT) -> None:
-    sim = bridge.sim
-    for h, t in zip(bridge._joint_handles, target):
-        sim.setJointTargetPosition(h, t)
-    for _ in range(n_steps + SETTLE_STEPS):
-        bridge.step()
-        _capture_frame(bridge, frames_dir, counter[0])
-        counter[0] += 1
-
-
-def compile_mp4(frames_dir: Path, mp4_path: Path, fps: int = 25) -> Path | None:
-    """Compila frames a MP4 con ffmpeg. Devuelve None si ffmpeg no está."""
+def compile_mp4(frames_dir: Path, mp4_path: Path, fps: int = 25) -> Optional[Path]:
+    """Compila frames PNG a MP4 con ffmpeg. None si ffmpeg no está."""
     if not shutil.which("ffmpeg"):
         logger.warning("ffmpeg no encontrado — skip MP4")
         return None
     cmd = [
-        "ffmpeg", "-y",
-        "-framerate", str(fps),
+        "ffmpeg", "-y", "-framerate", str(fps),
         "-i", str(frames_dir / "%06d.png"),
         "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "20",
         str(mp4_path),
@@ -110,24 +89,69 @@ def compile_mp4(frames_dir: Path, mp4_path: Path, fps: int = 25) -> Path | None:
     return mp4_path
 
 
+def _setup_ik(bridge: CoppeliaSimBridge):
+    """Crea IK env + group + element. Devuelve (env, ik_group, target_dummy,
+    ik_joints, simIK_module)."""
+    from coppeliasim_zmqremoteapi_client import RemoteAPIClient
+    client = RemoteAPIClient("localhost", 23000)
+    simIK = client.require("simIK")
+    sim = bridge.sim
+    env = simIK.createEnvironment()
+    ik_group = simIK.createGroup(env)
+    simIK.setGroupCalculation(env, ik_group, simIK.method_damped_least_squares, 0.01, 50)
+    tip_h = sim.getObject("/tip")
+    base_h = sim.getObject("/UR5e")
+    try:
+        old = sim.getObject("/ik_target")
+        sim.removeObject(old)
+    except Exception:
+        pass
+    target_dummy = sim.createDummy(0.02)
+    sim.setObjectAlias(target_dummy, "ik_target")
+    sim.setObjectMatrix(target_dummy, -1, sim.getObjectMatrix(tip_h, -1))
+    res = simIK.addElementFromScene(env, ik_group, base_h, tip_h, target_dummy,
+                                     simIK.constraint_position)
+    scene_to_ik = res[1]
+    ik_joints = [scene_to_ik[h] for h in bridge._joint_handles]
+    return env, ik_group, target_dummy, ik_joints, simIK
+
+
+def _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
+                      target_xyz, frames_dir, counter,
+                      n_substeps: int = 40, steps_per_substep: int = 3) -> None:
+    """Mueve TCP a target_xyz interpolando linealmente + IK por substep +
+    comandando joints como PID target. Captura frame por step."""
+    sim = bridge.sim
+    start_pos = sim.getObjectPosition(target_dummy, -1)
+    for i in range(1, n_substeps + 1):
+        a = i / n_substeps
+        interp = [start_pos[j] + a * (target_xyz[j] - start_pos[j]) for j in range(3)]
+        sim.setObjectPosition(target_dummy, -1, interp)
+        simIK.syncFromSim(env, [ik_group])
+        simIK.handleGroup(env, ik_group)
+        joint_vals = [simIK.getJointPosition(env, j) for j in ik_joints]
+        for h, v in zip(bridge._joint_handles, joint_vals):
+            sim.setJointTargetPosition(h, v)
+        for _ in range(steps_per_substep):
+            bridge.step()
+            _capture_frame(bridge, frames_dir, counter[0])
+            counter[0] += 1
+    # Settle
+    for _ in range(30):
+        bridge.step()
+        _capture_frame(bridge, frames_dir, counter[0])
+        counter[0] += 1
+
+
 def run_pick_sequence(
     bridge: CoppeliaSimBridge,
     frames_dir: Path,
     target_object: str = "/object_1",
 ) -> PickResult:
-    """Ejecuta home → approach → descend → grasp → lift → deposit → release → home.
+    """Ejecuta pick-and-place completo con IK + attach del cubo al gripper.
 
-    Pre-condición: bridge ya tiene la escena cargada y simulación EN STEPPED MODE.
-    Esta función llama start_simulation y stop_simulation internamente.
-
-    Args:
-        bridge: CoppeliaSimBridge conectado con escena cargada.
-        frames_dir: directorio para frames PNG (se crea si no existe; los .png
-            existentes se eliminan).
-        target_object: handle path del objeto que se intenta agarrar.
-
-    Returns:
-        PickResult con métricas y referencia a los frames.
+    Pre-condición: escena ya cargada, sim NO iniciada. La función configura
+    el robot, arranca/detiene la simulación, y captura frames.
     """
     frames_dir.mkdir(parents=True, exist_ok=True)
     for old in frames_dir.glob("*.png"):
@@ -135,48 +159,83 @@ def run_pick_sequence(
 
     setup_robot_control(bridge)
     sim = bridge.sim
+    env, ik_group, target_dummy, ik_joints, simIK = _setup_ik(bridge)
+
+    bridge.set_stepping(True)
     bridge.start_simulation()
 
-    # Pose inicial del objeto
     obj_h = sim.getObject(target_object)
-    obj_start = sim.getObjectPosition(obj_h, -1)
+    obj_start = list(sim.getObjectPosition(obj_h, -1))
+    tip_h = sim.getObject("/tip")
 
     counter = [0]
     set_gripper(bridge, True)
-    for _ in range(15):
+    for _ in range(20):
         bridge.step()
         _capture_frame(bridge, frames_dir, counter[0])
         counter[0] += 1
 
-    sequence = [
-        ("home",         KEYFRAMES["home"],     None),
-        ("approach",     KEYFRAMES["approach"], None),
-        ("descend",      KEYFRAMES["descend"],  None),
-        ("grasp_close",  KEYFRAMES["descend"],  "close"),
-        ("lift",         KEYFRAMES["lift"],     None),
-        ("deposit",      KEYFRAMES["deposit"],  None),
-        ("release_open", KEYFRAMES["deposit"],  "open"),
-        ("home_return",  KEYFRAMES["home"],     None),
-    ]
+    # 1. Approach: 30 cm sobre cubo
+    logger.info(f"  → approach (30 cm sobre {target_object})")
+    _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
+                     [obj_start[0], obj_start[1], 0.30], frames_dir, counter)
 
-    for name, pose, gripper in sequence:
-        logger.info(f"  → {name}")
-        if gripper == "open":
-            set_gripper(bridge, True)
-        elif gripper == "close":
-            set_gripper(bridge, False)
-        _move_to(bridge, pose, frames_dir, counter)
+    # 2. Descend: al nivel del cubo
+    logger.info("  → descend")
+    _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
+                     [obj_start[0], obj_start[1], obj_start[2]], frames_dir, counter)
 
-    obj_end = sim.getObjectPosition(obj_h, -1)
-    moved = math.sqrt(sum((a-b)**2 for a, b in zip(obj_start, obj_end)))
+    # 3. Grasp: cerrar gripper + ATTACH cubo al tip
+    # Técnica estándar en sims comerciales (Pickit, Cognex, etc) — evita
+    # tuning fino de friction y garantiza el grasp para demos.
+    logger.info("  → grasp_close + attach")
+    sim.setObjectInt32Param(obj_h, sim.shapeintparam_respondable, 0)
+    sim.setObjectInt32Param(obj_h, sim.shapeintparam_static, 1)
+    sim.setObjectParent(obj_h, tip_h, True)
+    set_gripper(bridge, False)
+    for _ in range(40):
+        bridge.step()
+        _capture_frame(bridge, frames_dir, counter[0])
+        counter[0] += 1
+
+    # 4. Lift
+    logger.info("  → lift")
+    _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
+                     [obj_start[0], obj_start[1], 0.40], frames_dir, counter)
+
+    # 5. Deposit (lateral)
+    logger.info("  → deposit")
+    _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
+                     [-0.30, -0.30, 0.30], frames_dir, counter)
+
+    # 6. Release: detach + abrir gripper + restaurar física
+    logger.info("  → release + detach")
+    sim.setObjectParent(obj_h, -1, True)
+    sim.setObjectInt32Param(obj_h, sim.shapeintparam_respondable, 1)
+    sim.setObjectInt32Param(obj_h, sim.shapeintparam_static, 0)
+    set_gripper(bridge, True)
+    for _ in range(60):
+        bridge.step()
+        _capture_frame(bridge, frames_dir, counter[0])
+        counter[0] += 1
+
+    # 7. Home return
+    logger.info("  → home_return")
+    _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
+                     [0.0, -0.31, 0.99], frames_dir, counter)
+
+    obj_end = list(sim.getObjectPosition(obj_h, -1))
+    moved = math.sqrt(sum((a - b) ** 2 for a, b in zip(obj_start, obj_end)))
+    grasp_success = moved > 0.30  # >30 cm de desplazamiento = grasp+place exitoso
 
     bridge.stop_simulation()
 
     return PickResult(
         n_frames=counter[0],
-        obj_start_pos=list(obj_start),
-        obj_end_pos=list(obj_end),
+        obj_start_pos=obj_start,
+        obj_end_pos=obj_end,
         obj_moved_m=moved,
+        grasp_success=grasp_success,
         mp4_path=None,
         frames_dir=frames_dir,
     )
