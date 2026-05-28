@@ -216,8 +216,39 @@ def phase_executed(n: int = N_EXECUTED) -> None:
 
 
 def phase_split() -> None:
-    """Combina heurístic + executed y hace train/val split. STUB — Task 6."""
-    raise NotImplementedError("Phase A.3 se implementa en Task 6 del plan")
+    """Combina heuristic.pt + executed.pt y hace 80/20 split."""
+    logger.info("Phase A.3: combinando + split 80/20")
+    heur_path = DATASET_DIR / "heuristic.pt"
+    exec_path = DATASET_DIR / "executed.pt"
+    if not heur_path.exists() or not exec_path.exists():
+        raise FileNotFoundError(
+            "Faltan datasets parciales. Corré --phase heuristic y --phase executed primero."
+        )
+
+    h = torch.load(heur_path, weights_only=True)
+    e = torch.load(exec_path, weights_only=True)
+    all_conds = torch.cat([h["conds"], e["conds"]], dim=0)
+    all_trajs = torch.cat([h["trajs"], e["trajs"]], dim=0)
+    n = len(all_conds)
+
+    rng = np.random.default_rng(SEED + 2)
+    indices = rng.permutation(n)
+    train_n = int(0.8 * n)
+    train_idx = indices[:train_n]
+    val_idx = indices[train_n:]
+
+    torch.save({
+        "conds": all_conds[train_idx],
+        "trajs": all_trajs[train_idx],
+        "split": "train",
+    }, DATASET_DIR / "train.pt")
+    torch.save({
+        "conds": all_conds[val_idx],
+        "trajs": all_trajs[val_idx],
+        "split": "val",
+    }, DATASET_DIR / "val.pt")
+
+    logger.info(f"escrito: train.pt ({train_n}), val.pt ({n - train_n})")
 
 
 def main() -> int:
