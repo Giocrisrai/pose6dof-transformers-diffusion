@@ -159,14 +159,17 @@ def main() -> int:
 
         # 3. Bin alineado con el alcance del UR5
         print("[INFO] construyendo bin")
-        # Bin elevado a 34 cm: con paredes de 15 cm (bin_h=0.15), el piso del
-        # bin queda en z=0.265 y los cubos sentados ahí tienen centro en
-        # z=0.29 — donde el TCP descend del UR5 llega naturalmente (z=0.317)
-        # con los dedos del RG2 wrapping the cube (cube half-height = 0.025).
-        bin_pos = [0.46, -0.10, 0.34]
+        # Bin a 28 cm: con paredes BAJAS (bin_h=0.03) los cubos descansan en
+        # z=0.29 (top de bin floor + cube_h/2) y las paredes no interfieren
+        # con el descenso del brazo del UR5. TCP descend del UR5 llega a
+        # z=0.317 — justo encima de los cubos para que el RG2 los agarre.
+        bin_pos = [0.46, -0.10, 0.28]
         wall_t = 0.005
         bin_size = 0.30
-        bin_h = 0.15  # paredes más altas para que los cubos no salten fuera
+        # Paredes BAJAS (3 cm) para que el brazo del UR5 pueda descender sin
+        # colisionar lateralmente. Lo importante es que los cubos no se
+        # desparramen, no que sea un bin profundo.
+        bin_h = 0.03
 
         floor = sim.createPrimitiveShape(
             sim.primitiveshape_cuboid, [bin_size, bin_size, wall_t], 0
@@ -200,6 +203,12 @@ def main() -> int:
         try:
             bin_group = sim.groupShapes([floor] + wall_handles, False)
             sim.setObjectAlias(bin_group, "bin")
+            # CRÍTICO: groupShapes preserva static=1 (bien) pero pone
+            # respondable=0 por default. Sin esto el bin es un "fantasma" y
+            # los cubos lo atraviesan al iniciar simulación, cayendo al piso.
+            sim.setObjectInt32Param(bin_group, sim.shapeintparam_static, 1)
+            sim.setObjectInt32Param(bin_group, sim.shapeintparam_respondable, 1)
+            print("[INFO] /bin: static=1, respondable=1 (sólido para colisiones)")
         except Exception as e:
             print(f"[warn] no se pudo agrupar bin ({e}); piezas quedan separadas")
 
