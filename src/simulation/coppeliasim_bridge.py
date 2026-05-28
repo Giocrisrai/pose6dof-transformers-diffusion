@@ -17,6 +17,7 @@ References:
 import logging
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -252,9 +253,8 @@ class CoppeliaSimBridge:
         Raises:
             FileNotFoundError: si scene_path no existe.
         """
-        from pathlib import Path as _Path
         self._check_connected()
-        scene_path = _Path(scene_path)
+        scene_path = Path(scene_path)
         if not scene_path.exists():
             raise FileNotFoundError(f"Escena no encontrada: {scene_path}")
         if close_current:

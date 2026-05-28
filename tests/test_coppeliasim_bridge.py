@@ -30,7 +30,7 @@ class TestBridgeScene:
             bridge.load_scene("/no/existe.ttt")
 
     def test_load_scene_closes_current_by_default(self, mock_remote_api, tmp_path):
-        """load_scene llama closeScene antes de loadScene si close_current=True."""
+        """load_scene llama closeScene ANTES de loadScene si close_current=True."""
         scene = tmp_path / "fake.ttt"
         scene.write_bytes(b"\x00")
 
@@ -39,6 +39,11 @@ class TestBridgeScene:
         bridge.load_scene(scene)
 
         bridge._sim.closeScene.assert_called_once()
+        # Validar orden: closeScene debe preceder a loadScene
+        call_names = [c[0] for c in bridge._sim.mock_calls if c[0] in ("closeScene", "loadScene")]
+        assert call_names == ["closeScene", "loadScene"], (
+            f"orden inválido: {call_names} (esperado closeScene antes que loadScene)"
+        )
 
     def test_load_scene_skip_close_when_false(self, mock_remote_api, tmp_path):
         """load_scene NO llama closeScene si close_current=False."""
