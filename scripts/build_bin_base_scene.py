@@ -123,14 +123,35 @@ def main() -> int:
         except Exception:
             pass
 
-        # 1. UR5 con joints aliaseados
-        print("[INFO] cargando UR5")
+        # 1. UR5 con joints aliaseados.
+        # UR5.ttm tiene "forward" = -Y en su frame local (verificado empíricamente).
+        # Para que el robot mire hacia el bin en +X, rotamos la base +π/2 en Z
+        # (yaw = +90°), que mapea -Y → +X.
+        print("[INFO] cargando UR5 (rotado +π/2 para que mire a +X)")
         ur5_handle = sim.loadModel(UR5_MODEL)
         sim.setObjectAlias(ur5_handle, "UR5e")
         sim.setObjectPosition(ur5_handle, -1, [0.0, 0.0, 0.0])
+        sim.setObjectOrientation(ur5_handle, -1, [0.0, 0.0, math.pi / 2])
 
         print("[INFO] aliaseando joints del UR5")
         joint_handles = alias_ur5_joints(sim, ur5_handle)
+
+        # 1b. Joints en modo dinámico + motor + position control para que
+        # setJointTargetPosition desde Python funcione.
+        # NOTA: el UR5.ttm trae un script threaded (/UR5e/Script) que controla
+        # los joints en callback mode (8) y sobrescribe nuestros target desde
+        # Python. Lo disabled aquí.
+        print("[INFO] joints → dynamic + motor + position control")
+        for h in joint_handles:
+            sim.setJointMode(h, sim.jointmode_dynamic, 0)
+            sim.setObjectInt32Param(h, sim.jointintparam_motor_enabled, 1)
+            sim.setObjectInt32Param(h, sim.jointintparam_dynctrlmode, sim.jointdynctrl_position)
+        try:
+            scr = sim.getObject("/UR5e/Script")
+            sim.setObjectInt32Param(scr, sim.scriptintparam_enabled, 0)
+            print("[INFO] UR5 threaded script disabled")
+        except Exception as e:
+            print(f"[warn] disable UR5 script: {e}")
 
         # 2. Gripper + tip
         connection_handle = find_connection_point(sim, ur5_handle)
