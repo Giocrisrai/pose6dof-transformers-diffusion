@@ -129,10 +129,14 @@ def run_scenario(bridge: CoppeliaSimBridge, sc: Scenario, planner, scheduler, de
 
     # Forzar render explícito del vision sensor antes de capturar (sin esto
     # getVisionSensorImg devuelve un buffer sin inicializar = imagen negra).
-    try:
-        bridge._sim.handleVisionSensor(bridge._camera_rgb_handle)
-    except Exception as e:
-        logger.debug(f"handleVisionSensor skipped: {e}")
+    # handleVisionSensor no está envuelto por el bridge → escape hatch público.
+    if bridge._camera_rgb_handle is not None:
+        try:
+            bridge.sim.handleVisionSensor(bridge._camera_rgb_handle)
+        except Exception as e:
+            logger.debug(f"handleVisionSensor skipped: {e}")
+    else:
+        logger.warning("rgb_camera handle no inicializado; capture_rgbd devolverá ceros")
 
     # Snapshot inicial
     rgb, _ = bridge.capture_rgbd()
