@@ -40,7 +40,11 @@ def main() -> int:
     logger.info(f"frames capturados: {result.n_frames}")
     logger.info(f"object_1 start → end: {result.obj_start_pos} → {result.obj_end_pos}")
     logger.info(f"moved: {result.obj_moved_m * 100:.1f} cm")
-    logger.info(f"grasp_success: {result.grasp_success}")
+    logger.info(f"grasp_proximity: {result.tip_grasp_proximity_m * 100:.1f} cm "
+                f"({'plausible' if result.grasp_plausible else 'IMPLAUSIBLE'})")
+    logger.info(f"deposit_error: {result.deposit_error_m * 100:.1f} cm "
+                f"({'plausible' if result.deposit_plausible else 'IMPLAUSIBLE'})")
+    logger.info(f"ik_converged: {result.ik_converged}")
 
     mp4 = compile_mp4(FRAMES_DIR, OUTPUT_DIR / "demo.mp4", fps=25)
     if mp4:

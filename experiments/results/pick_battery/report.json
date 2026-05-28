@@ -13,13 +13,22 @@
         0.033
       ],
       "object_end": [
-        -0.361,
-        -0.182,
+        -0.34,
+        -0.22,
         0.025
       ],
-      "object_moved_m": 0.825,
-      "object_manipulated": true,
-      "grasp_success": true,
+      "deposit_target": [
+        -0.3,
+        -0.3,
+        0.3
+      ],
+      "object_moved_m": 0.809,
+      "tip_grasp_proximity_m": 0.104,
+      "deposit_error_m": 0.09,
+      "obj_displaced": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true,
+      "ik_converged": true,
       "mp4_path": "experiments/results/pick_battery/base/demo.mp4",
       "frames_dir": "experiments/results/pick_battery/base/frames"
     },
@@ -36,13 +45,22 @@
         0.033
       ],
       "object_end": [
-        -0.307,
-        0.615,
+        -0.316,
+        -0.212,
         0.025
       ],
-      "object_moved_m": 1.049,
-      "object_manipulated": true,
-      "grasp_success": true,
+      "deposit_target": [
+        -0.3,
+        -0.3,
+        0.3
+      ],
+      "object_moved_m": 0.784,
+      "tip_grasp_proximity_m": 0.102,
+      "deposit_error_m": 0.09,
+      "obj_displaced": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true,
+      "ik_converged": true,
       "mp4_path": "experiments/results/pick_battery/easy/demo.mp4",
       "frames_dir": "experiments/results/pick_battery/easy/frames"
     },
@@ -59,13 +77,22 @@
         0.033
       ],
       "object_end": [
-        -0.441,
-        -0.006,
+        -0.343,
+        -0.376,
         0.025
       ],
-      "object_moved_m": 0.906,
-      "object_manipulated": true,
-      "grasp_success": true,
+      "deposit_target": [
+        -0.3,
+        -0.3,
+        0.3
+      ],
+      "object_moved_m": 0.849,
+      "tip_grasp_proximity_m": 0.107,
+      "deposit_error_m": 0.087,
+      "obj_displaced": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true,
+      "ik_converged": true,
       "mp4_path": "experiments/results/pick_battery/hard/demo.mp4",
       "frames_dir": "experiments/results/pick_battery/hard/frames"
     }
