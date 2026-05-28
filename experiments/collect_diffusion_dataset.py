@@ -95,8 +95,124 @@ def phase_heuristic(n: int = N_HEURISTIC) -> None:
 
 
 def phase_executed(n: int = N_EXECUTED) -> None:
-    """Genera n trayectorias ejecutadas en CoppeliaSim. STUB — implementado en Task 5."""
-    raise NotImplementedError("Phase A.2 se implementa en Task 5 del plan")
+    """Genera n trayectorias ejecutadas en CoppeliaSim.
+
+    Por cada pose:
+      1. Mueve /object_1 a la pose target.
+      2. Corre approach → descend → grasp+close → lift, capturando TCP
+         pose por step.
+      3. Submuestrea N steps → 16 waypoints uniformes.
+      4. Acción 7-D por waypoint: [x, y, z, rx, ry, rz, gripper] donde
+         (rx, ry, rz) es so3_log de la rotación del tip.
+
+    Persiste: data/datasets/sim_pick_v1/executed.pt
+    """
+    from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
+    from src.simulation.pick_sequence import (
+        _move_tcp_via_ik, _setup_ik, set_gripper, setup_robot_control,
+    )
+    from src.utils.lie_groups import so3_log
+
+    logger.info(f"Phase A.2: generando {n} trayectorias ejecutadas en sim")
+    DATASET_DIR.mkdir(parents=True, exist_ok=True)
+
+    planner_aux = DiffusionGraspPlanner(
+        action_dim=7, horizon=16, n_diffusion_steps=100, device="cpu",
+    )
+    rng = np.random.default_rng(SEED + 1)
+    conds = np.zeros((n, 64), dtype=np.float32)
+    trajs = np.zeros((n, 16, 7), dtype=np.float32)
+    skipped = 0
+
+    SCENE = REPO / "data" / "scenes" / "bin_base.ttt"
+
+    for i in range(n):
+        pose = sample_pose(rng)
+        conds[i] = planner_aux.encode_observation(pose).cpu().numpy()[0]
+
+        try:
+            with CoppeliaSimBridge() as bridge:
+                bridge.load_scene(SCENE)
+                sim = bridge.sim
+                obj1 = sim.getObject("/object_1")
+                sim.setObjectPosition(obj1, -1, list(pose[:3, 3]))
+
+                setup_robot_control(bridge)
+                env, ik_group, target_dummy, ik_joints, simIK = _setup_ik(bridge)
+                bridge.set_stepping(True)
+                bridge.start_simulation()
+                tip_h = sim.getObject("/tip")
+
+                tip_log = []  # list of (xyz, R_3x3, gripper_open)
+
+                def log_tip(gripper_open):
+                    p = sim.getObjectPosition(tip_h, -1)
+                    M = sim.getObjectMatrix(tip_h, -1)  # 12 elementos (3x4)
+                    R = np.array([M[0:3], M[4:7], M[8:11]])
+                    tip_log.append((p, R, gripper_open))
+
+                set_gripper(bridge, True)
+                for _ in range(20):
+                    bridge.step()
+                    log_tip(1.0)
+
+                # Approach (30cm above target)
+                _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
+                                 [pose[0, 3], pose[1, 3], 0.30], frames_dir=None, counter=[0])
+                for _ in range(5): log_tip(1.0)
+
+                # Descend (cube non-respondable to avoid push)
+                sim.setObjectInt32Param(obj1, sim.shapeintparam_respondable, 0)
+                _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
+                                 [pose[0, 3], pose[1, 3], pose[2, 3]], frames_dir=None, counter=[0])
+                for _ in range(5): log_tip(1.0)
+
+                # Grasp close
+                set_gripper(bridge, False)
+                for _ in range(20):
+                    bridge.step()
+                    log_tip(0.0)
+
+                # Lift
+                _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
+                                 [pose[0, 3], pose[1, 3], 0.40], frames_dir=None, counter=[0])
+                for _ in range(5): log_tip(0.0)
+
+                bridge.stop_simulation()
+                try: simIK.eraseEnvironment(env)
+                except Exception: pass
+
+            # Submuestrear a 16 waypoints
+            n_logged = len(tip_log)
+            if n_logged < 16:
+                logger.warning(f"  [{i}] solo {n_logged} steps logged, skipping")
+                skipped += 1
+                continue
+
+            indices = np.linspace(0, n_logged - 1, 16).astype(int)
+            for k, idx in enumerate(indices):
+                p, R, g = tip_log[idx]
+                rot_vec = so3_log(R)
+                trajs[i, k] = [p[0], p[1], p[2], rot_vec[0], rot_vec[1], rot_vec[2], g]
+
+            if (i + 1) % 5 == 0:
+                logger.info(f"  {i+1}/{n} (skipped {skipped})")
+        except Exception as e:
+            logger.warning(f"  [{i}] falló: {e}")
+            skipped += 1
+
+    if skipped > 0:
+        logger.warning(f"Phase A.2: {skipped}/{n} trayectorias saltadas")
+
+    n_valid = n - skipped
+    out = DATASET_DIR / "executed.pt"
+    torch.save({
+        "conds": torch.from_numpy(conds[:n_valid]),
+        "trajs": torch.from_numpy(trajs[:n_valid]),
+        "source": "executed",
+        "seed": SEED + 1,
+    }, out)
+    logger.info(f"escrito: {out} ({n_valid} trayectorias)")
 
 
 def phase_split() -> None:
