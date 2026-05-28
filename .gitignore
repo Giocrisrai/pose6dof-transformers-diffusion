@@ -86,3 +86,4 @@ packages/*/.coverage
 # Pick battery: frames intermedios regenerables (mantener solo MP4)
 experiments/results/pick_battery/*/frames/
 experiments/results/pick_demo/frames/
+experiments/results/pick_with_fp_pose/frames/
