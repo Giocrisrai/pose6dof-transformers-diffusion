@@ -1,0 +1,13 @@
+{
+  "n_eval": 20,
+  "policy": "data/models/diffusion_policy_sim_v1.pth",
+  "mse_dp_vs_heuristic_mean": 0.002193498184670851,
+  "mse_dp_vs_heuristic_max": 0.014523187657402311,
+  "dp_grasp_proximity_mean_m": 0.07255625177195715,
+  "dp_grasp_proximity_max_m": 0.22833751558943105,
+  "dp_grasp_plausible_pct": 25.0,
+  "thresholds_passed": {
+    "mse_dp_vs_heuristic_mean < 0.10": true,
+    "dp_grasp_plausible_pct >= 70": false
+  }
+}
