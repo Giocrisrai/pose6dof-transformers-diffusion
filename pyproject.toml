@@ -123,6 +123,9 @@ ignore = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+markers = [
+    "integration: requires CoppeliaSim running on localhost:23000 (skip if unavailable)",
+]
 
 [dependency-groups]
 dev = [

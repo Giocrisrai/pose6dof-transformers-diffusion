@@ -1,0 +1,46 @@
+{
+  "scenarios": [
+    {
+      "scenario_id": "base",
+      "scene": "bin_base.ttt",
+      "difficulty": "easy",
+      "description": "Escena base, 5 objetos surtidos, iluminaci\u00f3n nominal",
+      "n_tweaks": 0,
+      "cycle_total_ms": 6032.328084945679,
+      "fp_ms": 4154.0,
+      "diff_ms": 1363.4300231933594,
+      "sim_ms": 514.8980617523193,
+      "gripper_present": false,
+      "grasp_success": false,
+      "snapshot": "experiments/results/scenario_battery/snapshots/base.png"
+    },
+    {
+      "scenario_id": "easy",
+      "scene": "bin_base.ttt",
+      "difficulty": "easy",
+      "description": "Colores acentuados + luz fuerte",
+      "n_tweaks": 4,
+      "cycle_total_ms": 5790.326789855957,
+      "fp_ms": 4154.0,
+      "diff_ms": 1045.2289581298828,
+      "sim_ms": 591.0978317260742,
+      "gripper_present": false,
+      "grasp_success": false,
+      "snapshot": "experiments/results/scenario_battery/snapshots/easy.png"
+    },
+    {
+      "scenario_id": "hard",
+      "scene": "bin_base.ttt",
+      "difficulty": "hard",
+      "description": "Iluminaci\u00f3n baja + objetos ocultos (simula oclusi\u00f3n)",
+      "n_tweaks": 3,
+      "cycle_total_ms": 5343.126014709473,
+      "fp_ms": 4154.0,
+      "diff_ms": 678.1558990478516,
+      "sim_ms": 510.9701156616211,
+      "gripper_present": false,
+      "grasp_success": false,
+      "snapshot": "experiments/results/scenario_battery/snapshots/hard.png"
+    }
+  ]
+}

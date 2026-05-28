@@ -17,6 +17,7 @@ References:
 import logging
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -116,41 +117,101 @@ class CoppeliaSimBridge:
         self._tip_handle = None
         self._object_handles: Dict[str, int] = {}
 
-    def connect(self):
+    def __enter__(self):
+        """Context manager: conecta y devuelve self."""
+        self.connect()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager: cleanup garantizado.
+
+        Si la simulación está corriendo, la detiene. Desactiva stepping.
+        Errores durante cleanup se loguean pero no se propagan; no suprime
+        excepciones del with body.
+        """
+        if self._connected and self._sim is not None:
+            try:
+                if self.get_simulation_state() != self._sim.simulation_stopped:
+                    self.stop_simulation()
+                self.set_stepping(False)
+            except Exception as e:
+                logger.warning(f"cleanup en __exit__ falló: {e}")
+        self.disconnect()
+        return False  # no suprime excepciones del body
+
+    def connect(
+        self,
+        retries: int = 3,
+        retry_delay_s: float = 1.0,
+        strict: bool = False,
+    ):
         """Connect to CoppeliaSim via ZMQ Remote API.
 
+        Args:
+            retries: número de intentos si la conexión falla (default 3).
+            retry_delay_s: espera entre reintentos en segundos (default 1.0).
+            strict: si True, _init_handles() levanta RuntimeError si faltan
+                handles esperados. Default False para no romper consumidores
+                que cargan escenas genéricas (smoke test con pickAndPlaceDemo).
+
         Raises:
-            ImportError: If coppeliasim_zmqremoteapi_client not installed
-            ConnectionError: If CoppeliaSim is not running
+            ImportError: si coppeliasim_zmqremoteapi_client no está instalado.
+            ConnectionError: si CoppeliaSim no responde tras `retries` intentos.
         """
         try:
             from coppeliasim_zmqremoteapi_client import RemoteAPIClient
         except ImportError:
             logger.error(
-                "Install: pip install coppeliasim-zmqremoteapi-client\n"
-                "Or run CoppeliaSim with the ZMQ plugin enabled."
+                "Install: pip install coppeliasim-zmqremoteapi-client"
             )
             raise ImportError(
                 "coppeliasim_zmqremoteapi_client not found. "
                 "Install with: pip install coppeliasim-zmqremoteapi-client"
             )
 
-        try:
-            self._client = RemoteAPIClient(self.host, self.port)
-            self._sim = self._client.require("sim")
-            self._connected = True
-            logger.info(f"Connected to CoppeliaSim at {self.host}:{self.port}")
+        n_attempts = max(retries, 1)
+        last_error = None
+        for attempt in range(1, n_attempts + 1):
+            try:
+                self._client = RemoteAPIClient(self.host, self.port)
+                self._sim = self._client.require("sim")
+                # Ping para validar que el server responde
+                _ = self._sim.getSimulationTime()
+                version = self._sim.getInt32Param(self._sim.intparam_program_version)
+                logger.info(
+                    f"Connected to CoppeliaSim at {self.host}:{self.port} "
+                    f"(version {version}, attempt {attempt}/{n_attempts})"
+                )
+                # _init_handles puede lanzar RuntimeError en strict=True; debe correr
+                # antes de marcar _connected para no dejar el bridge en estado parcial
+                self._init_handles(strict=strict)
+                self._connected = True
+                return
+            except Exception as e:
+                last_error = e
+                # rollback: la conexión quedó parcial, limpiar para que el siguiente
+                # intento (o el caller post-ConnectionError) arranque limpio
+                self._connected = False
+                self._client = None
+                self._sim = None
+                logger.warning(
+                    f"connect attempt {attempt}/{n_attempts} failed: {e}"
+                )
+                if attempt < n_attempts:
+                    time.sleep(retry_delay_s)
 
-            # Get object handles
-            self._init_handles()
-        except Exception as e:
-            raise ConnectionError(
-                f"Cannot connect to CoppeliaSim at {self.host}:{self.port}. "
-                f"Make sure CoppeliaSim is running with ZMQ plugin. Error: {e}"
-            )
+        raise ConnectionError(
+            f"Cannot connect to CoppeliaSim at {self.host}:{self.port} "
+            f"after {n_attempts} attempts. Make sure CoppeliaSim is running "
+            f"with ZMQ plugin enabled. Last error: {last_error}"
+        )
 
-    def _init_handles(self):
-        """Initialize handles for scene objects."""
+    def _init_handles(self, strict: bool = False):
+        """Initialize handles for scene objects.
+
+        Args:
+            strict: si True, levanta RuntimeError si faltan handles esperados.
+        """
         sim = self._sim
 
         # Robot joints
@@ -186,6 +247,23 @@ class CoppeliaSimBridge:
         except Exception:
             logger.warning("Tip/TCP not found in scene")
 
+        if strict:
+            # Criterio "crítico" = handles sin los que ningún pipeline puede correr:
+            # joints (sin ellos no hay control motor) + rgb_camera (sin ella no hay
+            # percepción). depth_camera y gripper/tip son opcionales — los runners
+            # que los necesitan fallarán explícitamente más adelante; aquí se
+            # priorizan los handles que rompen el pipeline al instante.
+            critical_missing = []
+            if not self._joint_handles:
+                critical_missing.append("joints")
+            if self._camera_rgb_handle is None:
+                critical_missing.append("rgb_camera")
+            if critical_missing:
+                raise RuntimeError(
+                    f"strict=True pero faltan handles críticos: {critical_missing}. "
+                    f"La escena cargada no tiene los objetos esperados."
+                )
+
         logger.info(
             f"Handles: {len(self._joint_handles)} joints, "
             f"camera={'OK' if self._camera_rgb_handle else 'NONE'}, "
@@ -194,6 +272,11 @@ class CoppeliaSimBridge:
 
     def disconnect(self):
         """Disconnect from CoppeliaSim."""
+        if self._client is not None and hasattr(self._client, "shutdown"):
+            try:
+                self._client.shutdown()
+            except Exception as e:
+                logger.warning(f"shutdown del cliente falló: {e}")
         self._connected = False
         self._client = None
         self._sim = None
@@ -215,6 +298,61 @@ class CoppeliaSimBridge:
         """Trigger a single simulation step (for stepped mode)."""
         self._check_connected()
         self._client.step()
+
+    def set_stepping(self, enabled: bool) -> None:
+        """Activa/desactiva modo stepped.
+
+        En stepped mode, la simulación solo avanza cuando se llama step().
+        Útil para sincronizar capturas RGB-D con el estado físico.
+        """
+        self._check_connected()
+        self._sim.setStepping(enabled)
+
+    def get_simulation_state(self) -> int:
+        """Devuelve el estado actual de la simulación.
+
+        Valores típicos:
+            0  = simulation_stopped
+            8  = simulation_paused
+            17 = simulation_advancing_running
+        """
+        self._check_connected()
+        return self._sim.getSimulationState()
+
+    def get_simulation_time(self) -> float:
+        """Devuelve el tiempo de simulación actual en segundos."""
+        self._check_connected()
+        return self._sim.getSimulationTime()
+
+    def load_scene(self, scene_path, close_current: bool = True) -> None:
+        """Carga una escena .ttt.
+
+        Args:
+            scene_path: Ruta al archivo .ttt (str o Path).
+            close_current: Si True (default), cierra la escena actual antes
+                de cargar la nueva.
+
+        Raises:
+            FileNotFoundError: si scene_path no existe.
+        """
+        self._check_connected()
+        scene_path = Path(scene_path)
+        if not scene_path.exists():
+            raise FileNotFoundError(f"Escena no encontrada: {scene_path}")
+        # Siempre absolutizar antes de pasarle el path a CoppeliaSim — el server
+        # resuelve paths relativos contra su propio CWD, no el del cliente Python.
+        scene_path = scene_path.resolve()
+        if close_current:
+            self._sim.closeScene()
+        self._sim.loadScene(str(scene_path))
+        # Re-inicializar handles porque la escena cambió
+        self._init_handles()
+        logger.info(f"Escena cargada: {scene_path.name}")
+
+    def close_scene(self) -> None:
+        """Cierra la escena actual."""
+        self._check_connected()
+        self._sim.closeScene()
 
     # ── Camera ────────────────────────────────────────────────
 
@@ -350,9 +488,16 @@ class CoppeliaSimBridge:
         self._sim.setJointTargetVelocity(self._gripper_handle, vel)
 
     def is_grasping(self) -> bool:
-        """Check if gripper is holding an object (force threshold)."""
+        """Check if gripper is holding an object (force threshold).
+
+        Returns False y loguea warning si no hay gripper en la escena.
+        """
         self._check_connected()
         if self._gripper_handle is None:
+            logger.warning(
+                "is_grasping: gripper no definido en escena "
+                "(handle '/gripper' no encontrado) → devuelve False por compatibilidad"
+            )
             return False
         force = self._sim.getJointForce(self._gripper_handle)
         return abs(force) > 0.5  # N
@@ -398,6 +543,121 @@ class CoppeliaSimBridge:
 
         self._sim.setObjectPosition(handle, -1, pos)
         self._sim.setObjectQuaternion(handle, -1, quat)
+
+    def set_object_color(self, name: str, rgb) -> None:
+        """Cambia el color shape de un objeto.
+
+        Args:
+            name: handle path (ej. "/object_1").
+            rgb: tupla o lista de 3 floats en [0,1].
+
+        Raises:
+            ValueError: si rgb no tiene exactamente 3 componentes.
+        """
+        self._check_connected()
+        rgb = list(rgb)
+        if len(rgb) != 3:
+            raise ValueError(f"rgb debe tener 3 componentes, recibió {len(rgb)}")
+        handle = self._sim.getObject(name)
+        self._sim.setShapeColor(
+            handle,
+            None,
+            self._sim.colorcomponent_ambient_diffuse,
+            rgb,
+        )
+        logger.debug(f"color {name} → {rgb}")
+
+    def set_light_intensity(self, light_name: str, intensity: float) -> None:
+        """Cambia la intensidad de una luz.
+
+        Args:
+            light_name: handle path (ej. "/Light").
+            intensity: float ≥ 0, típicamente 0.0–1.5.
+        """
+        self._check_connected()
+        if intensity < 0:
+            raise ValueError(f"intensity debe ser ≥ 0, recibió {intensity}")
+        handle = self._sim.getObject(light_name)
+        # setLightParameters(handle, state, ambient_or_None, diffuse, specular)
+        self._sim.setLightParameters(
+            handle,
+            1,                                      # state: on
+            None,                                   # ambient: usa default
+            [intensity, intensity, intensity],      # diffuse
+            [intensity * 0.2, intensity * 0.2, intensity * 0.2],  # specular tenue
+        )
+        logger.debug(f"light {light_name} → intensity {intensity}")
+
+    def set_object_visibility(self, name: str, visible: bool) -> None:
+        """Oculta/muestra un objeto cambiando su visibility layer.
+
+        Args:
+            name: handle path.
+            visible: True muestra (layer 1), False oculta (layer 0).
+        """
+        self._check_connected()
+        handle = self._sim.getObject(name)
+        layer = 1 if visible else 0
+        self._sim.setObjectInt32Param(
+            handle,
+            self._sim.objintparam_visibility_layer,
+            layer,
+        )
+        logger.debug(f"visibility {name} → {visible}")
+
+    def apply_scenario(self, scenario: dict) -> None:
+        """Aplica los tweaks de un scenario en orden.
+
+        Asume que la escena ya fue cargada por el caller (vía load_scene).
+        Las claves `id` y `scene` del dict se ignoran.
+
+        Args:
+            scenario: dict con campo opcional `tweaks` (lista de dicts con
+                `type` ∈ {color, light, visibility} y campos específicos).
+
+        Raises:
+            ValueError: si un tweak tiene type desconocido o campos faltantes.
+        """
+        self._check_connected()
+        tweaks = scenario.get("tweaks", [])
+        scenario_id = scenario.get("id", "<sin-id>")
+
+        for i, tweak in enumerate(tweaks):
+            ttype = tweak.get("type")
+            target = tweak.get("target")
+            if target is None:
+                raise ValueError(
+                    f"scenario {scenario_id} tweak[{i}]: missing required field 'target'"
+                )
+
+            if ttype == "color":
+                rgb = tweak.get("rgb")
+                if rgb is None:
+                    raise ValueError(
+                        f"scenario {scenario_id} tweak[{i}]: color tweak missing 'rgb'"
+                    )
+                self.set_object_color(target, rgb)
+            elif ttype == "light":
+                intensity = tweak.get("intensity")
+                if intensity is None:
+                    raise ValueError(
+                        f"scenario {scenario_id} tweak[{i}]: light tweak missing 'intensity'"
+                    )
+                self.set_light_intensity(target, intensity)
+            elif ttype == "visibility":
+                visible = tweak.get("visible")
+                if visible is None:
+                    raise ValueError(
+                        f"scenario {scenario_id} tweak[{i}]: visibility tweak missing 'visible'"
+                    )
+                self.set_object_visibility(target, visible)
+            else:
+                raise ValueError(
+                    f"scenario {scenario_id} tweak[{i}]: unknown type '{ttype}' "
+                    f"(esperado: color, light, visibility)"
+                )
+
+        logger.info(f"scenario {scenario_id}: {len(tweaks)} tweaks aplicados")
 
     def randomize_object_poses(
         self,
@@ -468,6 +728,24 @@ class CoppeliaSimBridge:
         return False
 
     # ── Helpers ────────────────────────────────────────────────
+
+    @property
+    def sim(self):
+        """Escape hatch: acceso directo al objeto sim crudo de la ZMQ API.
+
+        Úsese solo para operaciones que el bridge NO envuelve (por ejemplo
+        createVisionSensor, handleVisionSensor cuando se crean sensores
+        dinámicamente). Para flujo normal, usar los métodos públicos del
+        bridge.
+
+        Raises:
+            RuntimeError: si el bridge no está conectado.
+        """
+        if not self._connected or self._sim is None:
+            raise RuntimeError(
+                "Bridge sin conexión. Llamar connect() o usar 'with CoppeliaSimBridge() as bridge:'"
+            )
+        return self._sim
 
     def _check_connected(self):
         if not self._connected:

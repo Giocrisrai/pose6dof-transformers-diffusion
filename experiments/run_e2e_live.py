@@ -25,14 +25,14 @@ OUTPUT.mkdir(parents=True, exist_ok=True)
 
 
 def try_connect_coppelia(timeout_s=5.0):
-    """Conexion robusta con timeout."""
+    """Conexion robusta con timeout via CoppeliaSimBridge."""
     try:
-        from coppeliasim_zmqremoteapi_client import RemoteAPIClient
+        from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
         t0 = time.time()
-        client = RemoteAPIClient(host="localhost", port=23000)
-        sim = client.getObject("sim")
-        sim.getSimulationTime()  # ping
-        return sim, time.time() - t0
+        bridge = CoppeliaSimBridge()
+        bridge.connect(retries=2, retry_delay_s=0.5)
+        # Ping ya lo hace bridge.connect internamente
+        return bridge, time.time() - t0
     except Exception as e:
         print(f"  [warn] CoppeliaSim no disponible: {type(e).__name__}: {str(e)[:80]}")
         return None, None
@@ -83,30 +83,32 @@ def main():
 
     # 1. CoppeliaSim
     print("\n[1/4] Conectando a CoppeliaSim...")
-    sim, connect_ms = try_connect_coppelia()
-    if sim is None:
+    bridge, connect_ms = try_connect_coppelia()
+    if bridge is None:
         print("  CoppeliaSim no disponible — abortando E2E live (use aggregate_e2e_timings.py para version offline)")
         return
+    sim = bridge.sim  # escape hatch para operaciones no envueltas (constantes, etc.)
     print(f"  CoppeliaSim OK (connect {connect_ms*1000:.1f} ms)")
 
     # Cargar escena por defecto si no hay nada (necesario para stepping)
     SCENE_PATH = "/Applications/CoppeliaSim_Edu.app/Contents/Resources/scenes/pickAndPlaceDemo.ttt"
     try:
         # Detener si esta corriendo
-        if sim.getSimulationState() != sim.simulation_stopped:
-            sim.stopSimulation()
+        if bridge.get_simulation_state() != sim.simulation_stopped:
+            bridge.stop_simulation()
             time.sleep(0.5)
         # Cargar escena
         if Path(SCENE_PATH).exists():
-            sim.loadScene(SCENE_PATH)
+            bridge.load_scene(SCENE_PATH)
             print(f"  Escena cargada: {Path(SCENE_PATH).name}")
-        sim.setStepping(True)
-        sim.startSimulation()
+        bridge.set_stepping(True)
+        bridge.start_simulation()
         # Test 1 step
-        sim.step()
+        bridge.step()
         print("  Stepping OK")
     except Exception as e:
         print(f"  [warn] setup sim: {e}")
+        bridge.disconnect()
         return
 
     # 2. Diffusion Policy
@@ -174,7 +176,7 @@ def main():
             t0 = time.time()
             try:
                 for _ in range(args.sim_steps):
-                    sim.step()
+                    bridge.step()
                 sim_ms = (time.time() - t0) * 1000.0
             except Exception as e:
                 print(f"    [warn] sim.step: {e}")
@@ -216,7 +218,11 @@ def main():
 
     # 4. Detener sim
     try:
-        sim.stopSimulation()
+        bridge.stop_simulation()
+    except Exception:
+        pass
+    try:
+        bridge.disconnect()
     except Exception:
         pass
 

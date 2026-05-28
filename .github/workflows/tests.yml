@@ -53,14 +53,17 @@ jobs:
             requests
           # CLIP/VLA-lite (tests/test_vla_lite_modules.py)
           uv pip install --quiet transformers
+          # CoppeliaSim ZMQ client (tests/test_coppeliasim_bridge.py — solo
+          # cliente Python, no requiere la app CoppeliaSim instalada)
+          uv pip install --quiet coppeliasim-zmqremoteapi-client
           # Paquete propio bop-bootstrap-ci (exploracion #1)
           uv pip install --quiet -e packages/bop_bootstrap_ci
 
       - name: Run pytest (TFM + paquete PyPI)
         run: |
           source .venv/bin/activate
-          # Tests del TFM (123 originales + 48 nuevos de exploraciones)
-          pytest tests/ -v --tb=short \
+          # Tests del TFM, excluyendo integration tests que requieren CoppeliaSim
+          pytest tests/ -v --tb=short -m "not integration" \
             --ignore=tests/test_foundationpose_*.py \
             --ignore=tests/test_gdrnet_*.py
           # Tests del paquete PyPI bop-bootstrap-ci (27 tests)

@@ -26,14 +26,14 @@ OUTPUT.mkdir(parents=True, exist_ok=True)
 
 
 def try_connect_coppelia(timeout_s=2.0):
+    """Devuelve (bridge, connect_time_s) si CoppeliaSim responde; (None, None) si no."""
     try:
-        from coppeliasim_zmqremoteapi_client import RemoteAPIClient
+        from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
         t0 = time.time()
-        client = RemoteAPIClient(host="localhost", port=23000)
-        sim = client.getObject("sim")
-        # Test simple: getSimulationTime
-        sim.getSimulationTime()
-        return sim, time.time() - t0
+        bridge = CoppeliaSimBridge()
+        bridge.connect(retries=1, retry_delay_s=0.5)
+        # Ping ya hecho dentro de connect; tampoco bloquea más allá del default
+        return bridge, time.time() - t0
     except Exception:
         return None, None
 
@@ -92,14 +92,15 @@ def main():
 
     # 1. Conectar CoppeliaSim (opcional)
     print("\n[1/3] Conectando a CoppeliaSim...")
-    sim, connect_time = try_connect_coppelia()
-    coppelia_available = sim is not None
+    bridge, connect_time = try_connect_coppelia()
+    coppelia_available = bridge is not None
     if coppelia_available:
         print(f"  CoppeliaSim OK (connect: {connect_time*1000:.1f} ms)")
         try:
-            sim.startSimulation()
-        except Exception:
-            pass
+            bridge.set_stepping(True)
+            bridge.start_simulation()
+        except Exception as e:
+            print(f"  [warn] start_simulation: {e}")
     else:
         print("  CoppeliaSim no disponible — usando tiempo nominal del smoke test (18 ms/step)")
 
@@ -113,9 +114,14 @@ def main():
     weights_path = REPO / "data/models/diffusion_policy_grasp.pth"
     if weights_path.exists():
         ckpt = torch.load(weights_path, map_location=device, weights_only=True)
-        # Pueden venir como state_dict directo o anidados
-        if "model" in ckpt:
-            planner.load_state_dict(ckpt["model"])
+        # Pueden venir como state_dict directo o anidados bajo varias claves
+        if isinstance(ckpt, dict):
+            for key in ("model_state_dict", "model", "state_dict"):
+                if key in ckpt:
+                    planner.load_state_dict(ckpt[key])
+                    break
+            else:
+                planner.load_state_dict(ckpt)
         else:
             planner.load_state_dict(ckpt)
         print(f"  Pesos cargados: {weights_path.name}")
@@ -161,9 +167,10 @@ def main():
             if coppelia_available:
                 try:
                     for _ in range(SIM_STEPS_PER_INSTANCE):
-                        sim.step()
+                        bridge.step()
                     sim_ms = (time.time() - sim_t0) * 1000.0
-                except Exception:
+                except Exception as e:
+                    print(f"    [warn] bridge.step: {e}")
                     sim_ms = NOMINAL_STEP_MS * SIM_STEPS_PER_INSTANCE
             else:
                 sim_ms = NOMINAL_STEP_MS * SIM_STEPS_PER_INSTANCE
@@ -211,9 +218,10 @@ def main():
 
     if coppelia_available:
         try:
-            sim.stopSimulation()
-        except Exception:
-            pass
+            bridge.stop_simulation()
+            bridge.disconnect()
+        except Exception as e:
+            print(f"  [warn] cleanup bridge: {e}")
 
     out_path = OUTPUT / "e2e_metrics.json"
     with open(out_path, "w") as f:
