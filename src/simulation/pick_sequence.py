@@ -30,11 +30,31 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class PickResult:
+    """Métricas de una corrida de pick-and-place.
+
+    Honestidad importante: con la técnica de attach (ver PICK_LIMITATIONS.md)
+    el "grasp" es cinemático, no físico. Por eso reportamos:
+
+    - obj_displaced: el cubo se desplazó >2 cm (señal de que el ciclo corrió)
+    - tip_grasp_proximity_m: distancia tip-cubo al momento del attach.
+      Si > 0.05 m, el grasp NO es "físicamente plausible" (el gripper estaría
+      lejos del cubo).
+    - deposit_error_m: distancia del cubo final al target deposit programado.
+      Mide qué tan precisamente se depositó (independiente de no-determinismo
+      del fly-after-release).
+    - ik_converged: True si todas las llamadas a IK convergieron.
+    """
     n_frames: int
     obj_start_pos: list[float]
     obj_end_pos: list[float]
     obj_moved_m: float
-    grasp_success: bool
+    tip_grasp_proximity_m: float       # distancia tip-cubo al momento del attach
+    deposit_target: list[float]        # target hardcoded del deposit
+    deposit_error_m: float             # distancia obj_end ↔ deposit_target
+    obj_displaced: bool                # moved > 2 cm (señal de actividad)
+    deposit_plausible: bool            # deposit_error_m < 0.30 m
+    grasp_plausible: bool              # tip_grasp_proximity_m < 0.05 m
+    ik_converged: bool
     mp4_path: Optional[Path]
     frames_dir: Path
 
@@ -91,10 +111,14 @@ def compile_mp4(frames_dir: Path, mp4_path: Path, fps: int = 25) -> Optional[Pat
 
 def _setup_ik(bridge: CoppeliaSimBridge):
     """Crea IK env + group + element. Devuelve (env, ik_group, target_dummy,
-    ik_joints, simIK_module)."""
-    from coppeliasim_zmqremoteapi_client import RemoteAPIClient
-    client = RemoteAPIClient("localhost", 23000)
-    simIK = client.require("simIK")
+    ik_joints, simIK_module).
+
+    Reutiliza el RemoteAPIClient del bridge (NO crea uno nuevo) para evitar
+    tener dos conexiones ZMQ simultáneas al mismo puerto.
+    """
+    # Reusar el cliente ZMQ del bridge en vez de crear uno nuevo.
+    # El bridge ya tiene self._client; lo accedemos para obtener simIK.
+    simIK = bridge._client.require("simIK")
     sim = bridge.sim
     env = simIK.createEnvironment()
     ik_group = simIK.createGroup(env)
@@ -118,7 +142,8 @@ def _setup_ik(bridge: CoppeliaSimBridge):
 
 def _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
                       target_xyz, frames_dir, counter,
-                      n_substeps: int = 40, steps_per_substep: int = 3) -> None:
+                      n_substeps: int = 40, steps_per_substep: int = 3,
+                      convergence_tracker: Optional[list] = None) -> None:
     """Mueve TCP a target_xyz interpolando linealmente + IK por substep +
     comandando joints como PID target. Captura frame por step."""
     sim = bridge.sim
@@ -128,7 +153,15 @@ def _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
         interp = [start_pos[j] + a * (target_xyz[j] - start_pos[j]) for j in range(3)]
         sim.setObjectPosition(target_dummy, -1, interp)
         simIK.syncFromSim(env, [ik_group])
-        simIK.handleGroup(env, ik_group)
+        # CHEQUEAR retorno de handleGroup: tupla (result, iters, [precision, ...])
+        # result_success=1, result_fail=2, result_not_performed=0
+        result = simIK.handleGroup(env, ik_group)
+        if isinstance(result, (list, tuple)) and len(result) > 0 and result[0] != 1:
+            if convergence_tracker is not None:
+                convergence_tracker.append(False)
+            logger.warning(f"IK no convergió en substep {i}: result={result}")
+        elif convergence_tracker is not None:
+            convergence_tracker.append(True)
         joint_vals = [simIK.getJointPosition(env, j) for j in ik_joints]
         for h, v in zip(bridge._joint_handles, joint_vals):
             sim.setJointTargetPosition(h, v)
@@ -157,6 +190,13 @@ def run_pick_sequence(
     for old in frames_dir.glob("*.png"):
         old.unlink()
 
+    # Constantes (extraídas como nombrados, antes magic numbers)
+    GRIPPER_OPEN_SETTLE_STEPS = 20
+    GRIPPER_CLOSE_STEPS = 40
+    GRASP_PLAUSIBILITY_THRESHOLD_M = 0.05  # tip-cubo al attach debe ser <5cm
+    DEPOSIT_TARGET = [-0.30, -0.30, 0.30]  # target hardcoded del deposit
+    DEPOSIT_PLAUSIBILITY_THRESHOLD_M = 0.30  # error <30cm para "plausible"
+
     setup_robot_control(bridge)
     sim = bridge.sim
     env, ik_group, target_dummy, ik_joints, simIK = _setup_ik(bridge)
@@ -169,8 +209,10 @@ def run_pick_sequence(
     tip_h = sim.getObject("/tip")
 
     counter = [0]
+    ik_convergence = []  # tracker: True por cada substep que IK convergió
+
     set_gripper(bridge, True)
-    for _ in range(20):
+    for _ in range(GRIPPER_OPEN_SETTLE_STEPS):
         bridge.step()
         _capture_frame(bridge, frames_dir, counter[0])
         counter[0] += 1
@@ -178,30 +220,37 @@ def run_pick_sequence(
     # 1. Approach: 30 cm sobre cubo
     logger.info(f"  → approach (30 cm sobre {target_object})")
     _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
-                     [obj_start[0], obj_start[1], 0.30], frames_dir, counter)
+                     [obj_start[0], obj_start[1], 0.30], frames_dir, counter,
+                     convergence_tracker=ik_convergence)
 
     # 2. Descend: al nivel del cubo
     logger.info("  → descend")
     _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
-                     [obj_start[0], obj_start[1], obj_start[2]], frames_dir, counter)
+                     [obj_start[0], obj_start[1], obj_start[2]], frames_dir, counter,
+                     convergence_tracker=ik_convergence)
 
-    # 3. Grasp: cerrar gripper + ATTACH cubo CENTRADO en el tip
-    # NOTA crítica: durante el descent el gripper FÍSICAMENTE puede empujar
-    # el cubo lateralmente. Si attacháramos con keepInPlace=True el cubo
-    # quedaría con offset del tip → en el lift/deposit se ve flotando.
-    # Por eso: snap del cubo a la pose del tip (centrado en el gripper)
-    # ANTES del attach. Visualmente el cubo aparece firmemente en el gripper.
-    logger.info("  → grasp_close + attach (cubo centrado en el tip)")
+    # 3. Grasp: attach del cubo al tip (técnica de snap+attach).
+    # IMPORTANTE: medimos PROXIMITY tip-cubo ANTES del snap para que la
+    # métrica `grasp_plausible` refleje si un grasp físico real habría sido
+    # posible. Después del snap esa distancia es siempre 0 (mentirosa).
+    cube_pos_pre_snap = sim.getObjectPosition(obj_h, -1)
+    tip_pos_pre_snap = sim.getObjectPosition(tip_h, -1)
+    grasp_proximity_m = math.sqrt(
+        sum((cube_pos_pre_snap[i] - tip_pos_pre_snap[i]) ** 2 for i in range(3))
+    )
+    grasp_plausible = grasp_proximity_m < GRASP_PLAUSIBILITY_THRESHOLD_M
+    logger.info(
+        f"  proximidad tip↔cubo PRE-snap: {grasp_proximity_m * 100:.1f} cm "
+        f"({'plausible' if grasp_plausible else 'IMPLAUSIBLE — gripper lejos del cubo'})"
+    )
+
+    logger.info("  → grasp_close + attach (snap del cubo al tip)")
     sim.setObjectInt32Param(obj_h, sim.shapeintparam_respondable, 0)
     sim.setObjectInt32Param(obj_h, sim.shapeintparam_static, 1)
-    # Snap del cubo al world position del tip, después attach con
-    # keepInPlace=True para que CoppeliaSim recompute el offset relativo
-    # como (0,0,0). Así el cubo viaja CENTRADO en el tip.
-    tip_pos = sim.getObjectPosition(tip_h, -1)
-    sim.setObjectPosition(obj_h, -1, tip_pos)
+    sim.setObjectPosition(obj_h, -1, tip_pos_pre_snap)
     sim.setObjectParent(obj_h, tip_h, True)
     set_gripper(bridge, False)
-    for _ in range(40):
+    for _ in range(GRIPPER_CLOSE_STEPS):
         bridge.step()
         _capture_frame(bridge, frames_dir, counter[0])
         counter[0] += 1
@@ -209,25 +258,28 @@ def run_pick_sequence(
     # 4. Lift
     logger.info("  → lift")
     _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
-                     [obj_start[0], obj_start[1], 0.40], frames_dir, counter)
+                     [obj_start[0], obj_start[1], 0.40], frames_dir, counter,
+                     convergence_tracker=ik_convergence)
 
     # 5. Deposit (lateral)
     logger.info("  → deposit")
     _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
-                     [-0.30, -0.30, 0.30], frames_dir, counter)
+                     DEPOSIT_TARGET, frames_dir, counter,
+                     convergence_tracker=ik_convergence)
 
     # 6. Release: detach + restaurar física + resetear velocidad
-    # El cubo hereda la velocidad del tip durante el deposit (era hijo del
-    # tip). Sin reset, al soltar conserva esa velocidad y vuela 1m+ por
-    # inercia. resetDynamicObject pone velocidad lineal y angular a 0.
     logger.info("  → release + detach + velocity reset")
     sim.setObjectParent(obj_h, -1, True)
     sim.setObjectInt32Param(obj_h, sim.shapeintparam_respondable, 1)
     sim.setObjectInt32Param(obj_h, sim.shapeintparam_static, 0)
+    reset_dynamic_ok = False
     try:
         sim.resetDynamicObject(obj_h)
+        reset_dynamic_ok = True
     except Exception as e:
-        logger.warning(f"resetDynamicObject falló: {e}")
+        # FAIL LOUD: si resetDynamicObject falla, el cubo VOLARÁ por
+        # inercia y deposit_error_m será grande. No silenciar.
+        logger.error(f"resetDynamicObject FALLÓ — el cubo volará por inercia: {e}")
     set_gripper(bridge, True)
     for _ in range(60):
         bridge.step()
@@ -237,20 +289,52 @@ def run_pick_sequence(
     # 7. Home return
     logger.info("  → home_return")
     _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
-                     [0.0, -0.31, 0.99], frames_dir, counter)
+                     [0.0, -0.31, 0.99], frames_dir, counter,
+                     convergence_tracker=ik_convergence)
 
     obj_end = list(sim.getObjectPosition(obj_h, -1))
     moved = math.sqrt(sum((a - b) ** 2 for a, b in zip(obj_start, obj_end)))
-    grasp_success = moved > 0.30  # >30 cm de desplazamiento = grasp+place exitoso
+
+    # MÉTRICAS HONESTAS (ver dataclass PickResult docstring)
+    # deposit_error_m: qué tan lejos quedó el cubo del target del deposit
+    deposit_error_m = math.sqrt(
+        (obj_end[0] - DEPOSIT_TARGET[0]) ** 2 +
+        (obj_end[1] - DEPOSIT_TARGET[1]) ** 2
+        # ignoramos Z porque el cubo cae al piso por gravedad post-release
+    )
+    obj_displaced = moved > 0.02  # >2cm = el ciclo se ejecutó
+    deposit_plausible = deposit_error_m < DEPOSIT_PLAUSIBILITY_THRESHOLD_M
+    ik_converged = len(ik_convergence) > 0 and all(ik_convergence)
+
+    logger.info(
+        f"  RESULTADOS: moved={moved*100:.1f}cm, "
+        f"grasp_proximity={grasp_proximity_m*100:.1f}cm "
+        f"({'plausible' if grasp_plausible else 'IMPLAUSIBLE'}), "
+        f"deposit_error={deposit_error_m*100:.1f}cm "
+        f"({'plausible' if deposit_plausible else 'IMPLAUSIBLE'}), "
+        f"ik_converged={ik_converged}"
+    )
 
     bridge.stop_simulation()
+
+    # CLEANUP: liberar el IK environment (resource leak fix)
+    try:
+        simIK.eraseEnvironment(env)
+    except Exception as e:
+        logger.warning(f"eraseEnvironment falló: {e}")
 
     return PickResult(
         n_frames=counter[0],
         obj_start_pos=obj_start,
         obj_end_pos=obj_end,
         obj_moved_m=moved,
-        grasp_success=grasp_success,
+        tip_grasp_proximity_m=grasp_proximity_m,
+        deposit_target=DEPOSIT_TARGET,
+        deposit_error_m=deposit_error_m,
+        obj_displaced=obj_displaced,
+        deposit_plausible=deposit_plausible,
+        grasp_plausible=grasp_plausible,
+        ik_converged=ik_converged,
         mp4_path=None,
         frames_dir=frames_dir,
     )

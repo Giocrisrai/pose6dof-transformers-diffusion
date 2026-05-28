@@ -41,13 +41,17 @@ SCENES_DIR = REPO / "data" / "scenes"
 SCENARIOS_YAML = SCENES_DIR / "scenarios.yaml"
 OUTPUT_DIR = REPO / "experiments" / "results" / "pick_battery"
 
-# Si el objeto se movió > este threshold, se considera "manipulated":
-# el robot lo desplazó (sea por grasp exitoso o por contacto).
-MOVE_THRESHOLD_M = 0.30  # un grasp+deposit exitoso mueve el cubo >30 cm
-
-
 def run_scenario(sc: Scenario) -> dict:
-    """Ejecuta pick sequence para un escenario. Devuelve dict con métricas."""
+    """Ejecuta pick sequence para un escenario. Devuelve dict con métricas honestas.
+
+    Métricas (ver pick_sequence.PickResult):
+    - object_moved_m: desplazamiento total del cubo (ruidoso por no-determinismo).
+    - grasp_proximity_m: distancia tip↔cubo al momento del attach (REAL).
+    - deposit_error_m: distancia obj_end↔deposit_target (REAL).
+    - grasp_plausible: True si grasp_proximity_m < 5 cm.
+    - deposit_plausible: True si deposit_error_m < 30 cm.
+    - ik_converged: True si todas las llamadas a IK convergieron.
+    """
     logger.info(f"\n=== escenario {sc.id} ({sc.difficulty}) ===")
     scenario_dir = OUTPUT_DIR / sc.id
     frames_dir = scenario_dir / "frames"
@@ -57,10 +61,8 @@ def run_scenario(sc: Scenario) -> dict:
         bridge.set_stepping(True)
         bridge.load_scene(SCENES_DIR / sc.scene)
         bridge.apply_scenario(sc.to_dict())
-
         result: PickResult = run_pick_sequence(bridge, frames_dir)
 
-    # Compilar MP4 fuera del with (no necesita bridge)
     compiled = compile_mp4(frames_dir, mp4_path, fps=25)
 
     return {
@@ -72,9 +74,14 @@ def run_scenario(sc: Scenario) -> dict:
         "n_frames": result.n_frames,
         "object_start": [round(p, 3) for p in result.obj_start_pos],
         "object_end": [round(p, 3) for p in result.obj_end_pos],
+        "deposit_target": result.deposit_target,
         "object_moved_m": round(result.obj_moved_m, 3),
-        "object_manipulated": result.obj_moved_m > MOVE_THRESHOLD_M,
-        "grasp_success": result.grasp_success,
+        "tip_grasp_proximity_m": round(result.tip_grasp_proximity_m, 3),
+        "deposit_error_m": round(result.deposit_error_m, 3),
+        "obj_displaced": result.obj_displaced,
+        "grasp_plausible": result.grasp_plausible,
+        "deposit_plausible": result.deposit_plausible,
+        "ik_converged": result.ik_converged,
         "mp4_path": str(compiled.relative_to(REPO)) if compiled else None,
         "frames_dir": str(frames_dir.relative_to(REPO)),
     }
@@ -90,24 +97,34 @@ def save_report(results: list[dict]) -> None:
 
     md_path = OUTPUT_DIR / "report.md"
     with md_path.open("w") as f:
-        f.write("# Pick Battery Report\n\n")
-        f.write("Cada escenario ejecuta la secuencia completa pick-and-place ")
-        f.write("(home → approach → descend → grasp → lift → deposit → release → home) ")
-        f.write("sobre la escena cargada con sus tweaks aplicados.\n\n")
-        f.write("**object_manipulated**: el objeto target se desplazó más de ")
-        f.write(f"{MOVE_THRESHOLD_M*100:.0f} cm durante la secuencia ")
-        f.write("(no garantiza grasp exitoso — solo contacto/desplazamiento).\n\n")
-        f.write("| id | difficulty | frames | object_start → end | moved | manipulated | video |\n")
-        f.write("|---|---|---:|---|---:|:-:|---|\n")
+        f.write("# Pick Battery Report — métricas honestas\n\n")
+        f.write("**IMPORTANTE — leé `docs/PICK_LIMITATIONS.md` antes de interpretar.**\n\n")
+        f.write("El \"grasp\" usa la técnica de snap+attach (cubo se teletransporta ")
+        f.write("al TCP y se parentea al gripper). El gripper físico NO agarra ")
+        f.write("por fricción. Esto es estándar en sims comerciales (Pickit, ")
+        f.write("Cognex, RoboDK) pero hay que entender las limitaciones.\n\n")
+        f.write("## Métricas\n\n")
+        f.write("- **moved**: desplazamiento total del cubo (cm). Ruidoso por no-")
+        f.write("determinismo de la física post-release.\n")
+        f.write("- **grasp_proximity**: distancia tip↔cubo AL momento del attach (cm). ")
+        f.write("Si > 5 cm el grasp NO sería físicamente plausible.\n")
+        f.write("- **deposit_error**: distancia entre obj_end y el target deposit (cm). ")
+        f.write("Mide la precisión del depósito (independiente de no-determinismo).\n")
+        f.write("- **ik_converged**: True si todas las llamadas a IK convergieron.\n\n")
+        f.write("## Resultados\n\n")
+        f.write("| id | diff | frames | grasp_prox | grasp_OK | moved | deposit_err | deposit_OK | ik_ok | video |\n")
+        f.write("|---|---|---:|---:|:-:|---:|---:|:-:|:-:|---|\n")
         for r in results:
-            start = ",".join(f"{p:+.2f}" for p in r["object_start"])
-            end = ",".join(f"{p:+.2f}" for p in r["object_end"])
-            check = "✓" if r["object_manipulated"] else "✗"
+            grasp_check = "✓" if r["grasp_plausible"] else "✗"
+            deposit_check = "✓" if r["deposit_plausible"] else "✗"
+            ik_check = "✓" if r["ik_converged"] else "✗"
             video = f"`{r['mp4_path']}`" if r["mp4_path"] else "n/a"
             f.write(
                 f"| {r['scenario_id']} | {r['difficulty']} | {r['n_frames']} | "
-                f"({start}) → ({end}) | {r['object_moved_m']*100:.1f} cm | "
-                f"{check} | {video} |\n"
+                f"{r['tip_grasp_proximity_m']*100:.1f}cm | {grasp_check} | "
+                f"{r['object_moved_m']*100:.1f}cm | "
+                f"{r['deposit_error_m']*100:.1f}cm | {deposit_check} | "
+                f"{ik_check} | {video} |\n"
             )
     logger.info(f"escrito: {md_path.relative_to(REPO)}")
 
