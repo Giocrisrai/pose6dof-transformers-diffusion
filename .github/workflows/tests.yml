@@ -53,6 +53,9 @@ jobs:
             requests
           # CLIP/VLA-lite (tests/test_vla_lite_modules.py)
           uv pip install --quiet transformers
+          # CoppeliaSim ZMQ client (tests/test_coppeliasim_bridge.py — solo
+          # cliente Python, no requiere la app CoppeliaSim instalada)
+          uv pip install --quiet coppeliasim-zmqremoteapi-client
           # Paquete propio bop-bootstrap-ci (exploracion #1)
           uv pip install --quiet -e packages/bop_bootstrap_ci
 
