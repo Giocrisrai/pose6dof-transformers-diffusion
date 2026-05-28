@@ -136,8 +136,6 @@ class CoppeliaSimBridge:
             ImportError: si coppeliasim_zmqremoteapi_client no está instalado.
             ConnectionError: si CoppeliaSim no responde tras `retries` intentos.
         """
-        import time as _time
-
         try:
             from coppeliasim_zmqremoteapi_client import RemoteAPIClient
         except ImportError:
@@ -149,32 +147,40 @@ class CoppeliaSimBridge:
                 "Install with: pip install coppeliasim-zmqremoteapi-client"
             )
 
+        n_attempts = max(retries, 1)
         last_error = None
-        for attempt in range(1, max(retries, 1) + 1):
+        for attempt in range(1, n_attempts + 1):
             try:
                 self._client = RemoteAPIClient(self.host, self.port)
                 self._sim = self._client.require("sim")
                 # Ping para validar que el server responde
                 _ = self._sim.getSimulationTime()
-                self._connected = True
                 version = self._sim.getInt32Param(self._sim.intparam_program_version)
                 logger.info(
                     f"Connected to CoppeliaSim at {self.host}:{self.port} "
-                    f"(version {version}, attempt {attempt}/{retries})"
+                    f"(version {version}, attempt {attempt}/{n_attempts})"
                 )
+                # _init_handles puede lanzar RuntimeError en strict=True; debe correr
+                # antes de marcar _connected para no dejar el bridge en estado parcial
                 self._init_handles(strict=strict)
+                self._connected = True
                 return
             except Exception as e:
                 last_error = e
+                # rollback: la conexión quedó parcial, limpiar para que el siguiente
+                # intento (o el caller post-ConnectionError) arranque limpio
+                self._connected = False
+                self._client = None
+                self._sim = None
                 logger.warning(
-                    f"connect attempt {attempt}/{retries} failed: {e}"
+                    f"connect attempt {attempt}/{n_attempts} failed: {e}"
                 )
-                if attempt < retries:
-                    _time.sleep(retry_delay_s)
+                if attempt < n_attempts:
+                    time.sleep(retry_delay_s)
 
         raise ConnectionError(
             f"Cannot connect to CoppeliaSim at {self.host}:{self.port} "
-            f"after {retries} attempts. Make sure CoppeliaSim is running "
+            f"after {n_attempts} attempts. Make sure CoppeliaSim is running "
             f"with ZMQ plugin enabled. Last error: {last_error}"
         )
 
@@ -220,6 +226,11 @@ class CoppeliaSimBridge:
             logger.warning("Tip/TCP not found in scene")
 
         if strict:
+            # Criterio "crítico" = handles sin los que ningún pipeline puede correr:
+            # joints (sin ellos no hay control motor) + rgb_camera (sin ella no hay
+            # percepción). depth_camera y gripper/tip son opcionales — los runners
+            # que los necesitan fallarán explícitamente más adelante; aquí se
+            # priorizan los handles que rompen el pipeline al instante.
             critical_missing = []
             if not self._joint_handles:
                 critical_missing.append("joints")

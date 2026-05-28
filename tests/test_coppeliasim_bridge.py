@@ -152,21 +152,14 @@ class TestBridgeConnect:
 
     def test_connect_import_error(self, monkeypatch):
         """Si el paquete no está instalado, levanta ImportError."""
-        # Simular import error patcheando el módulo
+        # `sys.modules[name] = None` hace que el `from name import X` lance
+        # ImportError. monkeypatch.setitem restaura el original automáticamente.
         import sys
+        monkeypatch.setitem(sys.modules, "coppeliasim_zmqremoteapi_client", None)
 
-        original_module = sys.modules.get("coppeliasim_zmqremoteapi_client")
-        sys.modules["coppeliasim_zmqremoteapi_client"] = None  # ImportError al hacer from-import
-
-        try:
-            bridge = CoppeliaSimBridge()
-            with pytest.raises(ImportError):
-                bridge.connect(retries=1)
-        finally:
-            if original_module is not None:
-                sys.modules["coppeliasim_zmqremoteapi_client"] = original_module
-            else:
-                sys.modules.pop("coppeliasim_zmqremoteapi_client", None)
+        bridge = CoppeliaSimBridge()
+        with pytest.raises(ImportError):
+            bridge.connect(retries=1)
 
     def test_disconnect_clears_state(self, mock_remote_api):
         bridge = CoppeliaSimBridge()
