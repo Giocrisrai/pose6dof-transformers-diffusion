@@ -261,9 +261,58 @@ Durante el smoke test del eval encontré que la primera iteración de `pick_with
 
 Fix: `precompute_visual_cond.py` ahora guarda `state_dict` del encoder en `data/models/visual_encoder_iter3.pth`. `eval_diffusion_iter3_sim.py` lo carga antes de empezar las capturas. Smoke test después del fix: 2/2 grasp plausible, proximity 3.1 cm.
 
+### Comparación honesta vs heurístico geométrico (mismas 50 poses, seed=2026)
+
+Para responder directamente "¿la DP entrenada vale la pena sobre la heurística?", se corrió el mismo eval con `experiments/eval_heuristic_baseline_sim.py` (planner = `plan_grasp_heuristic`).
+
+| Métrica | Heurístico | **DP v3** | Δ | Interpretación |
+|---|---|---|---|---|
+| `grasp_plausible_pct_sim` | **100 %** | 78 % | −22 pp | El heurístico pone el waypoint k=8 EXACTAMENTE sobre la pose del cubo por construcción geométrica. La DP imita esto aproximadamente. |
+| `ik_converged_pct` | **96 %** | 90 % | −6 pp | Los waypoints del heurístico son trayectorias suaves dentro del workspace. La DP a veces genera waypoints en bordes/singularidades. |
+| `mean_grasp_proximity_m` | **0.000** | 0.042 | +4.2 cm | Heurístico = proximidad cero por definición; DP tiene error residual de aprendizaje. |
+| `deposit_plausible_pct_sim` | 0 % | 0 % | — | Ninguno cierra el deposit (sale del workspace de training). |
+| `mean_deposit_error_m` | 0.82 m | 0.80 m | — | Indistinguible. |
+
+**Lectura honesta**: en este escenario (1 cubo, pose conocida, workspace 15×10×3 cm), el heurístico es objetivamente mejor por construcción. La DP no le gana al heurístico — lo *imita*. ¿Entonces para qué la DP?
+
+**Lo que la DP aporta (no medible en este escenario simple)**:
+
+1. **Conditioning visual**: el heurístico necesita la pose 4×4 explícita; la DP usa RGB-D directamente (cubre el caso donde no hay FoundationPose disponible o falla la detección).
+2. **Extensibilidad a clutter**: la DP, con conditioning visual, en principio puede aprender a evitar otros objetos del bin. El heurístico geométrico no — necesitaría re-codificar reglas para cada nuevo objeto.
+3. **Generalización a poses no vistas**: el 78 % sobre poses random (seed 2026) muestra que la DP aprendió la estructura del workspace, no solo memorizó ejemplos.
+
+**Para la defensa, claim correcto**: "la DP no busca superar la heurística en este escenario controlado; busca demostrar que un policy entrenado con conditioning RGB-D **alcanza el 78 % del rendimiento del heurístico ideal** sin acceso explícito a la pose. Es la base sobre la cual extender a escenarios donde la heurística no es escalable (multi-objeto, clutter, oclusión)."
+
+Ver `experiments/results/pick_with_diffusion/eval_heuristic_baseline_sim.json`.
+
+### Failure mode analysis DP v3 (11 fails sobre 50 poses)
+
+Análisis de las 11 poses donde la DP no logró `grasp_plausible` (`experiments/results/pick_with_diffusion/eval_v3_sim.json::per_pick`):
+
+| Bin | Total | Plausibles | % | Mean proximity |
+|---|---|---|---|---|
+| **θ = 0** (sin rotación) | 11 | 6 | **55 %** | 0.055 m |
+| **θ = π/4** (45°) | 24 | 21 | 88 % | 0.038 m |
+| **θ = π/2** (90°) | 15 | 12 | 80 % | 0.041 m |
+| **x < 0.45** (cerca del robot) | 15 | 13 | 87 % | 0.033 m |
+| **x ∈ [0.45, 0.50)** | 19 | 15 | 79 % | 0.044 m |
+| **x ∈ [0.50, 0.55]** (lejos) | 16 | 11 | **69 %** | 0.050 m |
+| y (todo el rango) | 50 | 39 | 78 % | uniforme |
+
+**Patrones identificados**:
+
+1. **θ = 0 es el peor caso**: 55 % vs ~84 % para rotaciones. Hipótesis: el cubo sin rotar es visualmente menos distintivo desde la cámara cenital — sin features discriminativas, el visual_emb degrada y la red toma decisiones cercanas a la media del dataset.
+2. **X lejos (>0.50 m) degrada a 69 %**: cerca del límite cinemático del UR5; aún cuando IK converge, los waypoints del policy quedan ligeramente por fuera del rango óptimo.
+3. **Y es indiferente**: la geometría del workspace (15×10 cm) no expone gradiente en Y.
+4. **Caso peor combinado**: θ = 0 AND x > 0.50 → probable ~40 % grasp_plausible (n insuficiente para confirmar).
+
+**Implicación para Iter 4+**: data augmentation con más ejemplos de θ = 0 y poses en x > 0.50. Posiblemente cambiar la cámara para evitar la ambigüedad visual de θ = 0.
+
 ### Conclusión para la defensa
 
-Iter 3 valida la hipótesis principal del diagnóstico Iter 2: la conditioning era el bottleneck. Con un encoder visual frozen (ResNet-18 ImageNet) y un head trainable de sólo 27 k params, la Diffusion Policy alcanza 78 % grasp_plausible_pct_sim — más del doble que Iter 2 y sustancialmente por encima del threshold. La defensa del TFM ahora puede argumentar no sólo el pipeline E2E funcionando sino una métrica de calidad robusta (78 % en 50 picks ejecutados, seed=2026).
+Iter 3 valida la hipótesis principal del diagnóstico Iter 2: el conditioning era el bottleneck. Con un encoder visual frozen (ResNet-18 ImageNet) y un head trainable de sólo 27 k params, la Diffusion Policy alcanza 78 % `grasp_plausible_pct_sim` — más del doble que Iter 2 y sustancialmente por encima del threshold.
+
+Frente al heurístico geométrico (oracle con pose explícita), la DP queda 22 pp atrás — esperable, porque está aprendiendo a reproducir lo que el heurístico encodea por construcción. **El valor de la DP no es ganarle al heurístico en este escenario** sino servir de base extensible a escenarios donde no existe heurística (clutter, multi-objeto, oclusión, generalización a objetos no vistos).
 
 Cosas que **siguen abiertas**:
 - Deposit error sigue ~80 cm; requiere extender el dataset para incluir deposit, no es problema del conditioning.
