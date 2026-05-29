@@ -212,6 +212,19 @@ def main() -> int:
     planner.model.eval()
     logger.info(f"policy cargada: {POLICY.name} (hidden_dim={hidden_dim})")
 
+    # 1.b Auto-cargar visual encoder si DP_VERSION=v3
+    visual_encoder = None
+    if POLICY_VERSION == "v3":
+        from src.planning.visual_encoder import ResNet18RGBDEncoder
+        enc_path = REPO / "data" / "models" / "visual_encoder_iter3.pth"
+        if not enc_path.exists():
+            logger.error(f"DP_VERSION=v3 requiere {enc_path}. Corré precompute_visual_cond.py.")
+            return 1
+        enc_state = torch.load(enc_path, map_location=device, weights_only=True)
+        visual_encoder = ResNet18RGBDEncoder(out_dim=enc_state.get("out_dim", 52)).to(device).eval()
+        visual_encoder.load_state_dict(enc_state["state_dict"])
+        logger.info(f"visual encoder: {enc_path.name}")
+
     # 2. Obtener target pose
     pose, source_label = get_target_pose(args)
     logger.info(f"target: t={pose[:3,3].tolist()}, source={source_label}")
@@ -221,7 +234,10 @@ def main() -> int:
     frames_dir = REPO_OUT / "frames"
     with CoppeliaSimBridge() as bridge:
         bridge.load_scene(SCENE)
-        result = pick_with_dp(planner, pose, bridge, frames_dir=frames_dir)
+        result = pick_with_dp(
+            planner, pose, bridge, frames_dir=frames_dir,
+            visual_encoder=visual_encoder,
+        )
 
     # 4. Compilar MP4
     mp4_path = REPO_OUT / "demo.mp4"

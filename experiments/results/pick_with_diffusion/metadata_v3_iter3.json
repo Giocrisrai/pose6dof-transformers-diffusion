@@ -1,0 +1,23 @@
+{
+  "target_pose_t": [
+    0.419,
+    -0.122,
+    0.033
+  ],
+  "cube_end": [
+    0.4582655602785602,
+    -0.16606156603156255,
+    0.02500008940696715
+  ],
+  "tip_end": [
+    0.4277277114871322,
+    -0.11264459490691306,
+    0.12667105048925048
+  ],
+  "ik_converged": true,
+  "grasp_proximity_m": 0.014790898444420589,
+  "deposit_error_m": 0.7700040025860101,
+  "grasp_plausible": true,
+  "deposit_plausible": false,
+  "n_waypoints": 16
+}

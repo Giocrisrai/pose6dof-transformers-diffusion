@@ -50,11 +50,14 @@ CLIPS = [
     },
     {
         "key": "02_planificacion",
-        "source": REPO / "experiments/results/pick_with_diffusion/demo.mp4",
+        "source": REPO / "experiments/results/pick_with_diffusion/demo_v3_iter3.mp4",
         "number": "2.",
-        "title": "Diffusion Policy -> trayectoria (16 waypoints)",
-        "metrics": [("inferencia ~165 ms  -  IK convergido OK", True)],
-        "honesty": "la DP imita la heuristica (Iter 1)",
+        "title": "Diffusion Policy v3 -> trayectoria (16 waypoints)",
+        "metrics": [
+            ("ResNet-18 RGB-D cond  -  IK convergido OK", True),
+            ("grasp_plausible_pct_sim 78% (n=50)", True),
+        ],
+        "honesty": "DP re-entrenada en sim (Iter 3); grasp via attach",
     },
     {
         "key": "03_e2e",
