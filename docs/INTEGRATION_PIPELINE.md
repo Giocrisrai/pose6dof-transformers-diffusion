@@ -195,3 +195,69 @@ Si se quisiera empujar `grasp_plausible_pct_sim` a ≥50 %:
 ### Conclusión para la defensa
 
 Iter 2 cierra Brecha B con métrica honesta: la DP entrenada en datos del sim ejecuta el pipeline completo (FP → DP → IK → Sim) en el 100 % de los picks intentados. El threshold de plausibilidad física (≥50 %) no se alcanza, pero la mejora frente a Iter 1 (25 % → 36 %) demuestra que la arquitectura responde al escalado del dataset y al loss ponderado. La defensa del TFM se sostiene sobre el pipeline E2E funcionando, no sobre el porcentaje de grasps plausibles.
+
+## Iter 3 (cerrado 2026-05-29): conditioning visual con ResNet-18
+
+Estado: **éxito** — el threshold `dp_grasp_plausible_pct_sim ≥ 55 %` se pasa con +23 pp de holgura.
+
+Cambios respecto a Iter 2:
+
+1. **Encoder visual**: `ResNet18RGBDEncoder` (torchvision pretrained ImageNet) reemplaza el zero-pad de `encode_observation`. Conv1 patch a 4 canales (RGB copiados, D zero-init). Backbone congelado; sólo `Linear(512, 52)` entrenable.
+2. **Captura RGB-D**: cada trayectoria del dataset incluye `rgbd_obs` (4 × 224 × 224 float32) capturada al inicio del pick (open-loop conditioning, como Chi et al. 2023).
+3. **Layout del cond**: `cond[:52]=visual_emb`, `cond[52:64]=pose[:3,:].flatten()[:12]`. Pose se mantiene como señal residual.
+4. **Precomputación de embeddings**: `experiments/precompute_visual_cond.py` corre el encoder una vez sobre las 1700 RGB-D y guarda `visual_emb` en el dataset. Encoder persistido (`data/models/visual_encoder_iter3.pth`) para reproducir embeddings en eval.
+5. **Fix lateral**: `bridge.capture_rgbd()` ahora invoca `sim.handleVisionSensor()` antes de leer — sin esto los vision sensors en modo "explicit handling" devolvían imagen vacía.
+
+### Métricas Iter 3 (50 picks en sim)
+
+Ver `experiments/results/pick_with_diffusion/eval_v3_sim.json`.
+
+| Métrica | Iter 1 | Iter 2 | **Iter 3** | Threshold | Pasó? |
+|---|---|---|---|---|---|
+| `dp_grasp_plausible_pct` (geom 20 picks) | 25 % | — | — | ≥70 % | n/a |
+| `dp_grasp_plausible_pct_sim` (sim 50 picks) | n/a | 36 % | **78 %** | ≥55 % | ✅ |
+| `dp_deposit_plausible_pct_sim` | n/a | 0 % | **0 %** | — | ❌ |
+| `dp_ik_converged_pct` | n/a | 90 % | **84 %** | ≥90 % | ❌ (−6 pp) |
+| `mean_grasp_proximity_m` | 0.073 | 0.056 | **0.042** | < 0.05 | ✅ |
+| `mean_deposit_error_m` | n/a | 0.81 | 0.81 | — | n/a |
+| training `final_val_loss` | n/a | 0.051 | **0.042** | < 0.05 | ✅ |
+| training `min_val_loss` | n/a | 0.031 | **0.026** | — | mejor |
+
+### Lectura honesta del resultado
+
+- ✅ **Mejora masiva de grasp plausible**: de 36 % (Iter 2) a 78 % (Iter 3). +42 pp. La hipótesis del diagnóstico Iter 2 era correcta: el conditioning era el bottleneck. El encoder visual da a la red información discriminativa real entre poses cercanas.
+- ✅ **Proximity media bajó a 4.2 cm** (vs 5.6 cm Iter 2), por debajo del threshold de 5 cm. La policy ahora apunta al cubo, no a la media de poses del workspace.
+- ✅ **val_loss mejor**: 0.042 (vs 0.051 Iter 2), min_val 0.026 (vs 0.031). El conditioning rico es más fácil de aprender.
+- ❌ **Regresión leve en IK convergence**: 84 % vs 90 %. Probable causa: con la policy generando waypoints más precisos (más cercanos al cubo, no a la media), los targets caen más cerca de singularidades cinemáticas del UR5 en el extremo inferior del workspace. Mitigación pendiente: revisar damping del IK en `_move_tcp_via_ik` o usar un solver con fallback.
+- ❌ **Deposit sigue 0 %**: el target de deposit (-0.30, -0.30, 0.30) está lejos del workspace de training. La policy no fue entrenada con trayectorias que lleguen allá — el dataset solo cubre pick (sin deposit explícito). Resolverlo requiere extender el dataset, fuera del scope de Iter 3.
+
+### Datos generados
+
+- `data/datasets/sim_pick_v3/{heuristic,executed,train,val}.pt` — 1700 trayectorias con RGB-D (~2.5 GB sin comprimir, gitignored).
+- `data/models/diffusion_policy_sim_v3.pth` — checkpoint Iter 3 (gitignored).
+- `data/models/visual_encoder_iter3.pth` — encoder ResNet-18 state (gitignored).
+- `experiments/results/pick_with_diffusion/eval_v3_sim.json` — métricas + per-pick details.
+
+### Tiempos reales
+
+- Phase A.1 (heuristic 1500 con RGB-D): **9 min** en M1 MPS.
+- Phase A.2 (executed 200): **46 min** (mucho más rápido que en Iter 2; bridge persistente y handleVisionSensor explícito ayudó).
+- Phase A.3 (split 90/10): **15 s**.
+- Precompute embeddings (1700): **15 s** en M1 MPS.
+- Training 150 epochs (hidden_dim=256): **6.6 min**.
+- Eval 50 picks: **49 min** (cada pick ~58 s con frame extra de captura).
+
+### Bug crítico encontrado y resuelto
+
+Durante el smoke test del eval encontré que la primera iteración de `pick_with_dp` con `visual_encoder` devolvía 0/2 grasp plausible (proximity 17 cm). Causa: el head `Linear(512, 52)` del encoder se inicializa con pesos random distintos en cada instancia. Sin persistir el encoder, los `visual_emb` usados en precompute (training) eran diferentes de los usados en eval, así que el modelo veía cond vector basura en el momento del eval.
+
+Fix: `precompute_visual_cond.py` ahora guarda `state_dict` del encoder en `data/models/visual_encoder_iter3.pth`. `eval_diffusion_iter3_sim.py` lo carga antes de empezar las capturas. Smoke test después del fix: 2/2 grasp plausible, proximity 3.1 cm.
+
+### Conclusión para la defensa
+
+Iter 3 valida la hipótesis principal del diagnóstico Iter 2: la conditioning era el bottleneck. Con un encoder visual frozen (ResNet-18 ImageNet) y un head trainable de sólo 27 k params, la Diffusion Policy alcanza 78 % grasp_plausible_pct_sim — más del doble que Iter 2 y sustancialmente por encima del threshold. La defensa del TFM ahora puede argumentar no sólo el pipeline E2E funcionando sino una métrica de calidad robusta (78 % en 50 picks ejecutados, seed=2026).
+
+Cosas que **siguen abiertas**:
+- IK convergence cayó a 84 %; no es bloqueante pero merece debug.
+- Deposit error sigue ~80 cm; requiere extender el dataset para incluir deposit, no es problema del conditioning.
+- Closed-loop policy (re-captura RGB-D durante la trayectoria) sería Iter 4 si se quisiera empujar más.
