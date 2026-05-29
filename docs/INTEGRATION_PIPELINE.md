@@ -135,3 +135,63 @@ Para mejorar `dp_grasp_plausible_pct` de 25% a >70%:
 ### Recomendación para próxima iteración
 
 Si la defensa del TFM ya está cubierta con Iter 1 (pipeline E2E funcionando), Iter 2 es opcional. Si se persigue mejorar performance: **roadmap punto 1 + 2** son los más alto-ROI (~4-8 h de trabajo).
+
+## Iter 2 (cerrado 2026-05-28): escalado + loss ponderado + eval en sim
+
+Estado: **mejora cuantitativa parcial; threshold ≥50% NO alcanzado**.
+
+Cambios respecto a Iter 1:
+
+1. **Dataset 7.4× más grande**: 1500 heurísticas + 200 ejecutadas (vs 200 + 30).
+2. **Red 4× más grande**: `hidden_dim=256` (1.35 M params vs 346 k de Iter 1).
+3. **Loss ponderado**: `weighted_mse_loss` con peso 3× en k∈[6,10] (fase grasp) y 2× en dims XYZ. Peso máximo = 6 en (k=8, XYZ).
+4. **150 epochs desde cero** (vs 50 epochs fine-tuning).
+5. **Eval EJECUTADO EN SIM**: 50 picks con seed=2026, cada pick corre en CoppeliaSim (no solo geometría).
+
+### Métricas Iter 2 (50 picks en sim)
+
+Ver `experiments/results/pick_with_diffusion/eval_v2_sim.json`.
+
+| Métrica | Iter 1 | Iter 2 | Threshold | Pasó? |
+|---|---|---|---|---|
+| `dp_grasp_plausible_pct` (geom 20 picks) | 25 % | — | ≥70 % | ❌ |
+| `dp_grasp_plausible_pct_sim` (sim 50 picks) | n/a | **36 %** | ≥50 % | ❌ |
+| `dp_deposit_plausible_pct_sim` | n/a | **0 %** | — | ❌ |
+| `dp_ik_converged_pct` | n/a | **90 %** | ≥90 % | ✅ (límite) |
+| `mean_grasp_proximity_m` | 0.073 | **0.056** | < 0.05 | ❌ (-0.6 cm) |
+| `mean_deposit_error_m` | n/a | 0.81 | — | n/a |
+| training `final_val_loss` | n/a | 0.051 | < 0.05 | ≈ |
+
+### Lectura honesta del resultado
+
+- ✅ **El pipeline E2E con DP en sim funciona en 100 % de los picks**: 50/50 ejecutaron sin crash, 90 % con IK convergido. Eso valida que `pick_with_dp` + `eval_diffusion_iter2_sim.py` cierran completamente la Brecha B en su versión "policy entrenada con datos del sim ejecuta picks en el sim".
+- ✅ **Mejora cuantitativa frente a Iter 1**: el grasp es plausible en 36 % de los picks ejecutados (vs 25 % geométrico de Iter 1). El waypoint k=8 está en promedio a 5.6 cm del cubo (vs 7.3 cm en Iter 1) — la red sí aprendió mejor con el loss ponderado y el dataset escalado.
+- ❌ **No alcanza el threshold ≥50 %**: a 5.6 cm de media (± varianza), solo 18/50 picks caen por debajo de los 5 cm requeridos para grasp físicamente plausible. La policy "casi acierta" pero no clava la pose.
+- ❌ **El deposit NO se logra**: 0/50 picks dejan el cubo a <30 cm del target de drop. Esperable: si el grasp inicial falla por 5–10 cm, el cubo nunca llega al bin destino. El deposit_error se mide solo como sanity-check del flujo completo, no como métrica primaria de la policy.
+- 📊 **El val_loss final (0.051) está al borde del threshold (0.05)**: indica que la red está saturando lo que aprende del dataset actual. Más epochs no ayudarían sin mejorar el conditioning.
+
+### Datos generados
+
+- `data/datasets/sim_pick_v2/{heuristic,executed,train,val}.pt` — 1700 trayectorias, split 90/10 (1530 / 170).
+- `data/models/diffusion_policy_sim_v2.pth` — checkpoint Iter 2 (gitignored).
+- `experiments/results/pick_with_diffusion/eval_v2_sim.json` — métricas + per-pick details.
+
+### Diagnóstico: ¿por qué no alcanzamos el 50 %?
+
+Tres hipótesis ordenadas por probabilidad:
+
+1. **Conditioning limitado** (más probable). Hoy `encode_observation` flattenea la pose 4×4 y rellena los primeros 12/64 dims; el resto del cond vector está vacío. Eso es muy poca señal para que una red de 1.35 M params discrimine entre poses cercanas. La red probablemente está aprendiendo la *media* de las trayectorias del dataset y no se ajusta al objeto específico.
+2. **Loss aún subponderado en grasp**. El peso máximo en (k=8, XYZ) es 6 — quizá insuficiente. Probar 10–20× específicamente en k=8.
+3. **Saturación del dataset**: 1700 trayectorias en un workspace de 15×10×3 cm cubren el espacio bien, pero el ruido de las trayectorias ejecutadas (que tienen IK error residual de ~3 cm) puede estar siendo un techo de precisión que la red no puede superar.
+
+### Roadmap Iter 3 (fuera de scope)
+
+Si se quisiera empujar `grasp_plausible_pct_sim` a ≥50 %:
+
+- **Mejorar el conditioning** (alto ROI, 1-2 días): codificar la pose con MLP no-trivial en vez de zero-pad. Eventualmente sumar features de la cámara (RGB-D embedding).
+- **Probar weighted loss más agresivo** (bajo ROI, 30 min): subir el peso de k=8 XYZ a 10–20×.
+- **Limpiar el dataset ejecutado** (medio ROI, 1 día): filtrar las trayectorias con IK error >3 cm — actualmente entran al training y "contaminan" la señal.
+
+### Conclusión para la defensa
+
+Iter 2 cierra Brecha B con métrica honesta: la DP entrenada en datos del sim ejecuta el pipeline completo (FP → DP → IK → Sim) en el 100 % de los picks intentados. El threshold de plausibilidad física (≥50 %) no se alcanza, pero la mejora frente a Iter 1 (25 % → 36 %) demuestra que la arquitectura responde al escalado del dataset y al loss ponderado. La defensa del TFM se sostiene sobre el pipeline E2E funcionando, no sobre el porcentaje de grasps plausibles.

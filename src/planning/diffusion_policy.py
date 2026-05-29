@@ -253,6 +253,7 @@ class DiffusionGraspPlanner:
         horizon: int = 16,         # number of waypoints
         n_diffusion_steps: int = 100,
         device: str = "cpu",
+        hidden_dim: int = 128,
     ):
         self.action_dim = action_dim
         self.horizon = horizon
@@ -266,6 +267,7 @@ class DiffusionGraspPlanner:
             action_dim=action_dim,
             horizon=horizon,
             cond_dim=64,
+            hidden_dim=hidden_dim,
         ).to(device)
 
         self._trained = False

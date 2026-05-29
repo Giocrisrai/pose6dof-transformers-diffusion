@@ -29,9 +29,10 @@ from src.planning.diffusion_policy import DiffusionGraspPlanner
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger("collect_dp")
 
-DATASET_DIR = REPO / "data" / "datasets" / "sim_pick_v1"
-N_HEURISTIC = 200
-N_EXECUTED = 30
+DATASET_VERSION = "v2"
+DATASET_DIR = REPO / "data" / "datasets" / f"sim_pick_{DATASET_VERSION}"
+N_HEURISTIC = 1500
+N_EXECUTED = 200
 SEED = 42
 
 # Workspace bounds (matching bin_base.ttt geometry)
@@ -233,7 +234,7 @@ def phase_split() -> None:
 
     rng = np.random.default_rng(SEED + 2)
     indices = rng.permutation(n)
-    train_n = int(0.8 * n)
+    train_n = int(0.9 * n)
     train_idx = indices[:train_n]
     val_idx = indices[train_n:]
 

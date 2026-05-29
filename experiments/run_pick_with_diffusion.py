@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -40,7 +41,8 @@ logger = logging.getLogger("pick_with_dp")
 
 REPO_OUT = REPO / "experiments" / "results" / "pick_with_diffusion"
 SCENE = REPO / "data" / "scenes" / "bin_base.ttt"
-POLICY = REPO / "data" / "models" / "diffusion_policy_sim_v1.pth"
+POLICY_VERSION = os.environ.get("DP_VERSION", "v1")  # default backwards-compat
+POLICY = REPO / "data" / "models" / f"diffusion_policy_sim_{POLICY_VERSION}.pth"
 FP_CKPT = REPO / "experiments" / "checkpoints" / "fp_ycbv_checkpoint.json"
 
 
@@ -60,6 +62,121 @@ def get_target_pose(args) -> tuple[np.ndarray, str]:
     raise ValueError(f"pose_source {args.pose_source} no soportado")
 
 
+def pick_with_dp(
+    planner,
+    pose: np.ndarray,
+    bridge,
+    frames_dir=None,
+    n_substeps: int = 8,
+    steps_per_substep: int = 2,
+):
+    """Ejecuta un pick usando la DP entrenada.
+
+    Args:
+        planner: DiffusionGraspPlanner con policy cargada.
+        pose: (4,4) matriz SE(3) target.
+        bridge: CoppeliaSimBridge con escena ya cargada.
+        frames_dir: None para skip frame capture (eval rápido).
+        n_substeps / steps_per_substep: pasados a _move_tcp_via_ik.
+
+    Returns:
+        dict con métricas: {
+            'target_pose_t': [x,y,z],
+            'cube_end': [x,y,z],
+            'tip_end': [x,y,z],
+            'ik_converged': bool,
+            'grasp_proximity_m': float,
+            'deposit_error_m': float,
+            'grasp_plausible': bool,
+            'deposit_plausible': bool,
+            'n_waypoints': int,
+            'waypoints': list of 16 lists of 7 floats (debug),
+        }
+    """
+    import math
+    from src.simulation.pick_sequence import (
+        _move_tcp_via_ik, _setup_ik, set_gripper, setup_robot_control,
+    )
+
+    GRASP_THRESHOLD_M = 0.05
+    DEPOSIT_TARGET = [-0.30, -0.30, 0.30]
+    DEPOSIT_THRESHOLD_M = 0.30
+
+    setup_robot_control(bridge)
+    env, ik_group, target_dummy, ik_joints, simIK = _setup_ik(bridge)
+    bridge.set_stepping(True)
+    bridge.start_simulation()
+    sim = bridge.sim
+    obj1 = sim.getObject("/object_1")
+    tip_h = sim.getObject("/tip")
+
+    # Mover el cubo al target
+    sim.setObjectPosition(obj1, -1, list(pose[:3, 3]))
+
+    # Generar trayectoria con la policy
+    traj = planner.plan_grasp(pose, n_samples=1)  # (1, 16, 7)
+    waypoints = traj[0]
+
+    # PROXIMITY pre-snap: distance entre el waypoint k=8 (donde la heur tiene grasp)
+    # y la pose del cubo. Mide si la DP "apunta" al cubo correctamente.
+    cube_pos = sim.getObjectPosition(obj1, -1)
+    grasp_wp = waypoints[8]
+    grasp_proximity_m = math.sqrt(
+        sum((cube_pos[i] - float(grasp_wp[i])) ** 2 for i in range(3))
+    )
+    grasp_plausible = grasp_proximity_m < GRASP_THRESHOLD_M
+
+    if frames_dir is not None:
+        for f in frames_dir.glob("*.png"): f.unlink()
+        frames_dir.mkdir(parents=True, exist_ok=True)
+
+    # Ejecutar waypoints
+    counter = [0]
+    ik_convergence = []
+    prev_gripper = 1.0
+    for i, wp in enumerate(waypoints):
+        x, y, z, _, _, _, gripper = wp.tolist()
+        if (gripper > 0.5) != (prev_gripper > 0.5):
+            set_gripper(bridge, gripper > 0.5)
+            prev_gripper = gripper
+        _move_tcp_via_ik(
+            bridge, env, ik_group, target_dummy, ik_joints, simIK,
+            [x, y, z], frames_dir, counter,
+            n_substeps=n_substeps, steps_per_substep=steps_per_substep,
+            convergence_tracker=ik_convergence,
+        )
+
+    cube_end = sim.getObjectPosition(obj1, -1)
+    tip_end = sim.getObjectPosition(tip_h, -1)
+    ik_converged = len(ik_convergence) > 0 and all(ik_convergence)
+
+    # Deposit error (XY only, Z lo ignoramos porque cae por gravedad)
+    deposit_error_m = math.sqrt(
+        (cube_end[0] - DEPOSIT_TARGET[0]) ** 2 +
+        (cube_end[1] - DEPOSIT_TARGET[1]) ** 2
+    )
+    deposit_plausible = deposit_error_m < DEPOSIT_THRESHOLD_M
+
+    bridge.stop_simulation()
+    try:
+        simIK.eraseEnvironment(env)
+    except Exception:
+        pass
+
+    return {
+        "target_pose_t": pose[:3, 3].tolist(),
+        "cube_end": cube_end,
+        "tip_end": tip_end,
+        "ik_converged": ik_converged,
+        "grasp_proximity_m": grasp_proximity_m,
+        "deposit_error_m": deposit_error_m,
+        "grasp_plausible": grasp_plausible,
+        "deposit_plausible": deposit_plausible,
+        "n_waypoints": len(waypoints),
+        "waypoints": waypoints.tolist(),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--pose-source", choices=["groundtruth", "fp_ckpt"], default="groundtruth")
@@ -70,91 +187,38 @@ def main() -> int:
         logger.error(f"policy no encontrada: {POLICY}. Corre train_diffusion_on_sim.py primero.")
         return 1
 
-    REPO_OUT.mkdir(parents=True, exist_ok=True)
-    frames_dir = REPO_OUT / "frames"
-
-    # 1. Cargar policy + scheduler
+    # 1. Cargar policy
     device = "mps" if torch.backends.mps.is_available() else "cpu"
+    ckpt = torch.load(POLICY, map_location=device, weights_only=True)
+    hidden_dim = ckpt.get("config", {}).get("hidden_dim", 128)
     planner = DiffusionGraspPlanner(
         action_dim=7, horizon=16, n_diffusion_steps=100, device=device,
+        hidden_dim=hidden_dim,
     )
-    ckpt = torch.load(POLICY, map_location=device, weights_only=True)
     planner.model.load_state_dict(ckpt["model_state_dict"])
     planner.model.eval()
-    logger.info(f"policy cargada: {POLICY.name}")
+    logger.info(f"policy cargada: {POLICY.name} (hidden_dim={hidden_dim})")
 
     # 2. Obtener target pose
     pose, source_label = get_target_pose(args)
     logger.info(f"target: t={pose[:3,3].tolist()}, source={source_label}")
 
-    # 3. Generar trayectoria con DP
-    traj = planner.plan_grasp(pose, n_samples=1)  # (1, 16, 7)
-    waypoints = traj[0]  # (16, 7)
-    logger.info(f"trayectoria DP: shape={waypoints.shape}, first={waypoints[0].tolist()}")
-
-    # 4. Ejecutar en sim
+    # 3. Ejecutar pick + capture frames
+    REPO_OUT.mkdir(parents=True, exist_ok=True)
+    frames_dir = REPO_OUT / "frames"
     with CoppeliaSimBridge() as bridge:
         bridge.load_scene(SCENE)
-        setup_robot_control(bridge)
-        env, ik_group, target_dummy, ik_joints, simIK = _setup_ik(bridge)
-        bridge.set_stepping(True)
-        bridge.start_simulation()
-        sim = bridge.sim
-        obj1 = sim.getObject("/object_1")
+        result = pick_with_dp(planner, pose, bridge, frames_dir=frames_dir)
 
-        # Mover cubo a la pose target (alinear cube center con el target)
-        sim.setObjectPosition(obj1, -1, list(pose[:3, 3]))
-
-        counter = [0]
-        ik_convergence: list[bool] = []
-        # Limpiar frames anteriores
-        if frames_dir.exists():
-            for f in frames_dir.glob("*.png"):
-                f.unlink()
-        frames_dir.mkdir(parents=True, exist_ok=True)
-
-        # Ejecutar cada waypoint
-        prev_gripper = 1.0
-        for i, wp in enumerate(waypoints):
-            x, y, z, _, _, _, gripper = wp.tolist()
-            # Toggle gripper si cambio
-            if (gripper > 0.5) != (prev_gripper > 0.5):
-                set_gripper(bridge, gripper > 0.5)
-                prev_gripper = gripper
-            _move_tcp_via_ik(
-                bridge, env, ik_group, target_dummy, ik_joints, simIK,
-                [x, y, z], frames_dir, counter,
-                n_substeps=8, steps_per_substep=2,
-                convergence_tracker=ik_convergence,
-            )
-            logger.info(
-                f"  waypoint {i+1}/16: xyz=[{x:.3f},{y:.3f},{z:.3f}] gripper={gripper:.1f}"
-            )
-
-        # Metricas finales
-        cube_end = sim.getObjectPosition(obj1, -1)
-        tip_end = sim.getObjectPosition(sim.getObject("/tip"), -1)
-        ik_converged = len(ik_convergence) > 0 and all(ik_convergence)
-
-        bridge.stop_simulation()
-        try:
-            simIK.eraseEnvironment(env)
-        except Exception:
-            pass
-
-    # 5. Compilar MP4
+    # 4. Compilar MP4
     mp4_path = REPO_OUT / "demo.mp4"
     compiled = compile_mp4(frames_dir, mp4_path, fps=25)
 
-    # 6. Reporte
+    # 5. Reporte
     metadata = {
         "policy": str(POLICY.relative_to(REPO)),
         "pose_source": source_label,
-        "target_pose_t": pose[:3, 3].tolist(),
-        "cube_end": cube_end,
-        "tip_end": tip_end,
-        "ik_converged": ik_converged,
-        "n_waypoints": len(waypoints),
+        **result,
         "mp4": str(compiled.relative_to(REPO)) if compiled else None,
     }
     (REPO_OUT / "metadata.json").write_text(json.dumps(metadata, indent=2))
@@ -162,7 +226,8 @@ def main() -> int:
     print()
     print("=== RESULTADOS pick con Diffusion Policy ===")
     for k, v in metadata.items():
-        print(f"  {k}: {v}")
+        if k != "waypoints":  # demasiado verboso
+            print(f"  {k}: {v}")
     return 0
 
 
