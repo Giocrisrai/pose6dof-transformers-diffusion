@@ -43,7 +43,7 @@ CLIPS = [
     {
         "key": "01_percepcion",
         "source": REPO / "experiments/results/pick_with_fp_pose/demo.mp4",
-        "number": "①",
+        "number": "1.",
         "title": "FoundationPose -> pose 6-DoF",
         "metrics": [("1098 poses YCBV  -  ~4.2 s/pose", True)],
         "honesty": "pose estimada offline (Colab T4)",
@@ -51,28 +51,28 @@ CLIPS = [
     {
         "key": "02_planificacion",
         "source": REPO / "experiments/results/pick_with_diffusion/demo.mp4",
-        "number": "②",
+        "number": "2.",
         "title": "Diffusion Policy -> trayectoria (16 waypoints)",
-        "metrics": [("inferencia ~165 ms  -  IK convergido ✓", True)],
+        "metrics": [("inferencia ~165 ms  -  IK convergido OK", True)],
         "honesty": "la DP imita la heuristica (Iter 1)",
     },
     {
         "key": "03_e2e",
         "source": REPO / "experiments/results/pipeline_e2e/demo_v2.mp4",
-        "number": "③",
+        "number": "3.",
         "title": "Pipeline end-to-end",
         "metrics": [
             ("ciclo p95 5.2 s (FP 4.2 / DP 0.2 / sim 1.0)", True),
-            ("aceptacion <10 s ✓", True),
+            ("aceptacion <10 s OK", True),
         ],
         "honesty": "grasp por attach (estandar en sims comerciales)",
     },
     {
         "key": "04_robustez",
         "source": REPO / "experiments/results/pick_battery/base/demo.mp4",
-        "number": "④",
+        "number": "4.",
         "title": "Robustez -> 3 escenarios",
-        "metrics": [("grasp_proximity 0.8 cm  -  IK ✓ en los 3", True)],
+        "metrics": [("grasp_proximity 0.8 cm  -  IK OK en los 3", True)],
         "honesty": "grasp por attach (estandar en sims comerciales)",
     },
 ]

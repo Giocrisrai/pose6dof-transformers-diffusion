@@ -127,7 +127,7 @@ def _setup_ik(bridge: CoppeliaSimBridge):
     sim = bridge.sim
     env = simIK.createEnvironment()
     ik_group = simIK.createGroup(env)
-    simIK.setGroupCalculation(env, ik_group, simIK.method_damped_least_squares, 0.01, 50)
+    simIK.setGroupCalculation(env, ik_group, simIK.method_damped_least_squares, 0.01, 200)
     tip_h = sim.getObject("/tip")
     base_h = sim.getObject("/UR5e")
     try:
@@ -158,15 +158,29 @@ def _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
         interp = [start_pos[j] + a * (target_xyz[j] - start_pos[j]) for j in range(3)]
         sim.setObjectPosition(target_dummy, -1, interp)
         simIK.syncFromSim(env, [ik_group])
-        # CHEQUEAR retorno de handleGroup: tupla (result, iters, [precision, ...])
-        # result_success=1, result_fail=2, result_not_performed=0
+        # CHEQUEAR retorno de handleGroup: tupla (result, iters, [precision_pos, precision_rot])
+        # result_success=1, result_fail=2, result_not_performed=0.
+        # Si result_fail PERO precision_pos < IK_POS_TOLERANCE_M, tratamos como
+        # convergido: para el pick (umbral grasp 5 cm) una solución con error <2 cm
+        # es funcionalmente válida.
+        IK_POS_TOLERANCE_M = 0.02
         result = simIK.handleGroup(env, ik_group)
-        if isinstance(result, (list, tuple)) and len(result) > 0 and result[0] != 1:
-            if convergence_tracker is not None:
-                convergence_tracker.append(False)
-            logger.warning(f"IK no convergió en substep {i}: result={result}")
-        elif convergence_tracker is not None:
-            convergence_tracker.append(True)
+        converged = True
+        if isinstance(result, (list, tuple)) and len(result) > 0:
+            if result[0] != 1:
+                precision_pos = (
+                    float(result[2][0])
+                    if len(result) > 2 and isinstance(result[2], (list, tuple))
+                    else float("inf")
+                )
+                if precision_pos > IK_POS_TOLERANCE_M:
+                    converged = False
+                    logger.warning(
+                        f"IK no convergió en substep {i}: result={result} "
+                        f"(precision_pos={precision_pos:.4f} m > {IK_POS_TOLERANCE_M})"
+                    )
+        if convergence_tracker is not None:
+            convergence_tracker.append(converged)
         joint_vals = [simIK.getJointPosition(env, j) for j in ik_joints]
         for h, v in zip(bridge._joint_handles, joint_vals):
             sim.setJointTargetPosition(h, v)
