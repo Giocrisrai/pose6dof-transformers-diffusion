@@ -53,8 +53,14 @@ def main() -> int:
     )
     planner.model.load_state_dict(ckpt["model_state_dict"])
     planner.model.eval()
-    encoder = ResNet18RGBDEncoder(out_dim=52).to(device).eval()
-    logger.info(f"policy: v3 (hidden_dim={hidden_dim}) + ResNet-18 RGB-D")
+    encoder_ckpt = REPO / "data" / "models" / "visual_encoder_iter3.pth"
+    if not encoder_ckpt.exists():
+        logger.error(f"encoder ckpt no encontrado: {encoder_ckpt}. Corré precompute_visual_cond.py.")
+        return 1
+    enc_state = torch.load(encoder_ckpt, map_location=device, weights_only=True)
+    encoder = ResNet18RGBDEncoder(out_dim=enc_state.get("out_dim", 52)).to(device).eval()
+    encoder.load_state_dict(enc_state["state_dict"])
+    logger.info(f"policy: v3 (hidden_dim={hidden_dim}) + ResNet-18 RGB-D ({encoder_ckpt.name})")
 
     rng = np.random.default_rng(EVAL_SEED)
     results = []

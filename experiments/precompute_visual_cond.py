@@ -25,6 +25,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(mes
 logger = logging.getLogger("precompute")
 
 DATASET_DIR = REPO / "data" / "datasets" / "sim_pick_v3"
+ENCODER_CKPT = REPO / "data" / "models" / "visual_encoder_iter3.pth"
 EMBED_DIM = 52
 BATCH_SIZE = 32
 
@@ -56,6 +57,11 @@ def main() -> int:
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     logger.info(f"device: {device}")
     encoder = ResNet18RGBDEncoder(out_dim=EMBED_DIM).to(device).eval()
+    # Persist encoder so eval can reproduce the exact embeddings used at training.
+    # Only the trainable head differs across instantiations; saving all params is safe.
+    ENCODER_CKPT.parent.mkdir(parents=True, exist_ok=True)
+    torch.save({"state_dict": encoder.state_dict(), "out_dim": EMBED_DIM}, ENCODER_CKPT)
+    logger.info(f"encoder ckpt: {ENCODER_CKPT}")
     for split in ("train", "val"):
         precompute(split, encoder, device)
     return 0
