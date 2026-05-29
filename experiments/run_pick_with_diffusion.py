@@ -69,6 +69,7 @@ def pick_with_dp(
     frames_dir=None,
     n_substeps: int = 8,
     steps_per_substep: int = 2,
+    visual_encoder=None,
 ):
     """Ejecuta un pick usando la DP entrenada.
 
@@ -78,6 +79,8 @@ def pick_with_dp(
         bridge: CoppeliaSimBridge con escena ya cargada.
         frames_dir: None para skip frame capture (eval rápido).
         n_substeps / steps_per_substep: pasados a _move_tcp_via_ik.
+        visual_encoder: opcional ResNet18RGBDEncoder. Si está presente,
+            captura RGB-D y construye cond v3.
 
     Returns:
         dict con métricas: {
@@ -113,8 +116,18 @@ def pick_with_dp(
     # Mover el cubo al target
     sim.setObjectPosition(obj1, -1, list(pose[:3, 3]))
 
+    # Conditioning: visual (Iter 3) o solo pose (v1/v2)
+    visual_emb = None
+    if visual_encoder is not None:
+        from experiments.collect_diffusion_dataset import _capture_rgbd_for_pose
+        rgbd = _capture_rgbd_for_pose(bridge, pose)
+        rgbd_t = torch.from_numpy(rgbd).unsqueeze(0).to(planner.device)
+        with torch.no_grad():
+            visual_emb = visual_encoder(rgbd_t).cpu().numpy()[0]
+    cond = planner.encode_observation(pose, visual_emb=visual_emb)
+
     # Generar trayectoria con la policy
-    traj = planner.plan_grasp(pose, n_samples=1)  # (1, 16, 7)
+    traj = planner.plan_grasp(pose, n_samples=1, cond=cond)
     waypoints = traj[0]
 
     # PROXIMITY pre-snap: distance entre el waypoint k=8 (donde la heur tiene grasp)

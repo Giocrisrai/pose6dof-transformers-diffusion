@@ -272,42 +272,47 @@ class DiffusionGraspPlanner:
 
         self._trained = False
 
-    def encode_observation(self, object_pose: np.ndarray) -> torch.Tensor:
-        """Encode object pose + context into condition vector.
+    def encode_observation(
+        self,
+        object_pose: np.ndarray,
+        visual_emb: np.ndarray | None = None,
+    ) -> torch.Tensor:
+        """Encode object pose + optional visual embedding into 64d cond vector.
 
-        In the full pipeline, this would include:
-        - Object 6-DoF pose (from FoundationPose)
-        - RGB-D features
-        - Robot state
-
-        Args:
-            object_pose: (4, 4) SE(3) transformation matrix
-
-        Returns:
-            (1, 64) condition tensor
+        Layouts:
+            v3 (visual_emb provided): cond[:52]=visual_emb, cond[52:64]=pose[:3,:].flatten()
+            v1/v2 (visual_emb=None):  cond[:12]=pose[:3,:].flatten(), cond[12:]=0
         """
-        # Flatten pose and pad to 64 dims
-        pose_flat = object_pose[:3, :].flatten()  # (12,)
-        cond = np.zeros(64)
-        cond[:12] = pose_flat
+        cond = np.zeros(64, dtype=np.float32)
+        pose_flat = object_pose[:3, :].flatten().astype(np.float32)
+        if visual_emb is not None:
+            v = np.asarray(visual_emb, dtype=np.float32).reshape(-1)
+            cond[: min(52, v.size)] = v[:52]
+            cond[52:64] = pose_flat[:12]
+        else:
+            cond[:12] = pose_flat[:12]
         return torch.tensor(cond, dtype=torch.float32).unsqueeze(0).to(self.device)
 
     def plan_grasp(
         self,
         object_pose: np.ndarray,
         n_samples: int = 1,
+        cond: torch.Tensor | None = None,
     ) -> np.ndarray:
         """Generate grasp trajectory using reverse diffusion.
 
         Args:
             object_pose: (4, 4) SE(3) pose of target object
             n_samples: number of trajectory samples (multimodal)
+            cond: optional precomputed (1, 64) cond tensor. If None, the
+                  default `encode_observation(object_pose)` is used.
 
         Returns:
             (n_samples, horizon, action_dim) trajectories
         """
         self.model.eval()
-        cond = self.encode_observation(object_pose)
+        if cond is None:
+            cond = self.encode_observation(object_pose)
         if n_samples > 1:
             cond = cond.repeat(n_samples, 1)
 
