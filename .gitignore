@@ -96,3 +96,7 @@ data/datasets/sim_pick_*/
 # Checkpoints de Iter1 (regenerables; el original sí se commit)
 data/models/diffusion_policy_sim_v1.pth
 data/models/diffusion_policy_sim_v1.summary.json
+
+# Iter 2 checkpoint (regenerable)
+data/models/diffusion_policy_sim_v2.pth
+data/models/diffusion_policy_sim_v2.summary.json
