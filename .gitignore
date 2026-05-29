@@ -100,3 +100,9 @@ data/models/diffusion_policy_sim_v1.summary.json
 # Iter 2 checkpoint (regenerable)
 data/models/diffusion_policy_sim_v2.pth
 data/models/diffusion_policy_sim_v2.summary.json
+
+# Demo reel: MP4 generados (regenerables con build_demo_reel.py)
+experiments/results/demo_reel/
+!experiments/results/demo_reel/README.md
+# Frames intermedios de los demos (regenerables re-corriendo el sim)
+experiments/results/**/frames/
