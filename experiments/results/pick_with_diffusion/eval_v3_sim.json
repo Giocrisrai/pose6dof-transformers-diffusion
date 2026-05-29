@@ -1,0 +1,668 @@
+{
+  "n_requested": 50,
+  "n_valid": 50,
+  "n_skipped": 0,
+  "policy": "data/models/diffusion_policy_sim_v3.pth",
+  "seed": 2026,
+  "dp_grasp_plausible_pct_sim": 78.0,
+  "dp_deposit_plausible_pct_sim": 0.0,
+  "dp_ik_converged_pct": 84.0,
+  "mean_grasp_proximity_m": 0.04238257587606321,
+  "mean_deposit_error_m": 0.8052779174585478,
+  "thresholds_passed": {
+    "dp_grasp_plausible_pct_sim >= 55": true,
+    "dp_ik_converged_pct >= 90": false
+  },
+  "per_pick": [
+    {
+      "i": 0,
+      "target_pose_t": [
+        0.42684022205131544,
+        -0.08600868342848454,
+        0.033
+      ],
+      "grasp_proximity_m": 0.02834259003723785,
+      "deposit_error_m": 0.6991692246358501,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 1,
+      "target_pose_t": [
+        0.45557507906620726,
+        -0.11450826656903487,
+        0.033
+      ],
+      "grasp_proximity_m": 0.08696153216786842,
+      "deposit_error_m": 0.8292020919415013,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": false
+    },
+    {
+      "i": 2,
+      "target_pose_t": [
+        0.5185777368779898,
+        -0.05948561633228261,
+        0.033
+      ],
+      "grasp_proximity_m": 0.04658723507088174,
+      "deposit_error_m": 0.8453468345476678,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 3,
+      "target_pose_t": [
+        0.4979177204027698,
+        -0.12016972326444307,
+        0.033
+      ],
+      "grasp_proximity_m": 0.029392272410552263,
+      "deposit_error_m": 0.8296024998601323,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 4,
+      "target_pose_t": [
+        0.5450443300243586,
+        -0.058014983946272185,
+        0.033
+      ],
+      "grasp_proximity_m": 0.07231231461141154,
+      "deposit_error_m": 0.8752399025725626,
+      "ik_converged": false,
+      "grasp_plausible": false,
+      "deposit_plausible": false
+    },
+    {
+      "i": 5,
+      "target_pose_t": [
+        0.512909814561863,
+        -0.09848463036776482,
+        0.033
+      ],
+      "grasp_proximity_m": 0.015385115844618713,
+      "deposit_error_m": 0.7968381496559315,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 6,
+      "target_pose_t": [
+        0.5238842887563355,
+        -0.10516194545998968,
+        0.033
+      ],
+      "grasp_proximity_m": 0.04593591867378508,
+      "deposit_error_m": 0.8466092302570702,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 7,
+      "target_pose_t": [
+        0.4416848823250239,
+        -0.12736669431565964,
+        0.033
+      ],
+      "grasp_proximity_m": 0.08608428584344126,
+      "deposit_error_m": 0.8551989806288701,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": false
+    },
+    {
+      "i": 8,
+      "target_pose_t": [
+        0.4788725265017873,
+        -0.10690879393155685,
+        0.033
+      ],
+      "grasp_proximity_m": 0.01797690268636891,
+      "deposit_error_m": 0.7893845649800028,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 9,
+      "target_pose_t": [
+        0.40192607235502104,
+        -0.10522980984612791,
+        0.033
+      ],
+      "grasp_proximity_m": 0.12024943793129998,
+      "deposit_error_m": 0.7281200399065971,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": false
+    },
+    {
+      "i": 10,
+      "target_pose_t": [
+        0.4547771201698587,
+        -0.1304602400128446,
+        0.033
+      ],
+      "grasp_proximity_m": 0.040776365944782934,
+      "deposit_error_m": 0.7689737101392103,
+      "ik_converged": false,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 11,
+      "target_pose_t": [
+        0.46529697339259674,
+        -0.12000084962548502,
+        0.033
+      ],
+      "grasp_proximity_m": 0.12143698067532688,
+      "deposit_error_m": 0.7861801012614197,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": false
+    },
+    {
+      "i": 12,
+      "target_pose_t": [
+        0.43141241818543297,
+        -0.06253759428078205,
+        0.033
+      ],
+      "grasp_proximity_m": 0.055342836644826164,
+      "deposit_error_m": 0.771341174035139,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": false
+    },
+    {
+      "i": 13,
+      "target_pose_t": [
+        0.4910064515027469,
+        -0.11548994213327078,
+        0.033
+      ],
+      "grasp_proximity_m": 0.027686139131969382,
+      "deposit_error_m": 0.8444019782030505,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 14,
+      "target_pose_t": [
+        0.5420229686469473,
+        -0.09366226254974544,
+        0.033
+      ],
+      "grasp_proximity_m": 0.09213962548031823,
+      "deposit_error_m": 0.8669359501284442,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": false
+    },
+    {
+      "i": 15,
+      "target_pose_t": [
+        0.5350674398506333,
+        -0.11806581960981376,
+        0.033
+      ],
+      "grasp_proximity_m": 0.035528997984736396,
+      "deposit_error_m": 0.8546564661271451,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 16,
+      "target_pose_t": [
+        0.5043992305200675,
+        -0.11861796727376299,
+        0.033
+      ],
+      "grasp_proximity_m": 0.07346567589280915,
+      "deposit_error_m": 0.807516922112677,
+      "ik_converged": false,
+      "grasp_plausible": false,
+      "deposit_plausible": false
+    },
+    {
+      "i": 17,
+      "target_pose_t": [
+        0.5051261334251284,
+        -0.12721080210926422,
+        0.033
+      ],
+      "grasp_proximity_m": 0.024381907497503207,
+      "deposit_error_m": 0.8069825445541597,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 18,
+      "target_pose_t": [
+        0.47396654844773217,
+        -0.09199715469794438,
+        0.033
+      ],
+      "grasp_proximity_m": 0.020476265726675474,
+      "deposit_error_m": 0.7889988554856795,
+      "ik_converged": false,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 19,
+      "target_pose_t": [
+        0.5096860987537667,
+        -0.09515169353753697,
+        0.033
+      ],
+      "grasp_proximity_m": 0.10494338098773592,
+      "deposit_error_m": 0.8789133757378894,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": false
+    },
+    {
+      "i": 20,
+      "target_pose_t": [
+        0.4932254889438907,
+        -0.11278556832031701,
+        0.033
+      ],
+      "grasp_proximity_m": 0.08182918672301309,
+      "deposit_error_m": 0.8294736976180663,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": false
+    },
+    {
+      "i": 21,
+      "target_pose_t": [
+        0.47422445168755845,
+        -0.10300290875938302,
+        0.033
+      ],
+      "grasp_proximity_m": 0.02272168192295193,
+      "deposit_error_m": 0.8003524240277627,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 22,
+      "target_pose_t": [
+        0.5013458834274435,
+        -0.09228224955038009,
+        0.033
+      ],
+      "grasp_proximity_m": 0.045528966724405324,
+      "deposit_error_m": 0.8452751677683162,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 23,
+      "target_pose_t": [
+        0.4002703530410229,
+        -0.07059689392244958,
+        0.033
+      ],
+      "grasp_proximity_m": 0.02789274621021747,
+      "deposit_error_m": 0.7143802172118158,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 24,
+      "target_pose_t": [
+        0.47790763317165036,
+        -0.117345533618873,
+        0.033
+      ],
+      "grasp_proximity_m": 0.041597629740410855,
+      "deposit_error_m": 0.7726886176539767,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 25,
+      "target_pose_t": [
+        0.41401689002419273,
+        -0.05952959274466472,
+        0.033
+      ],
+      "grasp_proximity_m": 0.021486194849419514,
+      "deposit_error_m": 0.8393773642799529,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 26,
+      "target_pose_t": [
+        0.5484604251376756,
+        -0.1441264782484417,
+        0.033
+      ],
+      "grasp_proximity_m": 0.023035467782197137,
+      "deposit_error_m": 0.8669582004011027,
+      "ik_converged": false,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 27,
+      "target_pose_t": [
+        0.5095096866728626,
+        -0.11857618687821173,
+        0.033
+      ],
+      "grasp_proximity_m": 0.02008926409733273,
+      "deposit_error_m": 0.8172397992074878,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 28,
+      "target_pose_t": [
+        0.48505746375466735,
+        -0.108342903768497,
+        0.033
+      ],
+      "grasp_proximity_m": 0.024673537723970042,
+      "deposit_error_m": 0.8428060391974818,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 29,
+      "target_pose_t": [
+        0.5437696601446051,
+        -0.06116045736833233,
+        0.033
+      ],
+      "grasp_proximity_m": 0.04110867559997417,
+      "deposit_error_m": 0.8735049007961279,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 30,
+      "target_pose_t": [
+        0.49314031978000744,
+        -0.13397256873319302,
+        0.033
+      ],
+      "grasp_proximity_m": 0.025265573350650807,
+      "deposit_error_m": 0.8103358925411611,
+      "ik_converged": false,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 31,
+      "target_pose_t": [
+        0.4035448643007664,
+        -0.12022905435791385,
+        0.033
+      ],
+      "grasp_proximity_m": 0.010160846159445897,
+      "deposit_error_m": 0.6683457737745725,
+      "ik_converged": false,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 32,
+      "target_pose_t": [
+        0.4422420239650894,
+        -0.08281740182772954,
+        0.033
+      ],
+      "grasp_proximity_m": 0.030499046568052406,
+      "deposit_error_m": 0.7706982541451036,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 33,
+      "target_pose_t": [
+        0.4139332823136171,
+        -0.14871421122550696,
+        0.033
+      ],
+      "grasp_proximity_m": 0.014491803518259563,
+      "deposit_error_m": 0.7871313474858047,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 34,
+      "target_pose_t": [
+        0.4906473620160457,
+        -0.10085166676590739,
+        0.033
+      ],
+      "grasp_proximity_m": 0.025462589493976878,
+      "deposit_error_m": 0.811240005343864,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 35,
+      "target_pose_t": [
+        0.4846035795798302,
+        -0.060954089170032,
+        0.033
+      ],
+      "grasp_proximity_m": 0.031243976517950838,
+      "deposit_error_m": 0.8345338106142478,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 36,
+      "target_pose_t": [
+        0.5377595286805895,
+        -0.1311742838897635,
+        0.033
+      ],
+      "grasp_proximity_m": 0.04954107007361889,
+      "deposit_error_m": 0.847170549831358,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 37,
+      "target_pose_t": [
+        0.5181589939484176,
+        -0.08609737477770336,
+        0.033
+      ],
+      "grasp_proximity_m": 0.04454773451449529,
+      "deposit_error_m": 0.8546399430584503,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 38,
+      "target_pose_t": [
+        0.49894109012364246,
+        -0.09539397700993575,
+        0.033
+      ],
+      "grasp_proximity_m": 0.025969975915589406,
+      "deposit_error_m": 0.8125087442090604,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 39,
+      "target_pose_t": [
+        0.4349894809300208,
+        -0.09006840077304192,
+        0.033
+      ],
+      "grasp_proximity_m": 0.014308404370366493,
+      "deposit_error_m": 0.7487474763463285,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 40,
+      "target_pose_t": [
+        0.5221364592807476,
+        -0.136523854837887,
+        0.033
+      ],
+      "grasp_proximity_m": 0.047465761639468564,
+      "deposit_error_m": 0.8380157899575599,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 41,
+      "target_pose_t": [
+        0.46042502132943613,
+        -0.07339636585337171,
+        0.033
+      ],
+      "grasp_proximity_m": 0.007815186036856122,
+      "deposit_error_m": 0.7945634179084522,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 42,
+      "target_pose_t": [
+        0.4101571540930811,
+        -0.08931856189657966,
+        0.033
+      ],
+      "grasp_proximity_m": 0.04082403293277454,
+      "deposit_error_m": 0.7362231243871565,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 43,
+      "target_pose_t": [
+        0.49425217935446364,
+        -0.11786623045464792,
+        0.033
+      ],
+      "grasp_proximity_m": 0.03771325499015233,
+      "deposit_error_m": 0.8198761792610693,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 44,
+      "target_pose_t": [
+        0.4983694083882834,
+        -0.11618471572639892,
+        0.033
+      ],
+      "grasp_proximity_m": 0.024963715002336948,
+      "deposit_error_m": 0.814020380926585,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 45,
+      "target_pose_t": [
+        0.41925166021630805,
+        -0.12200082558041073,
+        0.033
+      ],
+      "grasp_proximity_m": 0.02146549812934002,
+      "deposit_error_m": 0.7323192016654403,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 46,
+      "target_pose_t": [
+        0.4049077567295373,
+        -0.14160906110373092,
+        0.033
+      ],
+      "grasp_proximity_m": 0.03422585113712668,
+      "deposit_error_m": 0.7723607889692383,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 47,
+      "target_pose_t": [
+        0.4347547332088461,
+        -0.09839174123622682,
+        0.033
+      ],
+      "grasp_proximity_m": 0.03731941807354237,
+      "deposit_error_m": 0.757901492841931,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 48,
+      "target_pose_t": [
+        0.4989354299609262,
+        -0.06188138206504765,
+        0.033
+      ],
+      "grasp_proximity_m": 0.06741091491520762,
+      "deposit_error_m": 0.8163931361729838,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": false
+    },
+    {
+      "i": 49,
+      "target_pose_t": [
+        0.4478018449658118,
+        -0.1186333258436192,
+        0.033
+      ],
+      "grasp_proximity_m": 0.03306500784590652,
+      "deposit_error_m": 0.7652015385539356,
+      "ik_converged": false,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    }
+  ]
+}

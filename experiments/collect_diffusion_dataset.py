@@ -29,7 +29,7 @@ from src.planning.diffusion_policy import DiffusionGraspPlanner
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger("collect_dp")
 
-DATASET_VERSION = "v2"
+DATASET_VERSION = "v3"
 DATASET_DIR = REPO / "data" / "datasets" / f"sim_pick_{DATASET_VERSION}"
 N_HEURISTIC = 1500
 N_EXECUTED = 200
@@ -60,39 +60,69 @@ def sample_pose(rng: np.random.Generator) -> np.ndarray:
     return pose
 
 
+def _capture_rgbd_for_pose(bridge, pose: np.ndarray) -> np.ndarray:
+    """Coloca el cubo en la pose, captura RGB-D, devuelve tensor (4, 224, 224) float32."""
+    import torch.nn.functional as F
+    sim = bridge.sim
+    obj1 = sim.getObject("/object_1")
+    sim.setObjectPosition(obj1, -1, list(pose[:3, 3]))
+    for _ in range(3):
+        bridge.step()
+
+    rgb, depth = bridge.capture_rgbd()
+    rgb_f = rgb.astype(np.float32) / 255.0
+    depth_clip = np.clip(depth, 0.05, 2.0)
+    depth_norm = (depth_clip - 0.05) / (2.0 - 0.05)
+    depth_norm = depth_norm[..., None]
+    rgbd = np.concatenate([rgb_f, depth_norm], axis=-1)
+    rgbd_t = torch.from_numpy(rgbd).permute(2, 0, 1).unsqueeze(0)
+    rgbd_resized = F.interpolate(rgbd_t, size=(224, 224), mode="bilinear", align_corners=False)
+    return rgbd_resized.squeeze(0).numpy().astype(np.float32)
+
+
 def phase_heuristic(n: int = N_HEURISTIC) -> None:
-    """Genera n trayectorias heurísticas y las guarda."""
-    logger.info(f"Phase A.1: generando {n} trayectorias heurísticas")
+    """Genera n trayectorias heurísticas con RGB-D capturado del sim."""
+    from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
+
+    logger.info(f"Phase A.1 (v3): generando {n} trayectorias heurísticas + RGB-D")
     DATASET_DIR.mkdir(parents=True, exist_ok=True)
 
     planner = DiffusionGraspPlanner(
-        action_dim=7, horizon=16, n_diffusion_steps=100,
-        device="cpu",  # heurística no usa la red
+        action_dim=7, horizon=16, n_diffusion_steps=100, device="cpu",
     )
 
     rng = np.random.default_rng(SEED)
-    conds = np.zeros((n, 64), dtype=np.float32)
+    poses = np.zeros((n, 16), dtype=np.float32)
+    rgbds = np.zeros((n, 4, 224, 224), dtype=np.float32)
     trajs = np.zeros((n, 16, 7), dtype=np.float32)
 
-    for i in range(n):
-        pose = sample_pose(rng)
-        traj = planner.plan_grasp_heuristic(pose, approach_distance=0.15, lift_height=0.10)
-        # plan_grasp_heuristic devuelve (1, 16, 7); extraer
-        trajs[i] = traj[0]
-        cond = planner.encode_observation(pose)  # (1, 64) torch
-        conds[i] = cond.cpu().numpy()[0]
-
-        if (i + 1) % 50 == 0:
-            logger.info(f"  {i+1}/{n}")
+    SCENE = REPO / "data" / "scenes" / "bin_base.ttt"
+    with CoppeliaSimBridge() as bridge:
+        bridge.load_scene(SCENE)
+        bridge.set_stepping(True)
+        bridge.start_simulation()
+        try:
+            for i in range(n):
+                pose = sample_pose(rng)
+                rgbd = _capture_rgbd_for_pose(bridge, pose)
+                traj = planner.plan_grasp_heuristic(pose, approach_distance=0.15, lift_height=0.10)
+                trajs[i] = traj[0]
+                rgbds[i] = rgbd
+                poses[i] = pose.flatten().astype(np.float32)
+                if (i + 1) % 50 == 0:
+                    logger.info(f"  {i+1}/{n}")
+        finally:
+            bridge.stop_simulation()
 
     out = DATASET_DIR / "heuristic.pt"
     torch.save({
-        "conds": torch.from_numpy(conds),
+        "poses": torch.from_numpy(poses),
+        "rgbds": torch.from_numpy(rgbds),
         "trajs": torch.from_numpy(trajs),
         "source": "heuristic",
         "seed": SEED,
     }, out)
-    logger.info(f"escrito: {out} ({n} trayectorias)")
+    logger.info(f"escrito: {out} ({n} trayectorias, ~{out.stat().st_size / 1e6:.0f} MB)")
 
 
 def phase_executed(n: int = N_EXECUTED) -> None:
@@ -117,11 +147,9 @@ def phase_executed(n: int = N_EXECUTED) -> None:
     logger.info(f"Phase A.2: generando {n} trayectorias ejecutadas en sim")
     DATASET_DIR.mkdir(parents=True, exist_ok=True)
 
-    planner_aux = DiffusionGraspPlanner(
-        action_dim=7, horizon=16, n_diffusion_steps=100, device="cpu",
-    )
     rng = np.random.default_rng(SEED + 1)
-    conds = np.zeros((n, 64), dtype=np.float32)
+    poses = np.zeros((n, 16), dtype=np.float32)
+    rgbds = np.zeros((n, 4, 224, 224), dtype=np.float32)
     trajs = np.zeros((n, 16, 7), dtype=np.float32)
     skipped = 0
 
@@ -129,7 +157,6 @@ def phase_executed(n: int = N_EXECUTED) -> None:
 
     for i in range(n):
         pose = sample_pose(rng)
-        conds[i] = planner_aux.encode_observation(pose).cpu().numpy()[0]
 
         try:
             with CoppeliaSimBridge() as bridge:
@@ -143,6 +170,10 @@ def phase_executed(n: int = N_EXECUTED) -> None:
                 bridge.set_stepping(True)
                 bridge.start_simulation()
                 tip_h = sim.getObject("/tip")
+
+                rgbd_obs = _capture_rgbd_for_pose(bridge, pose)
+                poses[i] = pose.flatten().astype(np.float32)
+                rgbds[i] = rgbd_obs
 
                 tip_log = []  # list of (xyz, R_3x3, gripper_open)
 
@@ -208,7 +239,8 @@ def phase_executed(n: int = N_EXECUTED) -> None:
     n_valid = n - skipped
     out = DATASET_DIR / "executed.pt"
     torch.save({
-        "conds": torch.from_numpy(conds[:n_valid]),
+        "poses": torch.from_numpy(poses[:n_valid]),
+        "rgbds": torch.from_numpy(rgbds[:n_valid]),
         "trajs": torch.from_numpy(trajs[:n_valid]),
         "source": "executed",
         "seed": SEED + 1,
@@ -217,20 +249,19 @@ def phase_executed(n: int = N_EXECUTED) -> None:
 
 
 def phase_split() -> None:
-    """Combina heuristic.pt + executed.pt y hace 80/20 split."""
-    logger.info("Phase A.3: combinando + split 80/20")
+    """Combina heuristic.pt + executed.pt y hace 90/10 split."""
+    logger.info("Phase A.3 (v3): combinando + split 90/10")
     heur_path = DATASET_DIR / "heuristic.pt"
     exec_path = DATASET_DIR / "executed.pt"
     if not heur_path.exists() or not exec_path.exists():
-        raise FileNotFoundError(
-            "Faltan datasets parciales. Corré --phase heuristic y --phase executed primero."
-        )
+        raise FileNotFoundError("Faltan datasets parciales.")
 
     h = torch.load(heur_path, weights_only=True)
     e = torch.load(exec_path, weights_only=True)
-    all_conds = torch.cat([h["conds"], e["conds"]], dim=0)
+    all_poses = torch.cat([h["poses"], e["poses"]], dim=0)
+    all_rgbds = torch.cat([h["rgbds"], e["rgbds"]], dim=0)
     all_trajs = torch.cat([h["trajs"], e["trajs"]], dim=0)
-    n = len(all_conds)
+    n = len(all_poses)
 
     rng = np.random.default_rng(SEED + 2)
     indices = rng.permutation(n)
@@ -239,16 +270,17 @@ def phase_split() -> None:
     val_idx = indices[train_n:]
 
     torch.save({
-        "conds": all_conds[train_idx],
+        "poses": all_poses[train_idx],
+        "rgbds": all_rgbds[train_idx],
         "trajs": all_trajs[train_idx],
         "split": "train",
     }, DATASET_DIR / "train.pt")
     torch.save({
-        "conds": all_conds[val_idx],
+        "poses": all_poses[val_idx],
+        "rgbds": all_rgbds[val_idx],
         "trajs": all_trajs[val_idx],
         "split": "val",
     }, DATASET_DIR / "val.pt")
-
     logger.info(f"escrito: train.pt ({train_n}), val.pt ({n - train_n})")
 
 
