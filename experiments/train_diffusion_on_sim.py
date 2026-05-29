@@ -18,7 +18,6 @@ import time
 from pathlib import Path
 
 import torch
-import torch.nn as nn
 from torch.utils.data import DataLoader
 
 REPO = Path(__file__).resolve().parents[1]
@@ -43,21 +42,28 @@ def main() -> int:
                         default=REPO_OUT_MODELS / "diffusion_policy_grasp.pth")
     parser.add_argument("--checkpoint-out", type=Path,
                         default=REPO_OUT_MODELS / "diffusion_policy_sim_v1.pth")
+    parser.add_argument("--from-scratch", action="store_true",
+                        help="No cargar checkpoint inicial; entrenar desde init random.")
+    parser.add_argument("--hidden-dim", type=int, default=128,
+                        help="ConditionalUNet1D hidden_dim. 256 para Iter 2.")
+    parser.add_argument("--dataset-dir", type=Path,
+                        default=REPO / "data" / "datasets" / "sim_pick_v1",
+                        help="Dir con train.pt y val.pt.")
     args = parser.parse_args()
 
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     logger.info(f"device: {device}")
 
     # Dataset
-    train_ds = SimPickDataset(DATASET_DIR / "train.pt")
-    val_ds = SimPickDataset(DATASET_DIR / "val.pt")
+    train_ds = SimPickDataset(args.dataset_dir / "train.pt")
+    val_ds = SimPickDataset(args.dataset_dir / "val.pt")
     train_dl = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True)
     val_dl = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False)
     logger.info(f"train={len(train_ds)}, val={len(val_ds)}")
 
     # Model + scheduler
     config = {"action_dim": 7, "horizon": 16, "cond_dim": 64,
-              "hidden_dim": 128, "n_timesteps": 100, "n_epochs": args.epochs}
+              "hidden_dim": args.hidden_dim, "n_timesteps": 100, "n_epochs": args.epochs}
     model = ConditionalUNet1D(
         action_dim=config["action_dim"],
         horizon=config["horizon"],
@@ -66,22 +72,29 @@ def main() -> int:
     ).to(device)
     scheduler = SimpleDDPMScheduler(num_timesteps=config["n_timesteps"])
 
-    # Cargar checkpoint existente si esta
-    if args.checkpoint_in.exists():
-        ckpt = torch.load(args.checkpoint_in, map_location=device, weights_only=True)
-        if "model_state_dict" in ckpt:
-            try:
+    # Cargar checkpoint existente solo si NO from-scratch
+    if args.from_scratch:
+        logger.info("--from-scratch: NO cargando checkpoint inicial (entrenando desde init random)")
+    elif args.checkpoint_in.exists():
+        try:
+            ckpt = torch.load(args.checkpoint_in, map_location=device, weights_only=True)
+            if "model_state_dict" in ckpt:
                 model.load_state_dict(ckpt["model_state_dict"])
                 logger.info(f"checkpoint cargado: {args.checkpoint_in.name}")
-            except RuntimeError as e:
-                logger.warning(f"checkpoint incompatible ({e}); entreno desde init aleatorio")
-        else:
-            logger.warning("checkpoint sin 'model_state_dict'; entreno desde init aleatorio")
+        except (RuntimeError, KeyError) as e:
+            logger.warning(f"no pude cargar checkpoint inicial ({e}); entrenando desde init random")
     else:
         logger.warning(f"checkpoint no existe: {args.checkpoint_in}; entreno desde init aleatorio")
 
     optim = torch.optim.Adam(model.parameters(), lr=args.lr)
-    loss_fn = nn.MSELoss()
+    # Loss ponderado en grasp phase (k=6..10) x3 y dims XYZ x2
+    from src.planning.diffusion_loss import make_grasp_weights, weighted_mse_loss
+    loss_weights = make_grasp_weights(
+        horizon=config["horizon"],
+        action_dim=config["action_dim"],
+        device=device,
+    )
+    logger.info(f"loss weights: max={loss_weights.max().item():.1f}, min={loss_weights.min().item():.1f}")
 
     train_losses, val_losses = [], []
     t0 = time.time()
@@ -96,7 +109,7 @@ def main() -> int:
             t = torch.randint(0, config["n_timesteps"], (B,), device=device, dtype=torch.long)
             traj_noisy, noise = scheduler.add_noise_batch(traj, t)
             noise_pred = model(traj_noisy, t, cond)
-            loss = loss_fn(noise_pred, noise)
+            loss = weighted_mse_loss(noise_pred, noise, loss_weights)
             if torch.isnan(loss):
                 logger.error(f"NaN loss en epoch {epoch}, abortando")
                 return 1
@@ -118,7 +131,7 @@ def main() -> int:
                 t = torch.randint(0, config["n_timesteps"], (B,), device=device, dtype=torch.long)
                 traj_noisy, noise = scheduler.add_noise_batch(traj, t)
                 noise_pred = model(traj_noisy, t, cond)
-                loss = loss_fn(noise_pred, noise)
+                loss = weighted_mse_loss(noise_pred, noise, loss_weights)
                 epoch_val += loss.item()
                 n_val_batches += 1
         epoch_val /= max(n_val_batches, 1)
