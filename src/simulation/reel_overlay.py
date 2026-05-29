@@ -8,6 +8,8 @@ Convención de color: BGR (como cv2).
 """
 from __future__ import annotations
 
+from typing import Sequence
+
 import cv2
 import numpy as np
 
@@ -40,16 +42,30 @@ def truncate(text: str, max_chars: int) -> str:
     return text[: max_chars - 1] + "…"
 
 
-def _alpha_band(frame, x0, y0, x1, y1, color, alpha):
+def _alpha_band(frame: np.ndarray, x0: int, y0: int, x1: int, y1: int,
+                color: tuple[int, int, int], alpha: float) -> None:
     """Blend de un rectángulo relleno semi-transparente, in-place."""
     sub = frame[y0:y1, x0:x1]
     overlay = np.full_like(sub, color, dtype=np.uint8)
     frame[y0:y1, x0:x1] = cv2.addWeighted(overlay, alpha, sub, 1 - alpha, 0)
 
 
+def _require_canvas(frame: np.ndarray) -> None:
+    """Las geometrías de overlay asumen un frame 1280x720 (post normalize_frame).
+
+    Falla fuerte si recibe otra resolución, en vez de dibujar mal en silencio.
+    """
+    if frame.shape[:2] != (H, W):
+        raise ValueError(
+            f"el overlay espera un frame {W}x{H} (usar normalize_frame antes); "
+            f"recibido {frame.shape[1]}x{frame.shape[0]}"
+        )
+
+
 def draw_title_bar(frame: np.ndarray, number: str, title: str,
-                   accent=_ACCENT) -> np.ndarray:
+                   accent: tuple[int, int, int] = _ACCENT) -> np.ndarray:
     """Banda superior semi-transparente + franja de acento + título."""
+    _require_canvas(frame)
     _alpha_band(frame, 0, 0, W, 70, (30, 30, 38), 0.55)
     cv2.rectangle(frame, (0, 0), (8, 70), accent, -1)
     label = f"{number} {truncate(title, 60)}".strip()
@@ -57,11 +73,13 @@ def draw_title_bar(frame: np.ndarray, number: str, title: str,
     return frame
 
 
-def draw_metrics(frame: np.ndarray, lines, accent=_ACCENT) -> np.ndarray:
+def draw_metrics(frame: np.ndarray, lines: Sequence[tuple[str, bool]],
+                 accent: tuple[int, int, int] = _ACCENT) -> np.ndarray:
     """Panel lower-left con métricas. lines = list[(texto, pasa_threshold)].
 
     Si pasa_threshold es True, el texto va en verde; si no, en blanco.
     """
+    _require_canvas(frame)
     n = len(lines)
     panel_h = 18 + 30 * n
     y_top = H - 20 - panel_h
@@ -78,6 +96,7 @@ def draw_metrics(frame: np.ndarray, lines, accent=_ACCENT) -> np.ndarray:
 
 def draw_honesty_tag(frame: np.ndarray, text: str) -> np.ndarray:
     """Texto chico y tenue abajo-derecha."""
+    _require_canvas(frame)
     label = truncate(text, 60)
     (tw, _), _ = cv2.getTextSize(label, _FONT_BODY, 0.5, 1)
     x = W - tw - 20
@@ -85,7 +104,8 @@ def draw_honesty_tag(frame: np.ndarray, text: str) -> np.ndarray:
     return frame
 
 
-def make_title_card(lines, w: int = W, h: int = H, accent=_ACCENT) -> np.ndarray:
+def make_title_card(lines: Sequence[tuple[str, float]], w: int = W, h: int = H,
+                    accent: tuple[int, int, int] = _ACCENT) -> np.ndarray:
     """Frame oscuro con líneas centradas. lines = list[(texto, escala)]."""
     card = np.full((h, w, 3), (28, 28, 34), dtype=np.uint8)
     cv2.rectangle(card, (0, h // 2 - 90), (10, h // 2 + 90), accent, -1)
