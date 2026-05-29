@@ -37,6 +37,7 @@ jobs:
             numpy>=1.26 \
             scipy>=1.11 \
             torch>=2.1 \
+            torchvision>=0.16 \
             matplotlib>=3.8 \
             opencv-python-headless>=4.8 \
             trimesh>=4.0 \

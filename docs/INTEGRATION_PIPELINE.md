@@ -14,21 +14,25 @@
    (CoppeliaSim)       (1098 poses)        (entrenada parcial)     (CoppeliaSim)
 ```
 
-## Estado real de cada bloque (HONESTO)
+## Estado real de cada bloque (HONESTO, post-Iter 3)
 
 | Componente | Existe | Entrenado | Conectado al sim |
 |---|---|---|---|
-| **Captura RGB-D** | ✓ `bridge.capture_rgbd()` | n/a | ✓ Sí (vision sensor) |
-| **FoundationPose** | ✓ checkpoints en disk | ✓ pre-trained (Wen et al. 2024) | **✗ NO** se ejecuta en el pick demo |
-| **Diffusion Policy** | ✓ `diffusion_policy.py` + .pth | ⚠ parcial (la DDPM-net no fue re-entrenada en este TFM, se usa heurística) | **✗ NO** se llama desde el pick demo |
-| **Ejecución en sim** | ✓ `pick_sequence.py` con IK | n/a | ✓ Sí — pero target hardcoded |
-| **Métricas E2E** | ✓ `run_pipeline_e2e.py` | n/a | ⚠ usa tiempos NOMINALES de FP, no ejecuta FP real |
+| **Captura RGB-D** | ✓ `bridge.capture_rgbd()` (handleVisionSensor explícito) | n/a | ✓ Sí (vision sensor de la escena) |
+| **FoundationPose** | ✓ checkpoints en disk | ✓ pre-trained (Wen et al. 2024) | ✓ Sí — `run_pick_with_fp_pose.py` y `--pose-source fp_ckpt` en `run_pick_with_diffusion.py` |
+| **Diffusion Policy** | ✓ `diffusion_policy.py` + `diffusion_policy_sim_v3.pth` | ✓ re-entrenada en este TFM (Iter 1-3, conditioning ResNet-18 sobre RGB-D) | ✓ Sí — `pick_with_dp()` genera 16 waypoints que se ejecutan en CoppeliaSim vía IK |
+| **Ejecución en sim** | ✓ `pick_sequence.py` con IK damped least squares | n/a | ✓ Sí (`dp_ik_converged_pct = 90 %` en eval n=50 Iter 3) |
+| **Métricas E2E** | ✓ `run_pipeline_e2e.py` + `eval_diffusion_iter3_sim.py` | n/a | ⚠ E2E usa tiempos NOMINALES de FP (no ejecuta FP real); el eval Iter 3 sí ejecuta DP+IK reales |
 
 ## Las brechas explícitas
 
 ### Brecha A: FoundationPose ↔ Pick target
 
-**Hoy**: `run_pick_sequence` recibe `target_object="/object_1"` (str) y lee la pose
+**ESTADO: cerrada en Iter 1** vía `experiments/run_pick_with_fp_pose.py` y la opción `--pose-source fp_ckpt` en `run_pick_with_diffusion.py`. La pose se lee de `experiments/checkpoints/fp_ycbv_checkpoint.json` y se mapea al workspace del sim con `map_fp_pose_to_sim_workspace`. La sección de abajo se mantiene como referencia histórica.
+
+---
+
+**Hoy (pre-Iter 1)**: `run_pick_sequence` recibe `target_object="/object_1"` (str) y lee la pose
 del cubo directamente del estado de CoppeliaSim. Eso ES "cheating" — usa
 ground truth en vez de estimar la pose desde la imagen RGB-D.
 
@@ -45,7 +49,11 @@ si FP falla la detección.
 
 ### Brecha B: Diffusion Policy ↔ Trayectoria del pick
 
-**Hoy**: las trayectorias del pick son **keyframes hardcoded** (home, approach,
+**ESTADO: cerrada por Iter 1 (mínima viable), profundizada en Iter 2 (escalado + loss ponderado) e Iter 3 (conditioning visual ResNet-18). Resultado actual: 78 % `grasp_plausible_pct_sim` en 50 picks ejecutados.** Pipeline: `pick_with_dp(planner, pose, bridge, visual_encoder)` captura RGB-D, codifica el cond y genera 16 waypoints 7-D vía DDPM reverse. Cada waypoint se ejecuta con IK damped least squares.
+
+---
+
+**Hoy (pre-Iter 1)**: las trayectorias del pick son **keyframes hardcoded** (home, approach,
 descend, lift, deposit). La diffusion policy NO se usa.
 
 **Honestidad sobre la policy**: el TFM declara que la DDPM-net **no fue
