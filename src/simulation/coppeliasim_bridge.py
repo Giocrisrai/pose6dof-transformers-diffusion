@@ -367,6 +367,21 @@ class CoppeliaSimBridge:
         sim = self._sim
         w, h = self.camera_config.resolution
 
+        # Trigger explicit-handling vision sensors (no-op if auto-handled)
+        if self._camera_rgb_handle is not None:
+            try:
+                sim.handleVisionSensor(self._camera_rgb_handle)
+            except Exception:
+                pass
+        if (
+            self._camera_depth_handle is not None
+            and self._camera_depth_handle != self._camera_rgb_handle
+        ):
+            try:
+                sim.handleVisionSensor(self._camera_depth_handle)
+            except Exception:
+                pass
+
         # RGB
         if self._camera_rgb_handle is not None:
             img_raw, res = sim.getVisionSensorImg(self._camera_rgb_handle)
