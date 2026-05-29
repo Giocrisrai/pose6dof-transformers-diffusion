@@ -49,3 +49,47 @@
 ## Grupo INTERMEDIO (frames regenerables, ~1.4 GB)
 Mover `experiments/results/{pick_battery,pick_with_fp_pose,pick_demo,pick_with_diffusion}/**/frames/`
 a `experiments/results/_frames_archive/` (reversible). El reel no los necesita.
+
+---
+
+## Verificación de "HUÉRFANO" (2026-05-28)
+
+El heurístico "0 refs en docs" marcó 3 carpetas como huérfanas, pero la
+verificación a nivel de TODO el repo (`.py`/`.ipynb`/código) mostró que **NO
+lo son** — son evidencia viva consumida por código. **Reclasificadas a KEEP, no
+se tocan:**
+
+| Carpeta | Referenciada por |
+|---|---|
+| exp11_paired_stats | `experiments/exp11_paired_stats.py`, `scripts/run_experiment.py` |
+| exp12_per_object | `dashboard.py`, `experiments/exp12_per_object_analysis.py`, `scripts/run_experiment.py` |
+| exp13_model_comparison | `scripts/api_server.py`, `experiments/exp13_diffusion_models_comparison.py` |
+
+Lección: el conteo de refs solo sobre `docs/` es insuficiente; verificar contra
+el código antes de archivar.
+
+## Ejecutado (2026-05-28)
+
+- **Movidos** 6 dirs `frames/` (de `pick_battery/{base,easy,hard}`,
+  `pick_with_fp_pose`, `pick_demo`, `pick_with_diffusion`) a
+  `experiments/results/_frames_archive/` (~1.4 GB **staged**, reversible).
+- Verificado: `build_demo_reel.py --only-clips` sigue generando 4/4 clips sin
+  los frames (el reel trabaja desde los MP4).
+- Demos activos: de cientos de MB → pocos MB cada uno.
+
+### Cómo revertir (si hiciera falta)
+
+```bash
+cd experiments/results/_frames_archive
+for f in *; do
+  dest="../$(echo "$f" | sed 's#__#/#g')"
+  mkdir -p "$(dirname "$dest")"; mv "$f" "$dest"
+done
+```
+
+### Borrado definitivo (PENDIENTE — requiere 2º OK explícito)
+
+```bash
+# Solo con confirmación adicional del usuario:
+# rm -rf experiments/results/_frames_archive   # libera ~1.4 GB
+```
