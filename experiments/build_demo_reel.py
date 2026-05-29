@@ -131,6 +131,41 @@ def annotate_clip(clip: dict) -> Path | None:
     return result
 
 
+def _make_card_clip(lines, key: str, seconds: float = 3.0) -> Path | None:
+    """Genera un MP4 corto (card estática) de `seconds` a FPS."""
+    card = make_title_card(lines)
+    n = int(round(seconds * FPS))
+    out_mp4 = CLIPS_OUT / f"{key}.mp4"
+    with tempfile.TemporaryDirectory() as td:
+        td = Path(td)
+        for i in range(n):
+            cv2.imwrite(str(td / f"{i:06d}.png"), card)
+        return _compile(td, out_mp4)
+
+
+def build_reel(annotated: list[Path]) -> Path | None:
+    """Concatena intro + clips anotados + outro en reel_resumen.mp4."""
+    intro = _make_card_clip(INTRO, "00_intro")
+    outro = _make_card_clip(OUTRO, "99_outro")
+    sequence = [p for p in [intro, *annotated, outro] if p is not None]
+    if not sequence:
+        logger.error("sin clips para concatenar")
+        return None
+    # ffmpeg concat demuxer (todos mismo codec/res/fps -> -c copy)
+    list_file = OUT / "_concat_list.txt"
+    list_file.write_text("".join(f"file '{p.resolve()}'\n" for p in sequence))
+    reel = OUT / "reel_resumen.mp4"
+    cmd = ["ffmpeg", "-y", "-f", "concat", "-safe", "0",
+           "-i", str(list_file), "-c", "copy", str(reel)]
+    r = subprocess.run(cmd, capture_output=True, text=True)
+    list_file.unlink(missing_ok=True)
+    if r.returncode != 0:
+        logger.error(f"concat falló: {r.stderr[-500:]}")
+        return None
+    logger.info(f"reel resumen: {reel}")
+    return reel
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--only-clips", action="store_true",
@@ -151,8 +186,6 @@ def main() -> int:
 
     if args.only_clips:
         return 0
-    # El reel resumen se arma en Task 3 (build_reel).
-    from experiments.build_demo_reel import build_reel  # noqa: import tardío
     build_reel(annotated)
     return 0
 
