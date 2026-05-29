@@ -189,13 +189,15 @@ def main() -> int:
 
     # 1. Cargar policy
     device = "mps" if torch.backends.mps.is_available() else "cpu"
+    ckpt = torch.load(POLICY, map_location=device, weights_only=True)
+    hidden_dim = ckpt.get("config", {}).get("hidden_dim", 128)
     planner = DiffusionGraspPlanner(
         action_dim=7, horizon=16, n_diffusion_steps=100, device=device,
+        hidden_dim=hidden_dim,
     )
-    ckpt = torch.load(POLICY, map_location=device, weights_only=True)
     planner.model.load_state_dict(ckpt["model_state_dict"])
     planner.model.eval()
-    logger.info(f"policy cargada: {POLICY.name}")
+    logger.info(f"policy cargada: {POLICY.name} (hidden_dim={hidden_dim})")
 
     # 2. Obtener target pose
     pose, source_label = get_target_pose(args)
