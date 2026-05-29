@@ -1,0 +1,22 @@
+{
+  "policy": "data/models/diffusion_policy_sim_v1.pth",
+  "pose_source": "scene_groundtruth",
+  "target_pose_t": [
+    0.46,
+    -0.1,
+    0.033
+  ],
+  "cube_end": [
+    0.4272967343896147,
+    -0.06741978254535282,
+    0.02500008940696715
+  ],
+  "tip_end": [
+    0.44590338394444806,
+    -0.16116872442120053,
+    0.019471280798779814
+  ],
+  "ik_converged": true,
+  "n_waypoints": 16,
+  "mp4": "experiments/results/pick_with_diffusion/demo.mp4"
+}

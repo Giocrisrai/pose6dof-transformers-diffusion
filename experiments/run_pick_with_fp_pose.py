@@ -40,6 +40,7 @@ sys.path.insert(0, str(REPO))
 
 from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
 from src.simulation.pick_sequence import compile_mp4, run_pick_sequence
+from src.simulation.utils import map_fp_pose_to_sim_workspace
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger("pick_with_fp")
@@ -47,26 +48,6 @@ logger = logging.getLogger("pick_with_fp")
 FP_CHECKPOINT = REPO / "experiments" / "checkpoints" / "fp_ycbv_checkpoint.json"
 SCENE_PATH = REPO / "data" / "scenes" / "bin_base.ttt"
 OUTPUT_DIR = REPO / "experiments" / "results" / "pick_with_fp_pose"
-
-
-def map_fp_pose_to_sim_workspace(t_pred: list[float]) -> list[float]:
-    """Mapea el centroide de una pose FP al workspace del sim.
-
-    Las poses de FP vienen en coords del dataset YCB-V (cámara del dataset,
-    típicamente t_pred[2] ≈ 0.5-1.5 m, t_pred[0]/[1] ≈ ±0.1-0.3 m).
-
-    Para el demo, mapeamos:
-      - X_sim = 0.46 (centro del bin) + clamp(t_pred[0], -0.05, +0.05)
-      - Y_sim = -0.10 + clamp(t_pred[1], -0.05, +0.05)
-      - Z_sim = 0.033 (altura del cube center sobre la table)
-
-    El componente XY de la pose FP se usa para *variar* la posición dentro
-    del workspace; Z se ignora (en el dataset es la distancia cámara-objeto,
-    no aplica al sim).
-    """
-    x_offset = max(-0.05, min(0.05, t_pred[0]))
-    y_offset = max(-0.05, min(0.05, t_pred[1]))
-    return [0.46 + x_offset, -0.10 + y_offset, 0.033]
 
 
 def main() -> int:

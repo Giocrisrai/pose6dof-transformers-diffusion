@@ -87,3 +87,12 @@ packages/*/.coverage
 experiments/results/pick_battery/*/frames/
 experiments/results/pick_demo/frames/
 experiments/results/pick_with_fp_pose/frames/
+# Iter1 frames (regenerables con run_pick_with_diffusion.py)
+experiments/results/pick_with_diffusion/frames/
+
+# Datasets de Iter1 retrain (regenerables con collect_diffusion_dataset.py)
+data/datasets/sim_pick_v1/
+
+# Checkpoints de Iter1 (regenerables; el original sí se commit)
+data/models/diffusion_policy_sim_v1.pth
+data/models/diffusion_policy_sim_v1.summary.json
