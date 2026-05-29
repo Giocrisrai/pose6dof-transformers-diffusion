@@ -5,7 +5,7 @@
 [![Tests](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/actions/workflows/tests.yml/badge.svg)](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/actions/workflows/tests.yml)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
 [![License](https://img.shields.io/badge/license-Academic-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-171%20passing-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/tests-207%20passing-brightgreen)](tests/)
 [![Bootstrap CI](https://img.shields.io/badge/bootstrap-CI%2095%25-purple)](experiments/results/local_metrics_with_bootstrap.json)
 [![Exploraciones post-TFM](https://img.shields.io/badge/exploraciones-13%2F13%20%E2%9C%85-success)](docs/PLAN_EXPLORACIONES_POST_TFM.md)
 [![PyPI version](https://img.shields.io/pypi/v/bop-bootstrap-ci?label=PyPI%20bop-bootstrap-ci&color=blue)](https://pypi.org/project/bop-bootstrap-ci/)
@@ -30,6 +30,37 @@
 **Robustez verificada**: T-LESS aguanta 70 % oclusión con solo −1 pp AUC ADD-S. **PBVS** converge 100 % en 50 muestras. **Cuello de botella identificado**: FoundationPose 80 % del ciclo.
 
 **Material disponible** en [`docs/entrega2/`](docs/entrega2/): TFM en docx + PDF (62 págs) + markdown + slide deck PPTX (20 slides) + FAQ defensa.
+
+---
+
+## Diffusion Policy re-entrenada sobre datos del sim (Iter 1-3, mayo 2026)
+
+Cierra **Brecha B** del pipeline (DP integrada a la ejecución en sim) en tres iteraciones progresivas. Eval honesto: **50 picks en CoppeliaSim, seed=2026**, métricas medidas en cada pick.
+
+| Métrica (eval n=50 sim) | Iter 1 (geom) | Iter 2 | **Iter 3** | Threshold | Pasó? |
+|---|---|---|---|---|---|
+| `dp_grasp_plausible_pct_sim` | 25 % | 36 % | **78 %** | ≥55 % | ✅ |
+| `dp_ik_converged_pct` | — | 90 % | **90 %** | ≥90 % | ✅ |
+| `mean_grasp_proximity_m` | 0.073 | 0.056 | **0.042** | <0.05 m | ✅ |
+| training `final_val_loss` | — | 0.051 | **0.042** | <0.05 | ✅ |
+
+**Lo que cambió en cada iteración:**
+
+- **Iter 1**: dataset del sim (230 trayectorias) + fine-tune sobre el ckpt del paper. Cierre mínimo de Brecha B con 25 % grasp plausible geométrico.
+- **Iter 2**: escalado a 1700 trayectorias + `weighted_mse_loss` (peso 3× en k∈[6,10], 2× en XYZ) + red 4× más grande (hidden_dim 256, 1.35 M params) + eval EJECUTADO en sim. Subió a 36 %.
+- **Iter 3**: conditioning visual con **ResNet-18 pretrained** (backbone frozen + head `Linear(512, 52)` trainable) sobre RGB-D del sim reemplazando el zero-pad de v2. Más que duplica `grasp_plausible` a 78 %. Detalles completos: [`docs/INTEGRATION_PIPELINE.md`](docs/INTEGRATION_PIPELINE.md).
+
+**Reproducir Iter 3 (requiere CoppeliaSim corriendo en :23000):**
+
+```bash
+python experiments/collect_diffusion_dataset.py --phase all   # ~1 h
+python experiments/precompute_visual_cond.py                  # ~30 s
+python experiments/train_diffusion_on_sim.py \
+    --dataset-dir data/datasets/sim_pick_v3 \
+    --hidden-dim 256 --from-scratch --epochs 150 \
+    --checkpoint-out data/models/diffusion_policy_sim_v3.pth   # ~7 min
+python experiments/eval_diffusion_iter3_sim.py --n 50          # ~50 min
+```
 
 ---
 
