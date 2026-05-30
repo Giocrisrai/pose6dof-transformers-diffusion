@@ -98,68 +98,113 @@ def _pose_from_position(position: np.ndarray, theta: float = 0.0) -> np.ndarray:
     return pose
 
 
-def phase_heuristic(n: int = N_HEURISTIC) -> None:
-    """Genera n trayectorias heurísticas con multi-object scene (Iter 4)."""
+def phase_heuristic(n: int = N_HEURISTIC, chunk_size: int = 200) -> None:
+    """Genera n trayectorias heurísticas con multi-object scene (Iter 4).
+
+    Chunked: cada chunk_size iters cierra y reabre el bridge (resiliente a
+    hangs de CoppeliaSim cuando el Mac duerme). Persiste tras cada chunk en
+    heuristic.pt como dict con n_valid_so_far. Si se interrumpe, retomar
+    corriendo el script de nuevo: carga el dict existente y continúa desde
+    n_valid_so_far.
+    """
     from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
     from src.simulation.multi_object_scene import setup_multi_object_scene
 
-    logger.info(f"Phase A.1 (v4): generando {n} trayectorias heurísticas multi-object")
     DATASET_DIR.mkdir(parents=True, exist_ok=True)
+    out = DATASET_DIR / "heuristic.pt"
+
+    if out.exists():
+        d = torch.load(out, weights_only=True)
+        if d.get("source") == "heuristic" and d.get("seed") == SEED:
+            done = int(d.get("n_valid", 0))
+            if done >= n:
+                logger.info(f"Phase A.1 (v4): ya hay {done} trayectorias en {out}; nada que hacer")
+                return
+            logger.info(f"Phase A.1 (v4): resume desde {done}/{n}")
+            poses = d["poses"].numpy()
+            rgbds = d["rgbds"].numpy()
+            trajs = d["trajs"].numpy()
+            n_distractors_arr = d["n_distractors"].numpy()
+            distractor_pos = d["distractor_positions"].numpy()
+            start = done
+        else:
+            logger.info("Phase A.1 (v4): heuristic.pt existe pero no es resumible — sobrescribiendo")
+            start = 0
+            poses = rgbds = trajs = n_distractors_arr = distractor_pos = None
+    else:
+        start = 0
+        poses = rgbds = trajs = n_distractors_arr = distractor_pos = None
+
+    if poses is None:
+        poses = np.zeros((n, 16), dtype=np.float32)
+        rgbds = np.zeros((n, 4, 224, 224), dtype=np.float32)
+        trajs = np.zeros((n, 16, 7), dtype=np.float32)
+        n_distractors_arr = np.zeros((n,), dtype=np.int32)
+        distractor_pos = np.full((n, MAX_DISTRACTORS, 3), np.nan, dtype=np.float32)
 
     planner = DiffusionGraspPlanner(
         action_dim=7, horizon=16, n_diffusion_steps=100, device="cpu",
     )
-
     rng = np.random.default_rng(SEED)
-    poses = np.zeros((n, 16), dtype=np.float32)
-    rgbds = np.zeros((n, 4, 224, 224), dtype=np.float32)
-    trajs = np.zeros((n, 16, 7), dtype=np.float32)
-    n_distractors_arr = np.zeros((n,), dtype=np.int32)
-    distractor_pos = np.full((n, MAX_DISTRACTORS, 3), np.nan, dtype=np.float32)
+    # Advance RNG to where we left off
+    for _ in range(start):
+        rng.integers(N_CUBES_RANGE[0], N_CUBES_RANGE[1] + 1)
+        rng.uniform(0, 1, size=2 * 10)  # consume sample_non_overlapping_positions usage approx
+        rng.integers(0, 2, size=8)  # paint distractor colors
+        rng.choice([0.0, np.pi / 4, np.pi / 2])
+    # NOTE: RNG resume es aproximado (no exacto). Las trayectorias post-resume
+    # serán deterministas pero distintas de las que habría dado un run sin interrupciones.
 
     SCENE = REPO / "data" / "scenes" / "bin_base.ttt"
     skipped = 0
-    with CoppeliaSimBridge() as bridge:
-        bridge.load_scene(SCENE)
-        bridge.set_stepping(True)
-        bridge.start_simulation()
-        try:
-            for i in range(n):
-                try:
-                    n_cubes = int(rng.integers(N_CUBES_RANGE[0], N_CUBES_RANGE[1] + 1))
-                    handles, positions = setup_multi_object_scene(bridge.sim, n_cubes, rng)
-                    theta = float(rng.choice([0.0, np.pi / 4, np.pi / 2]))
-                    target_pose = _pose_from_position(positions[0], theta)
-                    rgbd = _capture_rgbd_only(bridge)
-                    traj = planner.plan_grasp_heuristic(
-                        target_pose, approach_distance=0.15, lift_height=0.10
-                    )
-                    trajs[i] = traj[0]
-                    rgbds[i] = rgbd
-                    poses[i] = target_pose.flatten().astype(np.float32)
-                    n_distractors_arr[i] = n_cubes - 1
-                    distractor_pos[i, : n_cubes - 1] = positions[1:n_cubes]
-                except RuntimeError as e:
-                    logger.warning(f"  [{i}] skip: {e}")
-                    skipped += 1
-                if (i + 1) % 50 == 0:
-                    logger.info(f"  {i+1}/{n} (skipped {skipped})")
-        finally:
-            bridge.stop_simulation()
+    i = start
+    logger.info(f"Phase A.1 (v4): generando {n - start} trayectorias multi-object (chunk_size={chunk_size})")
 
-    out = DATASET_DIR / "heuristic.pt"
-    torch.save({
-        "poses": torch.from_numpy(poses),
-        "rgbds": torch.from_numpy(rgbds),
-        "trajs": torch.from_numpy(trajs),
-        "n_distractors": torch.from_numpy(n_distractors_arr),
-        "distractor_positions": torch.from_numpy(distractor_pos),
-        "source": "heuristic",
-        "seed": SEED,
-    }, out)
-    logger.info(
-        f"escrito: {out} ({n - skipped} válidos, ~{out.stat().st_size / 1e6:.0f} MB)"
-    )
+    while i < n:
+        chunk_end = min(i + chunk_size, n)
+        with CoppeliaSimBridge() as bridge:
+            bridge.load_scene(SCENE)
+            bridge.set_stepping(True)
+            bridge.start_simulation()
+            try:
+                while i < chunk_end:
+                    try:
+                        n_cubes = int(rng.integers(N_CUBES_RANGE[0], N_CUBES_RANGE[1] + 1))
+                        handles, positions = setup_multi_object_scene(bridge.sim, n_cubes, rng)
+                        theta = float(rng.choice([0.0, np.pi / 4, np.pi / 2]))
+                        target_pose = _pose_from_position(positions[0], theta)
+                        rgbd = _capture_rgbd_only(bridge)
+                        traj = planner.plan_grasp_heuristic(
+                            target_pose, approach_distance=0.15, lift_height=0.10
+                        )
+                        trajs[i] = traj[0]
+                        rgbds[i] = rgbd
+                        poses[i] = target_pose.flatten().astype(np.float32)
+                        n_distractors_arr[i] = n_cubes - 1
+                        distractor_pos[i, : n_cubes - 1] = positions[1:n_cubes]
+                    except RuntimeError as e:
+                        logger.warning(f"  [{i}] skip: {e}")
+                        skipped += 1
+                    i += 1
+                    if i % 50 == 0:
+                        logger.info(f"  {i}/{n} (skipped {skipped})")
+            finally:
+                bridge.stop_simulation()
+
+        # Checkpoint tras cada chunk
+        torch.save({
+            "poses": torch.from_numpy(poses),
+            "rgbds": torch.from_numpy(rgbds),
+            "trajs": torch.from_numpy(trajs),
+            "n_distractors": torch.from_numpy(n_distractors_arr),
+            "distractor_positions": torch.from_numpy(distractor_pos),
+            "source": "heuristic",
+            "seed": SEED,
+            "n_valid": i,
+        }, out)
+        logger.info(f"  checkpoint: {i}/{n} guardado ({out.stat().st_size / 1e6:.0f} MB)")
+
+    logger.info(f"escrito: {out} ({n - skipped} válidos)")
 
 
 def phase_executed(n: int = N_EXECUTED) -> None:
@@ -275,6 +320,21 @@ def phase_executed(n: int = N_EXECUTED) -> None:
 
             if (i + 1) % 5 == 0:
                 logger.info(f"  {i+1}/{n} (skipped {skipped})")
+            # Checkpoint cada 20 picks
+            if (i + 1) % 20 == 0:
+                n_valid_so_far = (i + 1) - skipped
+                out = DATASET_DIR / "executed.pt"
+                torch.save({
+                    "poses": torch.from_numpy(poses[:n_valid_so_far]),
+                    "rgbds": torch.from_numpy(rgbds[:n_valid_so_far]),
+                    "trajs": torch.from_numpy(trajs[:n_valid_so_far]),
+                    "n_distractors": torch.from_numpy(n_distractors_arr[:n_valid_so_far]),
+                    "distractor_positions": torch.from_numpy(distractor_pos[:n_valid_so_far]),
+                    "source": "executed",
+                    "seed": SEED + 1,
+                    "n_valid": n_valid_so_far,
+                }, out)
+                logger.info(f"  checkpoint: {n_valid_so_far} válidos guardados")
         except Exception as e:
             logger.warning(f"  [{i}] falló: {e}")
             skipped += 1
@@ -292,6 +352,7 @@ def phase_executed(n: int = N_EXECUTED) -> None:
         "distractor_positions": torch.from_numpy(distractor_pos[:n_valid]),
         "source": "executed",
         "seed": SEED + 1,
+        "n_valid": n_valid,
     }, out)
     logger.info(f"escrito: {out} ({n_valid} trayectorias)")
 
