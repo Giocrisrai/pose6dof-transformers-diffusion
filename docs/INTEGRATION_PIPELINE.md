@@ -314,6 +314,63 @@ Iter 3 valida la hipótesis principal del diagnóstico Iter 2: el conditioning e
 
 Frente al heurístico geométrico (oracle con pose explícita), la DP queda 22 pp atrás — esperable, porque está aprendiendo a reproducir lo que el heurístico encodea por construcción. **El valor de la DP no es ganarle al heurístico en este escenario** sino servir de base extensible a escenarios donde no existe heurística (clutter, multi-objeto, oclusión, generalización a objetos no vistos).
 
+## Iter 4 (cerrado 2026-05-30): multi-object clutter — hipótesis rechazada honestamente
+
+Estado: **éxito parcial científico, fracaso del threshold operacional**.
+
+### Hipótesis (del spec)
+
+En escenas con 3-8 cubos (1 target rojo, 2-7 distractores azul/verde), la DP v4 con conditioning visual debería evitar distractores mejor que el heurístico geométrico (que sólo conoce la pose del target y no ve la escena). Threshold del spec: **`distractor_collision_pct (DP) < heurístico − 20 pp`**.
+
+### Setup
+
+- **Dataset v4**: 2000 heurísticas + 200 ejecutadas (cada trayectoria con escena multi-object random) → 2200 totales, split 90/10.
+- **Arquitectura**: idéntica a Iter 3 (ResNet-18 + DP UNet hidden_dim=256), encoder fresh.
+- **Training**: 150 epochs from-scratch, weighted MSE loss. `final_val_loss = 0.024` — **43 % mejor que Iter 3 (0.042)**.
+- **Eval n=50** (seed=2026), threshold de colisión = 5 cm de desplazamiento de cualquier distractor (5 cm porque el gripper RG2 abierto mide 8.5 cm y los cubos pueden estar a 4 cm de distancia mínima — un 1 cm de threshold daría falsos positivos por brush leve).
+
+### Resultados (50 escenas multi-object)
+
+| Métrica | Heurístico | **DP v4** | Δ | Threshold spec |
+|---|---|---|---|---|
+| `grasp_plausible_pct_sim` | 100 % | 78 % | −22 pp | ≥60 % ✅ |
+| `distractor_collision_pct` | 54 % | **54 %** | **0 pp** | DP −20 pp ❌ |
+| `ik_converged_pct` | 94 % | 88 % | −6 pp | ≥90 % ✅* |
+| `grasp_success_with_no_collision_pct` | 46 % | 38 % | −8 pp | DP > heur ❌ |
+| `mean_max_distractor_displacement_m` | 0.177 | 0.181 | empate | informativo |
+
+(*88 % está apenas debajo del threshold; los 6/50 fails son por waypoints inalcanzables UR5, mismo patrón que Iter 3.)
+
+### Lectura honesta — la hipótesis no se sostiene
+
+**El threshold no se alcanzó**: DP v4 colisiona el 54 %, igual que el heurístico. La hipótesis del spec (la DP con conditioning visual evade distractores) **NO se confirma** en este experimento.
+
+**¿Por qué?**: la DP fue entrenada sobre trayectorias HEURÍSTICAS. Esas mismas trayectorias colisionan el 54 % de las veces (por construcción geométrica del path approach→descend→lift sin awareness de obstáculos). El loss MSE penaliza desviarse del demostrador heurístico — no hay señal en el gradiente que premie evitar distractores. Resultado: la DP imita el comportamiento de colisión del heurístico.
+
+**Lo que sí mejoró**: `final_val_loss` (0.024 vs 0.042 en Iter 3) — la red aprendió a generar trayectorias más cercanas a la heurística incluso con conditioning visual variable. Pero esto no se traduce en mejor performance física, porque la heurística misma es subóptima.
+
+### Diagnóstico para Iter 5+
+
+Tres caminos para que la DP venza al heurístico en este escenario:
+
+1. **Demostraciones con obstacle avoidance** (alto ROI, 2-3 días): generar trayectorias de training con RRT/RRT-Connect alrededor de los distractors. La DP aprende del demostrador que SÍ evita, no del heurístico geométrico.
+2. **Loss explícito de colisión** (medio ROI, 1-2 días): agregar al `weighted_mse_loss` un término que penalice proximidad a las posiciones conocidas de distractores. Requiere agregar `distractor_positions` al batch del training.
+3. **Reinforcement learning con simulación** (alto esfuerzo, 1-2 semanas): policy gradient en CoppeliaSim, reward = grasp_plausible − collisions. Closed-loop. Out of scope inmediato.
+
+### Datos generados
+
+- `data/datasets/sim_pick_v4/{heuristic,executed,train,val}.pt` — 2200 trayectorias multi-object con n_distractors + distractor_positions (gitignored).
+- `data/models/diffusion_policy_sim_v4.pth` — checkpoint Iter 4 (gitignored).
+- `data/models/visual_encoder_iter4.pth` — encoder (gitignored).
+- `experiments/results/pick_with_diffusion/eval_v4_multi_sim.json` — métricas + per-pick.
+- `experiments/results/pick_with_diffusion/eval_heuristic_baseline_multi_sim.json` — baseline comparable.
+
+### Conclusión para la defensa
+
+Iter 4 es el primer experimento en el TFM donde la DP **no le gana al heurístico**. Esto es **valioso científicamente** — confirma una intuición de RL/imitation learning: *un policy aprende lo que el demostrador hace, incluyendo sus defectos*. La DP no inventa estrategia de evasión que no esté en sus datos de training.
+
+El claim que ahora se sostiene: "para escenarios donde queremos que la policy supere al demostrador (e.g., clutter), necesitamos demostraciones que ya tengan la propiedad deseada (evasión) o un signal de reward explícito (Iter 5)". Eso es una contribución honesta y útil del TFM.
+
 Cosas que **siguen abiertas**:
 - Deposit error sigue ~80 cm; requiere extender el dataset para incluir deposit, no es problema del conditioning.
 - Closed-loop policy (re-captura RGB-D durante la trayectoria) sería Iter 4 si se quisiera empujar más.

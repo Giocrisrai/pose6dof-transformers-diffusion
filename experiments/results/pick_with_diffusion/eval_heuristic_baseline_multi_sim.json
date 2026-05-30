@@ -1,0 +1,1115 @@
+{
+  "n_requested": 50,
+  "n_valid": 50,
+  "n_skipped": 0,
+  "planner": "heuristic_geometric_multi",
+  "seed": 2026,
+  "grasp_plausible_pct_sim": 100.0,
+  "distractor_collision_pct": 54.0,
+  "ik_converged_pct": 94.0,
+  "grasp_success_with_no_collision_pct": 46.0,
+  "mean_grasp_proximity_m": 0.0,
+  "mean_max_distractor_displacement_m": 0.1774233608593506,
+  "per_pick": [
+    {
+      "i": 0,
+      "n_cubes": 8,
+      "n_distractors": 7,
+      "target_pose_t": [
+        0.4887852370738983,
+        -0.09990973770618439,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.5322739202558735,
+        -0.12004138046692811,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.8515074768211546,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.04031300118690179
+    },
+    {
+      "i": 1,
+      "n_cubes": 5,
+      "n_distractors": 4,
+      "target_pose_t": [
+        0.4309985637664795,
+        -0.1385875791311264,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.4148042753560836,
+        -0.09882148053287734,
+        0.025000089406967158
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.7425752142122165,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.01685377662079916
+    },
+    {
+      "i": 2,
+      "n_cubes": 6,
+      "n_distractors": 5,
+      "target_pose_t": [
+        0.4856555461883545,
+        -0.11417835205793381,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.06091563075284988,
+        -0.5643310145343354,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.4473600091274124,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 1.0
+    },
+    {
+      "i": 3,
+      "n_cubes": 6,
+      "n_distractors": 5,
+      "target_pose_t": [
+        0.511616051197052,
+        -0.026230338960886,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.4678397888716785,
+        -0.005498060269319724,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.8223802854395509,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.03363143095294414
+    },
+    {
+      "i": 4,
+      "n_cubes": 5,
+      "n_distractors": 4,
+      "target_pose_t": [
+        0.4822349548339844,
+        -0.0853964239358902,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.5258285604855328,
+        0.03090047322618007,
+        0.025000066777592766
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.8896560765233481,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.15900985272883203
+    },
+    {
+      "i": 5,
+      "n_cubes": 3,
+      "n_distractors": 2,
+      "target_pose_t": [
+        0.4831584393978119,
+        -0.04143819585442543,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.4996819893360011,
+        -0.08823497011502218,
+        0.02500008936181723
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.8272458594339229,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.017307071278603505
+    },
+    {
+      "i": 6,
+      "n_cubes": 6,
+      "n_distractors": 5,
+      "target_pose_t": [
+        0.41938871145248413,
+        -0.09258761256933212,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.3215579815390276,
+        -0.0525856655727724,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.6689904164447635,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.03967677562865814
+    },
+    {
+      "i": 7,
+      "n_cubes": 7,
+      "n_distractors": 6,
+      "target_pose_t": [
+        0.5354575514793396,
+        -0.1221826896071434,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.5762577200381961,
+        -0.08978366312372058,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.9011206912596219,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.1859791145054892
+    },
+    {
+      "i": 8,
+      "n_cubes": 4,
+      "n_distractors": 3,
+      "target_pose_t": [
+        0.5179435610771179,
+        -0.12554791569709778,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.5348226430298533,
+        -0.06626574075222304,
+        0.025000077316074037
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.8669259191311891,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.05470222429231652
+    },
+    {
+      "i": 9,
+      "n_cubes": 3,
+      "n_distractors": 2,
+      "target_pose_t": [
+        0.4927034378051758,
+        -0.12177266925573349,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.5147445472687895,
+        -0.06515150281589953,
+        0.025000089406967158
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.8479165607144699,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.056237710587883565
+    },
+    {
+      "i": 10,
+      "n_cubes": 5,
+      "n_distractors": 4,
+      "target_pose_t": [
+        0.5338756442070007,
+        -0.14331287145614624,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.6085096989119025,
+        -0.16497493172809657,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.9184887816837112,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.011762912956430898
+    },
+    {
+      "i": 11,
+      "n_cubes": 4,
+      "n_distractors": 3,
+      "target_pose_t": [
+        0.4737338721752167,
+        -0.13059751689434052,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.6395007580996833,
+        -0.15309343119051286,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.9509170386680723,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.22561029899756282
+    },
+    {
+      "i": 12,
+      "n_cubes": 6,
+      "n_distractors": 5,
+      "target_pose_t": [
+        0.4883512258529663,
+        -0.09013282507658005,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.5421433035429493,
+        -0.10677438024088004,
+        0.025000089396160274
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.8640263212619903,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.045539249705440724
+    },
+    {
+      "i": 13,
+      "n_cubes": 5,
+      "n_distractors": 4,
+      "target_pose_t": [
+        0.39298033714294434,
+        -0.1523430347442627,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.35257127366835417,
+        -0.18657593298971975,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.6623551058112941,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.2829460406715275
+    },
+    {
+      "i": 14,
+      "n_cubes": 6,
+      "n_distractors": 5,
+      "target_pose_t": [
+        0.45475584268569946,
+        -0.052184898406267166,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.48304518772944577,
+        -0.09238785529341535,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.8101003448066856,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.033102422130012694
+    },
+    {
+      "i": 15,
+      "n_cubes": 7,
+      "n_distractors": 6,
+      "target_pose_t": [
+        0.5309654474258423,
+        -0.03804991394281387,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.5359835108040983,
+        -0.04755329892311561,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.8732684393821568,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.11530058754437573
+    },
+    {
+      "i": 16,
+      "n_cubes": 5,
+      "n_distractors": 4,
+      "target_pose_t": [
+        0.5257411599159241,
+        -0.14102450013160706,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.5822553309916895,
+        -0.1756555246695565,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.8909747569984566,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.0860713930706691
+    },
+    {
+      "i": 17,
+      "n_cubes": 6,
+      "n_distractors": 5,
+      "target_pose_t": [
+        0.4482864439487457,
+        -0.04593592882156372,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.37974408133902904,
+        -0.036168101028251035,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.7291497013854422,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.011599824862778012
+    },
+    {
+      "i": 18,
+      "n_cubes": 5,
+      "n_distractors": 4,
+      "target_pose_t": [
+        0.42869627475738525,
+        -0.09263383597135544,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.40308232691179713,
+        -0.01989377881741274,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.7568251142509052,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.03862535257032139
+    },
+    {
+      "i": 19,
+      "n_cubes": 8,
+      "n_distractors": 7,
+      "target_pose_t": [
+        0.404584676027298,
+        -0.03622673451900482,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.3252332013295057,
+        -0.02731945844791831,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.682107934117379,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.01169584097408928
+    },
+    {
+      "i": 20,
+      "n_cubes": 8,
+      "n_distractors": 7,
+      "target_pose_t": [
+        0.3939895033836365,
+        -0.08438941836357117,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.2963388729740798,
+        -0.10801304892146035,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.6264814768246777,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 1.0
+    },
+    {
+      "i": 21,
+      "n_cubes": 3,
+      "n_distractors": 2,
+      "target_pose_t": [
+        0.5322126746177673,
+        -0.06027854233980179,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.6151166362634912,
+        -0.039368844909049225,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.9515077808248602,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.007999910414218915
+    },
+    {
+      "i": 22,
+      "n_cubes": 5,
+      "n_distractors": 4,
+      "target_pose_t": [
+        0.4486508369445801,
+        -0.0693483054637909,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.4920599599126122,
+        -0.09972823403964245,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.8169870013272237,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.04369440541421117
+    },
+    {
+      "i": 23,
+      "n_cubes": 7,
+      "n_distractors": 6,
+      "target_pose_t": [
+        0.4987611174583435,
+        -0.04624798148870468,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.5211475088587874,
+        -0.12656567697342458,
+        0.02499985886300877
+      ],
+      "ik_converged": false,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.8392631861988699,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.14950656019190098
+    },
+    {
+      "i": 24,
+      "n_cubes": 8,
+      "n_distractors": 7,
+      "target_pose_t": [
+        0.4797336757183075,
+        -0.1171233057975769,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.5055435878858963,
+        -0.19602498786997039,
+        0.025000089406967164
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.8122261231526123,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.15092588937672904
+    },
+    {
+      "i": 25,
+      "n_cubes": 3,
+      "n_distractors": 2,
+      "target_pose_t": [
+        0.44930121302604675,
+        -0.0816551148891449,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.4860758509635774,
+        -0.18930430671995613,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.7938317075922717,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.16626379655299733
+    },
+    {
+      "i": 26,
+      "n_cubes": 8,
+      "n_distractors": 7,
+      "target_pose_t": [
+        0.5466881394386292,
+        -0.13858562707901,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.569007559411099,
+        -0.15069523972436544,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.8817403527992804,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.2363824920082505
+    },
+    {
+      "i": 27,
+      "n_cubes": 5,
+      "n_distractors": 4,
+      "target_pose_t": [
+        0.5177247524261475,
+        -0.10993155092000961,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.531796382730509,
+        -0.09902887458756346,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.855730457312991,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.2173876005211295
+    },
+    {
+      "i": 28,
+      "n_cubes": 8,
+      "n_distractors": 7,
+      "target_pose_t": [
+        0.4187292754650116,
+        -0.0319058932363987,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.9661278113175001,
+        0.9763523700460357,
+        0.02500008940696715
+      ],
+      "ik_converged": false,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 1.7978195146103448,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 1.0
+    },
+    {
+      "i": 29,
+      "n_cubes": 5,
+      "n_distractors": 4,
+      "target_pose_t": [
+        0.5099384784698486,
+        -0.08947896212339401,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.5985631281647673,
+        -0.08070055524057754,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.9249367231162589,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.007999910414218915
+    },
+    {
+      "i": 30,
+      "n_cubes": 7,
+      "n_distractors": 6,
+      "target_pose_t": [
+        0.39657366275787354,
+        -0.0403921864926815,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.26584192049550615,
+        -0.19057325290223234,
+        0.02499939541013784
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.5763256822061996,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.22577880982431625
+    },
+    {
+      "i": 31,
+      "n_cubes": 4,
+      "n_distractors": 3,
+      "target_pose_t": [
+        0.4001559019088745,
+        -0.09173925220966339,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.4434997998166169,
+        -0.1386688269886977,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.7608020108494404,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.03852831383872483
+    },
+    {
+      "i": 32,
+      "n_cubes": 7,
+      "n_distractors": 6,
+      "target_pose_t": [
+        0.5228615999221802,
+        -0.03790436312556267,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.5287640820562647,
+        -0.020114799142659054,
+        0.02500008940696715
+      ],
+      "ik_converged": false,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.8747488950353222,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.038871748896184104
+    },
+    {
+      "i": 33,
+      "n_cubes": 4,
+      "n_distractors": 3,
+      "target_pose_t": [
+        0.5398367047309875,
+        -0.1345309466123581,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.6456423753991145,
+        -0.10092435909394168,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.9663698116935554,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.3102710052151722
+    },
+    {
+      "i": 34,
+      "n_cubes": 4,
+      "n_distractors": 3,
+      "target_pose_t": [
+        0.44798120856285095,
+        -0.13932110369205475,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.4440563780813154,
+        -0.25574848579464726,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.7453711090946253,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.10646174049263017
+    },
+    {
+      "i": 35,
+      "n_cubes": 5,
+      "n_distractors": 4,
+      "target_pose_t": [
+        0.3908686637878418,
+        -0.14113694429397583,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.3908686637878418,
+        -0.14113694429397583,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.708898427895177,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.014900717169336457
+    },
+    {
+      "i": 36,
+      "n_cubes": 6,
+      "n_distractors": 5,
+      "target_pose_t": [
+        0.4867703318595886,
+        -0.15291662514209747,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.49248247975065695,
+        -0.23143730708382965,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.7954428474577337,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.01367205316901018
+    },
+    {
+      "i": 37,
+      "n_cubes": 5,
+      "n_distractors": 4,
+      "target_pose_t": [
+        0.4827486276626587,
+        -0.11285337060689926,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.5711506406088547,
+        0.027608557505955884,
+        0.02500008635644953
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.9307152118582521,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.17907212476328774
+    },
+    {
+      "i": 38,
+      "n_cubes": 5,
+      "n_distractors": 4,
+      "target_pose_t": [
+        0.40232980251312256,
+        -0.13372252881526947,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.44259619471552697,
+        0.03935862650869289,
+        0.02498105832666122
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.8164639525366979,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.13654582088200148
+    },
+    {
+      "i": 39,
+      "n_cubes": 5,
+      "n_distractors": 4,
+      "target_pose_t": [
+        0.5338914394378662,
+        -0.08066337555646896,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.552269609753292,
+        -0.0733239604934293,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.8818988119934242,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.17389654726590142
+    },
+    {
+      "i": 40,
+      "n_cubes": 4,
+      "n_distractors": 3,
+      "target_pose_t": [
+        0.4489458501338959,
+        -0.11693984270095825,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.49634250406998276,
+        -0.11803057411758226,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.8168685669949769,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.050125651853409434
+    },
+    {
+      "i": 41,
+      "n_cubes": 3,
+      "n_distractors": 2,
+      "target_pose_t": [
+        0.5420942902565002,
+        -0.13013316690921783,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.7321219116155016,
+        -0.12522943303065928,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 1.0468144016565792,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.6120161977228935
+    },
+    {
+      "i": 42,
+      "n_cubes": 3,
+      "n_distractors": 2,
+      "target_pose_t": [
+        0.5071303248405457,
+        -0.0245610773563385,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.5545912758957867,
+        -0.037762790732097096,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.8939209152726021,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.1977926192503799
+    },
+    {
+      "i": 43,
+      "n_cubes": 3,
+      "n_distractors": 2,
+      "target_pose_t": [
+        0.5468341112136841,
+        -0.06149836257100105,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.6136721404205312,
+        -0.07502629200770414,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.9409622465691372,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.008080146820187324
+    },
+    {
+      "i": 44,
+      "n_cubes": 7,
+      "n_distractors": 6,
+      "target_pose_t": [
+        0.5190891623497009,
+        -0.1671116203069687,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.5390865391905961,
+        -0.24400504467518505,
+        0.025000089405914888
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.840952825830724,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 0.25593013090729644
+    },
+    {
+      "i": 45,
+      "n_cubes": 6,
+      "n_distractors": 5,
+      "target_pose_t": [
+        0.4216770827770233,
+        -0.13882926106452942,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.41976262683220333,
+        -0.13962701238490374,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.7374128654566485,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.01339144295887718
+    },
+    {
+      "i": 46,
+      "n_cubes": 3,
+      "n_distractors": 2,
+      "target_pose_t": [
+        0.3893142342567444,
+        -0.11727633327245712,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.36122497015970023,
+        -0.1557912026597788,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.6767677876443362,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.019291791119023738
+    },
+    {
+      "i": 47,
+      "n_cubes": 6,
+      "n_distractors": 5,
+      "target_pose_t": [
+        0.40514835715293884,
+        -0.10294973850250244,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.3197696533620918,
+        -0.07684790264574279,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.6587194256906133,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.018806183624018417
+    },
+    {
+      "i": 48,
+      "n_cubes": 6,
+      "n_distractors": 5,
+      "target_pose_t": [
+        0.5103084444999695,
+        -0.11910262703895569,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.5249723866477426,
+        -0.1327476452401933,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.8417557774699099,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": true,
+      "max_distractor_displacement_m": 1.0
+    },
+    {
+      "i": 49,
+      "n_cubes": 7,
+      "n_distractors": 6,
+      "target_pose_t": [
+        0.4148706793785095,
+        -0.13494911789894104,
+        0.032999999821186066
+      ],
+      "cube_end": [
+        0.41670735590624225,
+        -0.1427375388389791,
+        0.02500008940696715
+      ],
+      "ik_converged": true,
+      "grasp_proximity_m": 0.0,
+      "deposit_error_m": 0.7337580770939006,
+      "grasp_plausible": true,
+      "deposit_plausible": false,
+      "distractor_collided": false,
+      "max_distractor_displacement_m": 0.011609551035585213
+    }
+  ]
+}

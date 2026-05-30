@@ -98,14 +98,21 @@ def measure_collision(
     sim,
     distractor_handles: list[int],
     initial_positions: np.ndarray,
-    threshold_m: float = 0.01,
+    threshold_m: float = 0.05,
 ) -> tuple[bool, float]:
-    """Devuelve (collided, max_displacement) sobre los distractors."""
+    """Devuelve (collided, max_displacement) sobre los distractors.
+
+    threshold_m=0.05 (5 cm): captura colisión destructiva e ignora "brush"
+    leve. Necesario porque el gripper RG2 abierto mide ~8.5 cm de ancho y
+    los cubos pueden estar a 4 cm de distancia mínima.
+    """
     if len(distractor_handles) == 0:
         return False, 0.0
     max_disp = 0.0
+    DISP_CLIP_M = 1.0  # cubos que vuelan fuera del bin se clampean a 1 m
     for h, pos0 in zip(distractor_handles, initial_positions):
         pos = sim.getObjectPosition(h, -1)
         d = float(np.linalg.norm(np.array(pos) - np.array(pos0)))
+        d = min(d, DISP_CLIP_M)
         max_disp = max(max_disp, d)
     return max_disp > threshold_m, max_disp
