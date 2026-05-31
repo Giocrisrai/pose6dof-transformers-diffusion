@@ -37,18 +37,22 @@
 
 Cierra **Brecha B** del pipeline (DP integrada a la ejecución en sim) en tres iteraciones progresivas. Eval honesto: **50 picks en CoppeliaSim, seed=2026**, métricas medidas en cada pick.
 
-| Métrica (eval n=50 sim) | Iter 1 (geom) | Iter 2 | **Iter 3** | Threshold | Pasó? |
+| Métrica (eval n=50 sim, seed 2026) | Iter 1 | Iter 2 | Iter 3 | Iter 4 (multi) | **Iter 5 (pick+place)** |
 |---|---|---|---|---|---|
-| `dp_grasp_plausible_pct_sim` | 25 % | 36 % | **78 %** | ≥55 % | ✅ |
-| `dp_ik_converged_pct` | — | 90 % | **90 %** | ≥90 % | ✅ |
-| `mean_grasp_proximity_m` | 0.073 | 0.056 | **0.042** | <0.05 m | ✅ |
-| training `final_val_loss` | — | 0.051 | **0.042** | <0.05 | ✅ |
+| `dp_grasp_plausible_pct_sim` | 25 % | 36 % | 78 % | 78 % | **94 %** |
+| `dp_deposit_plausible_pct_sim` | — | 0 % | 0 % | 0 % | **64 %** |
+| `dp_ik_converged_pct` | — | 90 % | 90 % | 88 % | **94 %** |
+| `pick_and_place_success_pct` | — | — | — | — | **60 %** |
+| `distractor_collision_pct` | — | — | — | 54 % (heur 54 %) | n/a single-obj |
+| training `final_val_loss` | — | 0.051 | 0.042 | 0.024 | 0.032 |
 
 **Lo que cambió en cada iteración:**
 
 - **Iter 1**: dataset del sim (230 trayectorias) + fine-tune sobre el ckpt del paper. Cierre mínimo de Brecha B con 25 % grasp plausible geométrico.
 - **Iter 2**: escalado a 1700 trayectorias + `weighted_mse_loss` (peso 3× en k∈[6,10], 2× en XYZ) + red 4× más grande (hidden_dim 256, 1.35 M params) + eval EJECUTADO en sim. Subió a 36 %.
-- **Iter 3**: conditioning visual con **ResNet-18 pretrained** (backbone frozen + head `Linear(512, 52)` trainable) sobre RGB-D del sim reemplazando el zero-pad de v2. Más que duplica `grasp_plausible` a 78 %. Detalles completos: [`docs/INTEGRATION_PIPELINE.md`](docs/INTEGRATION_PIPELINE.md).
+- **Iter 3**: conditioning visual con **ResNet-18 pretrained** (backbone frozen + head `Linear(512, 52)` trainable) sobre RGB-D del sim reemplazando el zero-pad de v2. Más que duplica `grasp_plausible` a 78 %.
+- **Iter 4** (multi-object): probó conditioning visual con escenas 3-8 cubos. **Hipótesis rechazada honestamente**: DP empata al heurístico en colisiones (54%/54%) — la DP imita los defectos del demostrador. Contribución científica: roadmap para Iter 6 con RL/RRT-Connect.
+- **Iter 5** (deposit phase): **primera vez que el TFM mide pick-AND-place E2E**. 60 % éxito completo (grasp + deposit), 94 % grasp plausible, 64 % deposit en threshold 30 cm. Detalles completos: [`docs/INTEGRATION_PIPELINE.md`](docs/INTEGRATION_PIPELINE.md).
 
 **Reproducir Iter 3 (requiere CoppeliaSim corriendo en :23000):**
 

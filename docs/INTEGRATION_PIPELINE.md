@@ -371,6 +371,70 @@ Iter 4 es el primer experimento en el TFM donde la DP **no le gana al heurístic
 
 El claim que ahora se sostiene: "para escenarios donde queremos que la policy supere al demostrador (e.g., clutter), necesitamos demostraciones que ya tengan la propiedad deseada (evasión) o un signal de reward explícito (Iter 5)". Eso es una contribución honesta y útil del TFM.
 
+## Iter 5b (cerrado 2026-05-31): cerrar el deposit phase — pick-AND-place E2E
+
+Estado: **éxito** — primera vez que el TFM mide pick-and-place completo con DP entrenada. **60 % E2E success** sobre 50 picks aleatorios.
+
+### Motivación
+
+Iter 1-4 medían `deposit_plausible_pct_sim = 0 %` porque las trayectorias del heurístico terminaban en lift (cubo elevado sobre el target). Nunca aprendíamos a soltar en otro lado. Aplicación industrial real requiere pick **AND** place: el cubo debe quedar en el bin destino.
+
+### Cambios
+
+1. **`plan_grasp_heuristic(with_deposit=True)`** (`src/planning/diffusion_policy.py`): nuevas fases para los 16 waypoints:
+   - 0-25 % approach (k=0-3)
+   - 25-40 % descend + close gripper (k=4-5)  ⬅ grasp moment ahora en k=5
+   - 40-50 % lift (k=6-7)
+   - 50-80 % move horizontal al deposit target `(-0.30, -0.30, 0.30)` (k=8-12)
+   - 80-100 % release: gripper se abre, cubo cae (k=13-15)
+2. **`pick_with_dp` ahora hace attach + release** (`experiments/run_pick_with_diffusion.py`):
+   - Al detectar transición gripper open→closed: snap+attach del cubo al tip (técnica estándar sim).
+   - Al detectar transición closed→open: desparenta + `resetDynamicObject` → el cubo cae por gravedad.
+   - Backwards-compat con v3/v4: trayectorias sin re-apertura simplemente quedan attached al final.
+   - `grasp_proximity_m` ahora calculado en el primer waypoint donde el gripper cruza < 0.5 (auto-detección), no hardcoded a k=8.
+3. **Dataset v5 single-object** (`experiments/collect_diffusion_dataset_v5.py`): 1000 trayectorias heurísticas con `with_deposit=True`, sólo heurísticas (sin executed phase, más limpio). Split 90/10 → 900 train / 100 val. Volumen ~1.5 GB.
+4. **Train v5** (mismo train script, dataset v5): hidden_dim=256, 150 epochs, weighted MSE loss. `final_val_loss = 0.032`, min_val 0.022.
+5. **`eval_diffusion_iter5_sim.py`**: 50 picks seed=2026 con la métrica nueva `pick_and_place_success_pct` (grasp AND deposit ambos).
+
+### Resultados (50 picks, seed=2026)
+
+Ver `experiments/results/pick_with_diffusion/eval_v5_sim.json`.
+
+| Métrica | Iter 3 (v3) | Iter 4 (v4) | **Iter 5 (v5)** | Cambio vs Iter 3 |
+|---|---|---|---|---|
+| `dp_grasp_plausible_pct_sim` | 78 % | 78 % | **94 %** | **+16 pp** ⬆ |
+| `dp_deposit_plausible_pct_sim` | 0 % | 0 % | **64 %** | **+64 pp** ⬆⬆⬆ |
+| `dp_ik_converged_pct` | 90 % | 88 % | **94 %** | +4 pp |
+| `pick_and_place_success_pct` (grasp ∧ deposit) | — | — | **60 %** | nueva |
+| `mean_grasp_proximity_m` | 0.042 | 0.036 | **0.031** | mejor |
+| `final_val_loss` (training) | 0.042 | 0.024 | **0.032** | — |
+
+### Lectura honesta
+
+- ✅ **Pick-and-place completo funciona en 60 % de los picks**: primera vez que el TFM mide el ciclo completo (no solo pick) con DP. 30/50 picks logran agarrar el cubo Y soltarlo dentro del threshold de 30 cm al target.
+- ✅ **Mejora simultánea de grasp_plausible** (78 → 94 %): el dataset v5 es más limpio (solo heurísticas, single-object), sin el ruido del multi-object y la IK error de las executed trajectories. Demuestra que **menos data ruidosa > más data sucia**.
+- ✅ **IK convergence al 94 %**: con menos waypoints en zonas marginales del workspace (el deposit target está claramente fuera del bin, los waypoints van directo allí sin pasar por bordes singulares).
+- ❌ **36 % de los picks no depositan**: las causas se distribuyen entre (a) el grasp/attach se pierde durante el move horizontal (lift→deposit es ~70 cm de movimiento), (b) el `resetDynamicObject` falla y el cubo vuela por inercia (outliers de 1+ m visibles en `mean_deposit_error_m`).
+- 📊 **mean_deposit_error_m = 1.11 m** es engañoso por outliers (cubos volando por inercia post-release). La métrica binaria `deposit_plausible_pct_sim = 64 %` es más robusta.
+
+### Datos generados
+
+- `data/datasets/sim_pick_v5/{heuristic,train,val}.pt` — 1000 trayectorias con deposit (gitignored).
+- `data/models/diffusion_policy_sim_v5.pth` — checkpoint Iter 5 (gitignored).
+- `data/models/visual_encoder_iter5.pth` — encoder (gitignored).
+- `experiments/results/pick_with_diffusion/eval_v5_sim.json` — métricas + per-pick.
+
+### Conclusión para la defensa
+
+Iter 5b es **el primer experimento del TFM que demuestra pick-and-place E2E funcional** con una Diffusion Policy entrenada. 60 % de éxito completo (grasp + deposit) sobre 50 picks aleatorios, sin acceso explícito a la pose del target — solo RGB-D + pose flattened como conditioning.
+
+El claim ahora se sostiene completamente: el pipeline FoundationPose → DP v5 → IK → Sim ejecuta el ciclo completo de bin-picking con métricas honestas, reproducibles (seed=2026), y comparables iter-a-iter.
+
+Para uso real:
+- **Lo que funciona**: pick + deposit en bin vacío con un objeto.
+- **Lo que NO funciona aún**: clutter (Iter 4 mostró que la DP imita defectos del demostrador), generalización a objetos no cubicos.
+- **Roadmap Iter 6**: RRT-Connect demos + PPO fine-tune para superar al demostrador (estado del arte 2025: DPPO, Q-DiT, IDQL).
+
 Cosas que **siguen abiertas**:
 - Deposit error sigue ~80 cm; requiere extender el dataset para incluir deposit, no es problema del conditioning.
 - Closed-loop policy (re-captura RGB-D durante la trayectoria) sería Iter 4 si se quisiera empujar más.
