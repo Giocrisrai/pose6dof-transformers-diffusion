@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-"""Precompute visual embeddings (ResNet-18) sobre el dataset v3.
+"""Precompute visual embeddings (ResNet-18) sobre el dataset.
 
 Lee {train,val}.pt, corre el encoder sobre el campo `rgbds`, agrega
 campo `visual_emb` (N, 52) y sobrescribe el archivo. El field `rgbds`
 se mantiene por si se quiere re-entrenar el encoder en el futuro.
 
 Uso:
-    python experiments/precompute_visual_cond.py
+    python experiments/precompute_visual_cond.py                # v3 (default)
+    python experiments/precompute_visual_cond.py --version v4
 """
 from __future__ import annotations
 
+import argparse
 import logging
 import sys
 from pathlib import Path
@@ -24,14 +26,14 @@ from src.planning.visual_encoder import ResNet18RGBDEncoder
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger("precompute")
 
-DATASET_DIR = REPO / "data" / "datasets" / "sim_pick_v3"
-ENCODER_CKPT = REPO / "data" / "models" / "visual_encoder_iter3.pth"
 EMBED_DIM = 52
 BATCH_SIZE = 32
 
 
-def precompute(split: str, encoder: ResNet18RGBDEncoder, device: str) -> None:
-    in_path = DATASET_DIR / f"{split}.pt"
+def precompute(
+    split: str, encoder: ResNet18RGBDEncoder, device: str, dataset_dir: Path
+) -> None:
+    in_path = dataset_dir / f"{split}.pt"
     if not in_path.exists():
         raise FileNotFoundError(in_path)
 
@@ -54,16 +56,25 @@ def precompute(split: str, encoder: ResNet18RGBDEncoder, device: str) -> None:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--version", default="v3",
+        help="dataset version: v3 | v4 | ... (default v3)",
+    )
+    args = parser.parse_args()
+
+    dataset_dir = REPO / "data" / "datasets" / f"sim_pick_{args.version}"
+    iter_num = args.version.lstrip("v")
+    encoder_ckpt = REPO / "data" / "models" / f"visual_encoder_iter{iter_num}.pth"
+
     device = "mps" if torch.backends.mps.is_available() else "cpu"
-    logger.info(f"device: {device}")
+    logger.info(f"version={args.version} dataset_dir={dataset_dir} device={device}")
     encoder = ResNet18RGBDEncoder(out_dim=EMBED_DIM).to(device).eval()
-    # Persist encoder so eval can reproduce the exact embeddings used at training.
-    # Only the trainable head differs across instantiations; saving all params is safe.
-    ENCODER_CKPT.parent.mkdir(parents=True, exist_ok=True)
-    torch.save({"state_dict": encoder.state_dict(), "out_dim": EMBED_DIM}, ENCODER_CKPT)
-    logger.info(f"encoder ckpt: {ENCODER_CKPT}")
+    encoder_ckpt.parent.mkdir(parents=True, exist_ok=True)
+    torch.save({"state_dict": encoder.state_dict(), "out_dim": EMBED_DIM}, encoder_ckpt)
+    logger.info(f"encoder ckpt: {encoder_ckpt}")
     for split in ("train", "val"):
-        precompute(split, encoder, device)
+        precompute(split, encoder, device, dataset_dir)
     return 0
 
 
