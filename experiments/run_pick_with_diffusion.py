@@ -130,10 +130,16 @@ def pick_with_dp(
     traj = planner.plan_grasp(pose, n_samples=1, cond=cond)
     waypoints = traj[0]
 
-    # PROXIMITY pre-snap: distance entre el waypoint k=8 (donde la heur tiene grasp)
-    # y la pose del cubo. Mide si la DP "apunta" al cubo correctamente.
+    # PROXIMITY pre-snap: distance entre el waypoint del grasp (primera vez que
+    # gripper cruza < 0.5 = "cerrándose") y la pose del cubo. Mide si la DP
+    # "apunta" al cubo en el momento del grasp.
+    # Compat: v1-v4 (sin deposit) tienen grasp en k=8; v5 (con deposit) en k=5.
     cube_pos = sim.getObjectPosition(obj1, -1)
-    grasp_wp = waypoints[8]
+    grasp_idx = next(
+        (k for k in range(len(waypoints)) if float(waypoints[k, 6]) < 0.5),
+        8,  # fallback al k=8 si nunca cierra (no debería pasar)
+    )
+    grasp_wp = waypoints[grasp_idx]
     grasp_proximity_m = math.sqrt(
         sum((cube_pos[i] - float(grasp_wp[i])) ** 2 for i in range(3))
     )
@@ -143,21 +149,47 @@ def pick_with_dp(
         for f in frames_dir.glob("*.png"): f.unlink()
         frames_dir.mkdir(parents=True, exist_ok=True)
 
-    # Ejecutar waypoints
+    # Ejecutar waypoints (con attach/release automático en transición de gripper)
     counter = [0]
     ik_convergence = []
     prev_gripper = 1.0
+    attached = False
     for i, wp in enumerate(waypoints):
         x, y, z, _, _, _, gripper = wp.tolist()
-        if (gripper > 0.5) != (prev_gripper > 0.5):
-            set_gripper(bridge, gripper > 0.5)
+        gripper_open = gripper > 0.5
+        prev_open = prev_gripper > 0.5
+        if gripper_open != prev_open:
+            set_gripper(bridge, gripper_open)
             prev_gripper = gripper
+            if not gripper_open and not attached:
+                # Cierre del gripper → snap+attach (técnica estándar sim)
+                tip_pos = sim.getObjectPosition(tip_h, -1)
+                sim.setObjectInt32Param(obj1, sim.shapeintparam_respondable, 0)
+                sim.setObjectInt32Param(obj1, sim.shapeintparam_static, 1)
+                sim.setObjectPosition(obj1, -1, tip_pos)
+                sim.setObjectParent(obj1, tip_h, True)
+                attached = True
+            elif gripper_open and attached:
+                # Apertura del gripper → release (cubo cae)
+                sim.setObjectParent(obj1, -1, True)
+                sim.setObjectInt32Param(obj1, sim.shapeintparam_respondable, 1)
+                sim.setObjectInt32Param(obj1, sim.shapeintparam_static, 0)
+                try:
+                    sim.resetDynamicObject(obj1)
+                except Exception:
+                    pass
+                attached = False
         _move_tcp_via_ik(
             bridge, env, ik_group, target_dummy, ik_joints, simIK,
             [x, y, z], frames_dir, counter,
             n_substeps=n_substeps, steps_per_substep=steps_per_substep,
             convergence_tracker=ik_convergence,
         )
+
+    # Settle post-release para que el cubo asiente
+    if not attached:
+        for _ in range(30):
+            bridge.step()
 
     cube_end = sim.getObjectPosition(obj1, -1)
     tip_end = sim.getObjectPosition(tip_h, -1)

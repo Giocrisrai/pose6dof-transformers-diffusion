@@ -347,18 +347,24 @@ class DiffusionGraspPlanner:
         object_pose: np.ndarray,
         approach_distance: float = 0.15,
         lift_height: float = 0.10,
+        with_deposit: bool = False,
+        deposit_target: tuple = (-0.30, -0.30, 0.30),
     ) -> np.ndarray:
         """Generate a simple heuristic grasp trajectory (baseline).
 
-        Creates a top-down approach trajectory:
-        1. Pre-grasp: approach from above
-        2. Grasp: close gripper at object pose
-        3. Lift: move up
+        Si `with_deposit=False` (default, compat con Iter 1-4): aproach → descend →
+        grasp → lift. Última pose: target + lift_height en Z, gripper cerrado.
+
+        Si `with_deposit=True` (Iter 5+): aproach (25 %) → grasp (15 %) → lift (10 %)
+        → move-to-deposit (30 %) → release (20 %). Última pose: deposit_target con
+        gripper abierto. El cubo cae por gravedad cuando el gripper abre.
 
         Args:
             object_pose: (4, 4) SE(3) pose of target object
-            approach_distance: approach distance in meters
-            lift_height: lift height in meters
+            approach_distance: approach offset en Z al inicio (m)
+            lift_height: altura de lift sobre el target (m)
+            with_deposit: si True, agrega fase de deposit + release (Iter 5)
+            deposit_target: (x, y, z) destino del cubo cuando with_deposit=True
 
         Returns:
             (1, horizon, 7) trajectory [x, y, z, rx, ry, rz, gripper]
@@ -370,33 +376,60 @@ class DiffusionGraspPlanner:
 
         trajectory = np.zeros((1, self.horizon, self.action_dim))
 
+        if not with_deposit:
+            for i in range(self.horizon):
+                progress = i / (self.horizon - 1)
+                if progress < 0.3:
+                    frac = progress / 0.3
+                    z_offset = approach_distance * (1 - frac)
+                    pos = t + np.array([0, 0, z_offset])
+                    gripper = 1.0
+                elif progress < 0.5:
+                    pos = t.copy()
+                    gripper = 1.0
+                elif progress < 0.6:
+                    pos = t.copy()
+                    frac = (progress - 0.5) / 0.1
+                    gripper = 1.0 - frac
+                else:
+                    frac = (progress - 0.6) / 0.4
+                    pos = t + np.array([0, 0, lift_height * frac])
+                    gripper = 0.0
+                trajectory[0, i, :3] = pos
+                trajectory[0, i, 3:6] = rot_vec
+                trajectory[0, i, 6] = gripper
+            return trajectory
+
+        # with_deposit=True: phases 5 con deposit
+        deposit_t = np.asarray(deposit_target, dtype=np.float32)
+        lift_t = t + np.array([0, 0, lift_height], dtype=np.float32)
         for i in range(self.horizon):
             progress = i / (self.horizon - 1)
-
-            if progress < 0.3:
-                # Phase 1: Approach from above
-                frac = progress / 0.3
-                z_offset = approach_distance * (1 - frac)
-                pos = t + np.array([0, 0, z_offset])
-                gripper = 1.0  # open
-
+            if progress < 0.25:
+                # Approach desde approach_distance arriba hasta target
+                frac = progress / 0.25
+                pos = t + np.array([0, 0, approach_distance * (1 - frac)])
+                gripper = 1.0
+            elif progress < 0.4:
+                # Descend + close gripper
+                frac = (progress - 0.25) / 0.15
+                pos = t.copy()
+                gripper = 1.0 - frac
             elif progress < 0.5:
-                # Phase 2: At grasp position
-                pos = t.copy()
-                gripper = 1.0  # open
-
-            elif progress < 0.6:
-                # Phase 3: Close gripper
-                pos = t.copy()
-                frac = (progress - 0.5) / 0.1
-                gripper = 1.0 - frac  # closing
-
-            else:
-                # Phase 4: Lift
-                frac = (progress - 0.6) / 0.4
+                # Lift up
+                frac = (progress - 0.4) / 0.1
                 pos = t + np.array([0, 0, lift_height * frac])
-                gripper = 0.0  # closed
-
+                gripper = 0.0
+            elif progress < 0.8:
+                # Move horizontally + up to deposit_target
+                frac = (progress - 0.5) / 0.3
+                pos = lift_t + frac * (deposit_t - lift_t)
+                gripper = 0.0
+            else:
+                # Release (gripper opens, cubo cae)
+                frac = (progress - 0.8) / 0.2
+                pos = deposit_t.copy()
+                gripper = frac
             trajectory[0, i, :3] = pos
             trajectory[0, i, 3:6] = rot_vec
             trajectory[0, i, 6] = gripper

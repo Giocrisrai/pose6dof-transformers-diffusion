@@ -111,6 +111,11 @@ data/models/diffusion_policy_sim_v4.pth
 data/models/diffusion_policy_sim_v4.summary.json
 data/models/visual_encoder_iter4.pth
 
+# Iter 5 checkpoints (regenerables)
+data/models/diffusion_policy_sim_v5.pth
+data/models/diffusion_policy_sim_v5.summary.json
+data/models/visual_encoder_iter5.pth
+
 # Demo reel: MP4 generados (regenerables con build_demo_reel.py)
 experiments/results/demo_reel/
 !experiments/results/demo_reel/README.md
