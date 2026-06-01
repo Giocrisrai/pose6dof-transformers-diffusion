@@ -435,6 +435,67 @@ Para uso real:
 - **Lo que NO funciona aún**: clutter (Iter 4 mostró que la DP imita defectos del demostrador), generalización a objetos no cubicos.
 - **Roadmap Iter 6**: RRT-Connect demos + PPO fine-tune para superar al demostrador (estado del arte 2025: DPPO, Q-DiT, IDQL).
 
+## Iter 6a (cerrado 2026-06-01): DPPO Phase A — self-imitation con/sin KL
+
+Estado: **resultado científicamente valioso, hipótesis de mejora rechazada**. Documenta empíricamente por qué DPPO necesita las componentes que la literatura describe.
+
+### Setup
+
+Phase A del spec Iter 6 (PoC en CoppeliaSim, antes de portar a PyBullet). **Algoritmo simplificado**: self-imitation BC weighted by advantage en lugar de DPPO full (que requiere re-evaluación de log-probs durante update). Sirve para validar el loop end-to-end y obtener evidencia empírica del comportamiento.
+
+- Init: DP v5 + visual_encoder_iter5.
+- Sim: CoppeliaSim, 500 episodios, batch_size=16, ~5 h por run.
+- Reward: shaped + terminal (+10 grasp+deposit, +5 grasp only, -5 IK fail).
+- Eval: 50 picks seed=2026, mismo setup que Iter 5.
+
+Dos variantes ejecutadas:
+
+**v1 — sin KL regularization** (`diffusion_policy_v6_phaseA.pth`):
+- Pure self-imitation, sin anchor al baseline.
+
+**v2 — con KL anchor a v5** (`diffusion_policy_v6_phaseA_kl.pth`):
+- BC weighted + KD loss MSE entre noise predictions vs v5 (frozen). `kl_coef=1.0`.
+
+### Resultados
+
+| Métrica (eval n=50, seed=2026) | v5 baseline | v6 Phase A v1 (sin KL) | v6 Phase A v2 (con KL) |
+|---|---|---|---|
+| `dp_grasp_plausible_pct_sim` | 94 % | **0 %** | 70 % |
+| `dp_deposit_plausible_pct_sim` | 64 % | 36 % | **78 %** ⬆ |
+| `dp_ik_converged_pct` | 94 % | 94 % | 84 % |
+| `pick_and_place_success_pct` | **60 %** | 0 % | 54 % |
+| `mean_grasp_proximity_m` | 0.031 | 0.427 | 0.037 |
+
+### Lectura honesta
+
+**v1 (sin KL): catastrophic forgetting** ❌. Self-imitation reinforcement loop quemó el policy bien entrenado de v5. La policy generó trayectorias 42.7 cm fuera del cubo. **Pick-and-place success: 0 %**. Confirma exactamente la motivación de la literatura para PPO+KL.
+
+**v2 (con KL=1.0): trade-off interesante** ⚖. KL anchor evitó el colapso (54 % E2E vs 0 %). Y notablemente, `deposit_plausible` **subió +14 pp** (64 → 78 %): la señal RL identificó que deposit era el bottleneck principal en v5 y empujó la policy hacia ahí. Pero pagó con `grasp_plausible` −24 pp (94 → 70 %), porque con `kl_coef=1.0` la policy no pudo encontrar un punto del policy space donde mejorara grasp Y deposit simultáneamente.
+
+**Pick-and-place E2E final: 54 % (v6) vs 60 % (v5)** — la mejora del deposit no compensa la degradación del grasp.
+
+### Contribución científica del Phase A
+
+1. **Validación empírica del catastrophic forgetting**: en literatura DPPO se argumenta teóricamente; aquí lo medimos. Self-imitation puro sobre 500 episodios degrada un policy bien entrenado al **0 %** de éxito.
+2. **El KL anchor previene el colapso**: con `kl_coef=1.0`, la policy se mantiene cerca del baseline y absorbe señal de mejora en deposit. **+14 pp en deposit_plausible** valida que el signal RL fluye correctamente cuando hay regularización.
+3. **El KL=1.0 es demasiado restrictivo para mejora neta E2E**: el policy no puede explorar lo suficiente como para mejorar grasp Y deposit simultáneamente. Phase B con DPPO completo (PPO clip + re-evaluated log-probs + GAE) permitiría exploración más controlada.
+
+### Roadmap Phase B+ (fuera de scope inmediato)
+
+- **Phase B — PyBullet + full DPPO**: 2-3 días de port + implementar PPO clip con re-evaluación de log-probs sobre los últimos K denoising steps. Permite ratio honesto y exploración bounded.
+- **Phase C — MuJoCo MJX batched + escala**: 100k+ episodios. Estado del arte 2024-2025 literature-comparable.
+
+### Datos generados
+
+- `data/models/diffusion_policy_v6_phaseA.pth` — v1 sin KL (gitignored).
+- `data/models/diffusion_policy_v6_phaseA_kl.pth` — v2 con KL (gitignored).
+- `experiments/results/dppo_phaseA_log.json` — curvas de training.
+- `experiments/results/pick_with_diffusion/eval_v6_phaseA_sim.json` — eval n=50.
+
+### Conclusión
+
+**Iter 5 (60 % E2E) sigue siendo el resultado headline del TFM**. Iter 6a aporta una **contribución científica negativa valiosa**: prueba empírica de que RL fine-tune naive degrada la DP (catastrophic forgetting), y prueba que la regularización al baseline es necesaria pero no suficiente — se necesita PPO clip con re-evaluación para encontrar la mejora E2E real. Esto motiva empíricamente el roadmap Iter 6b (PyBullet + DPPO full) como trabajo siguiente.
+
 Cosas que **siguen abiertas**:
 - Deposit error sigue ~80 cm; requiere extender el dataset para incluir deposit, no es problema del conditioning.
 - Closed-loop policy (re-captura RGB-D durante la trayectoria) sería Iter 4 si se quisiera empujar más.
