@@ -30,6 +30,8 @@ class DPPOAgent:
         lr: float = 3e-4,
         entropy_coef: float = 0.01,
         value_loss_coef: float = 0.5,
+        kl_coef: float = 1.0,
+        ref_model=None,
     ):
         self.planner = planner
         self.value_net = value_net
@@ -37,6 +39,12 @@ class DPPOAgent:
         self.clip = clip_ratio
         self.entropy_coef = entropy_coef
         self.value_loss_coef = value_loss_coef
+        self.kl_coef = kl_coef
+        self.ref_model = ref_model  # frozen reference policy (v5) for KD anchor
+        if self.ref_model is not None:
+            for p in self.ref_model.parameters():
+                p.requires_grad = False
+            self.ref_model.eval()
         self.policy_optim = torch.optim.Adam(planner.model.parameters(), lr=lr)
         self.value_optim = torch.optim.Adam(value_net.parameters(), lr=lr)
 
@@ -101,22 +109,35 @@ class DPPOAgent:
             value_loss.backward()
             self.value_optim.step()
 
-            # Policy update solo sobre episodios con advantage > 0
-            if not positive_eps:
-                policy_losses.append(0.0)
-                continue
+            # Policy update: BC sobre positivos + KL/KD a referencia v5 sobre TODO
             self.planner.model.train()
-            conds_pos = torch.stack([ep.cond for ep in positive_eps]).to(device)
-            actions_pos = torch.stack([ep.actions for ep in positive_eps]).to(device).float()
-            B = actions_pos.shape[0]
-            t = torch.randint(0, n_timesteps, (B,), device=device, dtype=torch.long)
-            noisy, true_noise = scheduler.add_noise_batch(actions_pos, t)
-            pred_noise = self.planner.model(noisy, t, conds_pos)
-            per_sample = ((pred_noise - true_noise) ** 2).mean(dim=(-1, -2))  # (B,)
-            weighted_loss = (per_sample * positive_weights).mean()
-            policy_losses.append(weighted_loss.item())
+            # BC weighted (signal de RL) sobre positivos
+            bc_loss = torch.tensor(0.0, device=device)
+            if positive_eps:
+                conds_pos = torch.stack([ep.cond for ep in positive_eps]).to(device)
+                actions_pos = torch.stack([ep.actions for ep in positive_eps]).to(device).float()
+                B = actions_pos.shape[0]
+                t = torch.randint(0, n_timesteps, (B,), device=device, dtype=torch.long)
+                noisy, true_noise = scheduler.add_noise_batch(actions_pos, t)
+                pred_noise = self.planner.model(noisy, t, conds_pos)
+                per_sample = ((pred_noise - true_noise) ** 2).mean(dim=(-1, -2))
+                bc_loss = (per_sample * positive_weights).mean()
+            # KD term: anclar a la referencia v5 con noisy actions del batch ENTERO
+            kd_loss = torch.tensor(0.0, device=device)
+            if self.ref_model is not None:
+                conds_all_pol = torch.stack([ep.cond for ep in episodes]).to(device)
+                actions_all = torch.stack([ep.actions for ep in episodes]).to(device).float()
+                Ba = actions_all.shape[0]
+                ta = torch.randint(0, n_timesteps, (Ba,), device=device, dtype=torch.long)
+                noisy_a, _ = scheduler.add_noise_batch(actions_all, ta)
+                pred_new = self.planner.model(noisy_a, ta, conds_all_pol)
+                with torch.no_grad():
+                    pred_ref = self.ref_model(noisy_a, ta, conds_all_pol)
+                kd_loss = F.mse_loss(pred_new, pred_ref)
+            total_policy_loss = bc_loss + self.kl_coef * kd_loss
+            policy_losses.append(float(total_policy_loss.item()))
             self.policy_optim.zero_grad()
-            weighted_loss.backward()
+            total_policy_loss.backward()
             self.policy_optim.step()
             self.planner.model.eval()
 

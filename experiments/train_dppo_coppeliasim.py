@@ -55,6 +55,8 @@ def main() -> int:
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--lr", type=float, default=3e-4)
     parser.add_argument("--seed", type=int, default=2027)  # ≠ eval seed 2026
+    parser.add_argument("--kl-coef", type=float, default=1.0,
+                        help="Peso del KD anchor a la referencia v5. 0 = sin anclaje.")
     parser.add_argument("--checkpoint-in", type=Path,
                         default=REPO / "data/models/diffusion_policy_sim_v5.pth")
     parser.add_argument("--checkpoint-out", type=Path,
@@ -70,6 +72,13 @@ def main() -> int:
         action_dim=7, horizon=16, n_diffusion_steps=100, device=device, hidden_dim=hd,
     )
     planner.model.load_state_dict(ckpt["model_state_dict"])
+    # Reference model (v5 frozen) — para KD anchor en update
+    ref_planner = DiffusionGraspPlanner(
+        action_dim=7, horizon=16, n_diffusion_steps=100, device=device, hidden_dim=hd,
+    )
+    ref_planner.model.load_state_dict(ckpt["model_state_dict"])
+    ref_planner.model.eval()
+
     enc_state = torch.load(
         REPO / "data/models/visual_encoder_iter5.pth", map_location=device, weights_only=True
     )
@@ -77,7 +86,10 @@ def main() -> int:
     encoder.load_state_dict(enc_state["state_dict"])
 
     value_net = ValueNet(cond_dim=64, hidden_dim=32).to(device)
-    agent = DPPOAgent(planner, value_net, k_last_denoising=4, lr=args.lr)
+    agent = DPPOAgent(
+        planner, value_net, k_last_denoising=4, lr=args.lr,
+        kl_coef=args.kl_coef, ref_model=ref_planner.model,
+    )
     buffer = EpisodeBuffer()
 
     rng = np.random.default_rng(args.seed)

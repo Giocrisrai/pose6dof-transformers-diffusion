@@ -125,6 +125,7 @@ experiments/results/demo_reel/
 !experiments/results/demo_reel/README.md
 # Frames intermedios de los demos (regenerables re-corriendo el sim)
 experiments/results/**/frames/
+experiments/results/**/frames_*/
 # Staging reversible de la limpieza (pendiente de borrado definitivo)
 experiments/results/_frames_archive/
 experiments/results/_orphans_review/
