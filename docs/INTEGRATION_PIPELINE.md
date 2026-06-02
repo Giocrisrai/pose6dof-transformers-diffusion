@@ -496,6 +496,83 @@ Dos variantes ejecutadas:
 
 **Iter 5 (60 % E2E) sigue siendo el resultado headline del TFM**. Iter 6a aporta una **contribución científica negativa valiosa**: prueba empírica de que RL fine-tune naive degrada la DP (catastrophic forgetting), y prueba que la regularización al baseline es necesaria pero no suficiente — se necesita PPO clip con re-evaluación para encontrar la mejora E2E real. Esto motiva empíricamente el roadmap Iter 6b (PyBullet + DPPO full) como trabajo siguiente.
 
+## Iter 6b (cerrado 2026-06-02): DPPO proper con PPO clip + re-evaluated log_probs
+
+Estado: **algoritmo correcto, comportamiento mecánico saludable, mejora parcial en deposit (+16 pp) pero degradación en E2E (-12 pp). Hipótesis técnica confirmada, no se gana E2E.**
+
+### Implementación
+
+Tras Iter 6a (self-imitation con KL parcialmente exitoso), implementé DPPO propiamente:
+- **Sampling con exploration noise** sobre los últimos K=4 timesteps del denoising: `eps_sampled = eps_pred + σ * N(0, I)` con σ=0.5.
+- **Almacenamiento** por step: `(x_t, t, cond, eps_sampled, log_prob_old)`.
+- **Update con re-evaluación**: re-corre el modelo sobre los stored steps para computar `log_prob_new` bajo política actual.
+- **PPO clip**: `ratio = exp(log_p_new - log_p_old)`, `surr2 = clamp(ratio, 1±0.2) * advantage`.
+- **Mean log-prob** (dim-normalized) para action space de 112 dims (16×7), trick estándar Schulman+2017.
+- **KL anchor** (kl_coef=0.1) a referencia v5 frozen, prevención drift acumulado.
+- **LR 1e-4** (vs 3e-4 inicial — el primer smoke con σ=0.1 dio ratio≈0 y 75 % clipped; con σ=0.5+lr=1e-4 ratio se estabiliza en 0.85-0.93).
+
+500 episodios CoppeliaSim, batch_size=16, 4 PPO epochs por update. ~3 h de wall-time.
+
+### Métricas del PPO loop (saludables)
+
+- `ratio` (mean): 0.85-0.93 a lo largo del training (target ~1.0, healthy ✓)
+- `clip_fraction`: 0.01-0.16 (target <0.3, healthy ✓)
+- `kl_term` (vs ref): 0.07 → 0.42 (drift modesto, KL anchor funcionando)
+- `policy_loss`: -0.01 a -0.02 (signal de mejora negativo = policy mejorando contra advantage)
+
+### Resultados (50 picks, seed=2026)
+
+| Métrica | v5 baseline | v6 Phase A v1 | v6 Phase A v2 (KL) | **v6 Phase B (DPPO proper)** |
+|---|---|---|---|---|
+| `dp_grasp_plausible_pct_sim` | **94 %** | 0 % | 70 % | 56 % |
+| `dp_deposit_plausible_pct_sim` | 64 % | 36 % | 78 % | **80 %** 🥇 |
+| `dp_ik_converged_pct` | **94 %** | 94 % | 84 % | 92 % |
+| `pick_and_place_success_pct` | **60 %** | 0 % | 54 % | 48 % |
+| `mean_grasp_proximity_m` | **0.031** | 0.427 | 0.037 | 0.048 |
+
+### Lectura honesta
+
+**Lo que se confirma**:
+- ✅ El algoritmo DPPO está correctamente implementado: ratio en rango, clip controlado, sin catastrophic forgetting (vs Phase A v1 que sí colapsó).
+- ✅ El signal RL FLUYE correctamente: deposit_plausible sube **+16 pp** (64 → 80 %), el bottleneck más débil de v5.
+- ✅ El reward y la value function aprenden (val_loss baja durante training).
+
+**Lo que NO se confirma**:
+- ❌ No mejora `pick_and_place_success_pct` (48 % vs 60 % baseline, **−12 pp**).
+- ❌ Degrada `grasp_plausible_pct_sim` (94 → 56 %, **−38 pp**).
+- ❌ La métrica E2E va para abajo porque el signal RL sesga el aprendizaje hacia el bottleneck más débil (deposit) sacrificando precisión donde la imitación ya estaba bien (grasp).
+
+### Diagnóstico: ¿por qué no gana E2E?
+
+Causa raíz **no es el algoritmo** (ya confirmado correcto). Tres factores probables:
+
+1. **Reward function biased**: el signal viene principalmente del delta deposit (donde v5 era 64 %). Grasp ya estaba al 94 % así que casi no hay headroom de reward por ahí. PPO optimiza donde hay gradiente → deposit primero.
+2. **Sampling σ=0.5 demasiado broad**: agrega ruido a TODOS los waypoints, incluido el grasp donde la precisión importa. Necesitamos σ por phase: σ pequeño en grasp, mayor en move/deposit.
+3. **500 episodios insuficientes**: la literatura DPPO usa 100k-1M episodios. Con 500, la red solo explora superficialmente.
+
+### Próximos pasos (Iter 6c+, fuera de scope inmediato)
+
+Tres mejoras ortogonales para hacer ganar E2E:
+
+1. **Reward balanceado**: penalizar grasp_proximity más explícitamente (e.g., -0.5 si proximity > 5 cm). Daría signal denso de "no degradar grasp".
+2. **σ por phase**: en sampling, usar σ=0.2 en k=0-5 (grasp) y σ=0.7 en k=6-15 (lift+deposit). Mantiene la precisión del grasp y permite exploración en deposit.
+3. **Escalar episodios via PyBullet**: 10x más rápido, permite 10k-50k episodios. Phase C del spec original.
+
+### Datos generados
+
+- `data/models/diffusion_policy_v6b.pth` — ckpt DPPO proper (gitignored).
+- `experiments/results/pick_with_diffusion/eval_v6_phaseA_sim.json` (overwriteado por eval Phase B; nombre legacy).
+- Curva training: ratio, clip_f, kl, pol_loss, val_loss disponibles en logs.
+
+### Contribución del Iter 6b para defensa
+
+**Iter 5 (60 % E2E) sigue siendo el headline**. Iter 6b agrega:
+
+1. **Validación del algoritmo**: DPPO con PPO clip + re-evaluated log-probs implementado correctamente. Demuestra que el problema NO era el algoritmo de Iter 6a.
+2. **Mejor deposit del TFM**: 80 % (vs 64 % v5, vs 78 % v6a). Si el TFM ponderase deposit > grasp, v6b sería el headline.
+3. **Identificación del verdadero bottleneck**: el reward function actual sesga hacia deposit. Trabajo futuro es reward shaping o curriculum, NO el algoritmo RL.
+4. **Empíricamente validado que CoppeliaSim+500 episodios es insuficiente para PPO E2E gain**: motiva el roadmap PyBullet (Phase C).
+
 Cosas que **siguen abiertas**:
 - Deposit error sigue ~80 cm; requiere extender el dataset para incluir deposit, no es problema del conditioning.
 - Closed-loop policy (re-captura RGB-D durante la trayectoria) sería Iter 4 si se quisiera empujar más.

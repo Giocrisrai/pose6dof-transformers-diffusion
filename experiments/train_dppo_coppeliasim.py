@@ -25,8 +25,8 @@ sys.path.insert(0, str(REPO))
 from src.planning.diffusion_policy import DiffusionGraspPlanner
 from src.planning.visual_encoder import ResNet18RGBDEncoder
 from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
-from src.rl.dppo_agent import DPPOAgent
-from src.rl.replay_buffer import Episode, EpisodeBuffer
+from src.rl.dppo_agent import DPPOAgent, DPPOEpisode
+from src.rl.replay_buffer import EpisodeBuffer
 from src.rl.reward_fn import compute_terminal_reward
 from src.rl.value_net import ValueNet
 from experiments.run_pick_with_diffusion import pick_with_dp
@@ -96,28 +96,110 @@ def main() -> int:
     rolling_rewards = []
     update_log = []
 
+    from src.simulation.pick_sequence import (
+        _move_tcp_via_ik, _setup_ik, set_gripper, setup_robot_control,
+    )
+    import math
+    GRASP_THRESHOLD_M = 0.05
+    DEPOSIT_TARGET = [-0.30, -0.30, 0.30]
+    DEPOSIT_THRESHOLD_M = 0.30
+
+    def run_episode_with_dppo(pose):
+        """Sample con exploration + ejecuta + devuelve (steps, terminal_r, cond)."""
+        with CoppeliaSimBridge() as bridge:
+            bridge.load_scene(SCENE)
+            cond = build_cond(planner, encoder, bridge, pose, device).to(device)
+            # Sample con DPPO
+            cond_b = cond.unsqueeze(0) if cond.ndim == 1 else cond
+            waypoints, steps = agent.sample_action_with_steps(cond_b)
+
+            # Execute igual que pick_with_dp
+            setup_robot_control(bridge)
+            env, ik_group, target_dummy, ik_joints, simIK = _setup_ik(bridge)
+            bridge.set_stepping(True)
+            bridge.start_simulation()
+            sim = bridge.sim
+            obj1 = sim.getObject("/object_1")
+            tip_h = sim.getObject("/tip")
+            sim.setObjectPosition(obj1, -1, list(pose[:3, 3]))
+
+            cube_pos = sim.getObjectPosition(obj1, -1)
+            grasp_idx = next(
+                (k for k in range(len(waypoints)) if float(waypoints[k, 6]) < 0.5), 8,
+            )
+            grasp_wp = waypoints[grasp_idx]
+            grasp_proximity_m = math.sqrt(
+                sum((cube_pos[i] - float(grasp_wp[i])) ** 2 for i in range(3))
+            )
+            grasp_plausible = grasp_proximity_m < GRASP_THRESHOLD_M
+
+            counter = [0]
+            ik_convergence = []
+            prev_gripper = 1.0
+            attached = False
+            for i, wp in enumerate(waypoints):
+                x, y, z, _, _, _, gripper = wp.tolist()
+                gripper_open = gripper > 0.5
+                prev_open = prev_gripper > 0.5
+                if gripper_open != prev_open:
+                    set_gripper(bridge, gripper_open)
+                    prev_gripper = gripper
+                    if not gripper_open and not attached:
+                        tip_pos = sim.getObjectPosition(tip_h, -1)
+                        sim.setObjectInt32Param(obj1, sim.shapeintparam_respondable, 0)
+                        sim.setObjectInt32Param(obj1, sim.shapeintparam_static, 1)
+                        sim.setObjectPosition(obj1, -1, tip_pos)
+                        sim.setObjectParent(obj1, tip_h, True)
+                        attached = True
+                    elif gripper_open and attached:
+                        sim.setObjectParent(obj1, -1, True)
+                        sim.setObjectInt32Param(obj1, sim.shapeintparam_respondable, 1)
+                        sim.setObjectInt32Param(obj1, sim.shapeintparam_static, 0)
+                        try: sim.resetDynamicObject(obj1)
+                        except Exception: pass
+                        attached = False
+                _move_tcp_via_ik(
+                    bridge, env, ik_group, target_dummy, ik_joints, simIK,
+                    [x, y, z], None, counter,
+                    n_substeps=8, steps_per_substep=2,
+                    convergence_tracker=ik_convergence,
+                )
+            if not attached:
+                for _ in range(30): bridge.step()
+
+            cube_end = sim.getObjectPosition(obj1, -1)
+            ik_converged = len(ik_convergence) > 0 and all(ik_convergence)
+            deposit_error_m = math.sqrt(
+                (cube_end[0] - DEPOSIT_TARGET[0]) ** 2 +
+                (cube_end[1] - DEPOSIT_TARGET[1]) ** 2
+            )
+            deposit_plausible = deposit_error_m < DEPOSIT_THRESHOLD_M
+            bridge.stop_simulation()
+            try: simIK.eraseEnvironment(env)
+            except Exception: pass
+
+        terminal_r = compute_terminal_reward(
+            grasp_plausible, deposit_plausible, ik_converged,
+            distractor_collision=False,
+        )
+        return steps, terminal_r, cond.cpu(), waypoints
+
     for ep_idx in range(args.episodes):
         pose = sample_pose_eval(rng)
         try:
-            with CoppeliaSimBridge() as bridge:
-                bridge.load_scene(SCENE)
-                cond_storage = build_cond(planner, encoder, bridge, pose, device)
-                r = pick_with_dp(planner, pose, bridge, frames_dir=None, visual_encoder=encoder)
+            steps, terminal_r, cond_cpu, waypoints = run_episode_with_dppo(pose)
         except Exception as e:
             logger.warning(f"[{ep_idx}] sim fail: {e}")
             continue
 
-        terminal_r = compute_terminal_reward(
-            r["grasp_plausible"], r["deposit_plausible"], r["ik_converged"],
-            distractor_collision=False,
-        )
-        value = float(value_net(cond_storage.unsqueeze(0).to(device)).item())
-        ep = Episode(
-            cond=cond_storage,
-            actions=torch.tensor(r["waypoints"]),
+        value = float(value_net(cond_cpu.unsqueeze(0).to(device)).item())
+        ep = DPPOEpisode(
+            cond=cond_cpu,
+            actions=torch.tensor(waypoints),
             rewards=[terminal_r],
-            log_probs=torch.zeros(4),
+            log_probs=None,
             value=value,
+            denoising_steps=steps,
         )
         buffer.add(ep)
         rolling_rewards.append(terminal_r)
@@ -130,8 +212,9 @@ def main() -> int:
             update_log.append({"ep": ep_idx + 1, "rolling_reward": rolling, **stats})
             logger.info(
                 f"ep {ep_idx+1}/{args.episodes}: rolling_R={rolling:.2f} "
-                f"pol_loss={stats['policy_loss']:.3f} val_loss={stats['value_loss']:.3f} "
-                f"pos={stats['n_positive_episodes']}/{args.batch_size}"
+                f"pol={stats['policy_loss']:.3f} val={stats['value_loss']:.3f} "
+                f"kl={stats['kl_term']:.4f} clip_f={stats['clip_fraction']:.2f} "
+                f"ratio={stats['mean_ratio']:.3f}"
             )
 
     args.checkpoint_out.parent.mkdir(parents=True, exist_ok=True)
