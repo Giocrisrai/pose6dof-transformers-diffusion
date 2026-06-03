@@ -22,22 +22,45 @@ from src.rl.replay_buffer import Episode
 from src.rl.value_net import ValueNet
 
 
-# Constant exploration variance. sigma=0.5 mantiene ratio en rango razonable
-# frente a steps de gradiente: si shift es 0.5 (=sigma), ratio ~ exp(-0.5) = 0.6.
-# Con sigma=0.1, shift de 0.5 daba ratio ~ 4e-6 (todo clipped).
+# Sampling sigma constante (Iter 6b). sigma=0.5 ratio estable.
 SAMPLING_SIGMA = 0.5
 
+# Iter 6c: sigma por phase del waypoint. La accion es (H=16, 7) con
+# k=0..5 = aproximacion+grasp (precision importa) y k=6..15 = lift+deposit.
+# Sigma pequeno en grasp preserva precision; sigma mayor en deposit explora.
+SIGMA_GRASP_PHASE = 0.2
+SIGMA_DEPOSIT_PHASE = 0.7
+GRASP_PHASE_END_IDX = 6  # k=0..5
 
-def _gaussian_log_prob(x: torch.Tensor, mean: torch.Tensor, sigma: float) -> torch.Tensor:
-    """Pseudo log-prob N(x | mean, sigma^2 I) PROMEDIADO sobre event dims.
 
-    NOTA: usar mean en vez de sum es una practica estandar en RL continuo
-    para action spaces de alta dimension (Schulman et al. 2017). Sin esto,
-    para spaces de 112 dims (16x7), una diferencia de O(sigma) por dim
-    produce ratio ~ exp(-56) = 0 → PPO inestable. Con mean, escala bien.
+def _build_sigma_tensor(horizon: int, action_dim: int, device, use_phase: bool):
+    """Construye sigma (H, action_dim). Si use_phase=True, sigma varia por k:
+    sigma_grasp_phase para k < GRASP_PHASE_END_IDX, sigma_deposit_phase para resto.
     """
-    var = sigma ** 2
-    log_norm = -0.5 * math.log(2 * math.pi * var)
+    if not use_phase:
+        return torch.full((horizon, action_dim), SAMPLING_SIGMA, device=device)
+    sigma = torch.full((horizon, action_dim), SIGMA_DEPOSIT_PHASE, device=device)
+    sigma[:GRASP_PHASE_END_IDX] = SIGMA_GRASP_PHASE
+    return sigma
+
+
+def _gaussian_log_prob(x: torch.Tensor, mean: torch.Tensor, sigma) -> torch.Tensor:
+    """Pseudo log-prob N(x | mean, sigma^2) PROMEDIADO sobre event dims.
+
+    NOTA: usar mean en vez de sum es practica estandar en RL continuo
+    (Schulman et al. 2017). Para spaces de 112 dims, una diff de O(sigma)
+    por dim daria ratio ~ exp(-56) sin esto. Con mean, escala bien.
+
+    sigma puede ser float (constante) o tensor (H, action_dim) — Iter 6c
+    permite sigma por phase del waypoint.
+    """
+    if isinstance(sigma, float):
+        var = sigma ** 2
+        log_norm = -0.5 * math.log(2 * math.pi * var)
+    else:
+        # sigma tensor: broadcast contra (B, H, action_dim) o (H, action_dim)
+        var = sigma ** 2
+        log_norm = -0.5 * torch.log(2 * math.pi * var)
     return (-0.5 * (x - mean) ** 2 / var + log_norm).mean(dim=(-1, -2))
 
 
@@ -69,6 +92,7 @@ class DPPOAgent:
         kl_coef: float = 0.1,
         ref_model=None,
         sampling_sigma: float = SAMPLING_SIGMA,
+        sigma_per_phase: bool = False,
     ):
         self.planner = planner
         self.value_net = value_net
@@ -77,7 +101,11 @@ class DPPOAgent:
         self.entropy_coef = entropy_coef
         self.value_loss_coef = value_loss_coef
         self.kl_coef = kl_coef
-        self.sigma = sampling_sigma
+        self.sigma_per_phase = sigma_per_phase
+        self.sigma_scalar = sampling_sigma  # fallback si sigma_per_phase=False
+        self.sigma_tensor = _build_sigma_tensor(
+            planner.horizon, planner.action_dim, planner.device, sigma_per_phase
+        )
         self.ref_model = ref_model
         if self.ref_model is not None:
             for p in self.ref_model.parameters():
@@ -101,11 +129,11 @@ class DPPOAgent:
             timestep = torch.full((1,), t, device=device, dtype=torch.long)
             eps_pred = self.planner.model(x_t, timestep, cond)
             if t < self.k_last:
-                # Sample con exploration: eps = eps_pred + sigma * N(0, I)
-                exploration = torch.randn_like(eps_pred) * self.sigma
+                # Sample con exploration: eps = eps_pred + sigma(k) * N(0, I)
+                sigma_b = self.sigma_tensor.unsqueeze(0)  # (1, H, action_dim)
+                exploration = torch.randn_like(eps_pred) * sigma_b
                 eps_sampled = eps_pred + exploration
-                # log prob bajo politica
-                lp = float(_gaussian_log_prob(eps_sampled, eps_pred, self.sigma).item())
+                lp = float(_gaussian_log_prob(eps_sampled, eps_pred, sigma_b).item())
                 steps.append(DenoisingStep(
                     x_t=x_t.squeeze(0).cpu().clone(),
                     t=int(t),
@@ -162,7 +190,9 @@ class DPPOAgent:
             # POLICY: re-evaluate noise predictions con el modelo actual
             self.planner.model.train()
             eps_pred_new = self.planner.model(x_t_batch, t_batch, cond_batch)
-            log_prob_new = _gaussian_log_prob(eps_sampled_batch, eps_pred_new, self.sigma)
+            log_prob_new = _gaussian_log_prob(
+                eps_sampled_batch, eps_pred_new, self.sigma_tensor.unsqueeze(0)
+            )
             ratio = torch.exp(log_prob_new - log_prob_old)
             surr1 = ratio * advantages
             surr2 = torch.clamp(ratio, 1 - self.clip, 1 + self.clip) * advantages

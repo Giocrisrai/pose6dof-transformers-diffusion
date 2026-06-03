@@ -13,6 +13,30 @@ def test_terminal_success():
     assert r == 10.0
 
 
+def test_terminal_with_continuous_penalties():
+    """Iter 6c: penalty continuo por grasp impreciso + deposit lejano."""
+    # grasp proximity 10cm (5cm above threshold) → penalty -3 * 0.05 = -0.15
+    # deposit_error 0.4m → penalty -1 * 0.4 = -0.4
+    r = compute_terminal_reward(
+        grasp_plausible=True, deposit_plausible=True,
+        ik_converged=True, distractor_collision=False,
+        grasp_proximity_m=0.10, deposit_error_m=0.4,
+    )
+    expected = 10.0 - 0.15 - 0.4
+    assert abs(r - expected) < 1e-6
+
+
+def test_terminal_penalty_caps_deposit_error():
+    """deposit_error > 0.5m se clampea a 0.5 para evitar reward inf negativo."""
+    r = compute_terminal_reward(
+        grasp_plausible=True, deposit_plausible=False,
+        ik_converged=True, distractor_collision=False,
+        grasp_proximity_m=0.0, deposit_error_m=2.0,
+    )
+    expected = 5.0 - 0.5  # grasp_only + min(deposit_error, 0.5)
+    assert abs(r - expected) < 1e-6
+
+
 def test_terminal_grasp_only():
     r = compute_terminal_reward(
         grasp_plausible=True, deposit_plausible=False,

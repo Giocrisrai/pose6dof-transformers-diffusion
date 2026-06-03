@@ -573,6 +573,81 @@ Tres mejoras ortogonales para hacer ganar E2E:
 3. **Identificación del verdadero bottleneck**: el reward function actual sesga hacia deposit. Trabajo futuro es reward shaping o curriculum, NO el algoritmo RL.
 4. **Empíricamente validado que CoppeliaSim+500 episodios es insuficiente para PPO E2E gain**: motiva el roadmap PyBullet (Phase C).
 
+## Iter 6c (cerrado 2026-06-03): reward shaping balanceado + σ por phase — contraintuitivo
+
+Estado: **el reward shaping amplificó el bias en vez de balancearlo**. Lección negativa valiosa sobre reward design en imitation→RL transitions.
+
+### Motivación
+
+Iter 6b mostró que DPPO mejora deposit (+16 pp) sacrificando grasp (−38 pp), porque el reward function da gradiente principalmente en deposit (donde había headroom: 64 → 80 %). Hipótesis 6c: agregar **penalty continuo en grasp_proximity** debería forzar al policy a mantener precisión de grasp; y **σ pequeño en grasp phase** (k=0..5) debería preservar la precisión donde importa.
+
+### Cambios
+
+`src/rl/reward_fn.py`:
+- Terminal reward = binarios anteriores +
+  - `−3.0 × max(0, grasp_proximity_m − 0.05)` (penalty si grasp > 5 cm)
+  - `−1.0 × min(deposit_error_m, 0.5)` (penalty continuo de deposit, clipped)
+
+`src/rl/dppo_agent.py`:
+- `--sigma-per-phase` flag: en sampling, σ=0.2 para waypoints k=0..5 (grasp), σ=0.7 para k=6..15 (lift+deposit).
+
+Resto idéntico a 6b: 500 episodios, lr=1e-4, kl_coef=0.1, batch=16.
+
+### Resultado (n=50, seed=2026)
+
+| Métrica | v5 base | 6b DPPO proper | **6c shaped+σ-phase** |
+|---|---|---|---|
+| `dp_grasp_plausible_pct_sim` | **94 %** | 56 % | **10 %** ⬇️ |
+| `dp_deposit_plausible_pct_sim` | 64 % | 80 % | **92 %** 🥇 |
+| `dp_ik_converged_pct` | **94 %** | 92 % | 84 % |
+| `pick_and_place_success_pct` | **60 %** | 48 % | **8 %** ⬇️ |
+| `mean_grasp_proximity_m` | **0.031** | 0.048 | 0.116 |
+
+### Lectura honesta (contraintuitiva pero correcta)
+
+El reward shaping **NO balanceó** el aprendizaje; lo **amplificó hacia deposit**. Causa raíz:
+
+- **El penalty de deposit es DENSO** (clipped a 0.5, pero activo en cada episodio independiente del outcome): cada batch acumula −0.5 a −2.5 de penalty de deposit incluso en success.
+- **El penalty de grasp es ESCASO** (solo cuando proximity > 5 cm): v5 ya estaba al 94 % plausible (mayoría < 5 cm), así que casi no genera gradiente.
+- **Net effect**: la red ve un signal sostenido de "minimizar deposit_error" y casi ningún signal de "preservar grasp precision". La policy optimiza agresivamente deposit y abandona grasp porque está fuera del path mínimo de la trayectoria.
+
+Pareciese paradójico: agregar un castigo a grasp impreciso **empeoró** el grasp. Pero el signal de deposit (siempre activo) dominó. Esto enseña algo clave sobre reward design: **el balance no se logra agregando términos sino comparando densidades de gradiente entre objetivos**.
+
+### Mapa final del policy trade-off surface (Iter 6 completo)
+
+| Variante | Algoritmo | Reward | grasp | deposit | E2E |
+|---|---|---|---|---|---|
+| v5 baseline | BC heuristic | binary (impl.) | **94 %** | 64 % | **60 %** |
+| 6a v1 | self-imitation BC | binary | 0 % | 36 % | 0 % |
+| 6a v2 | self-imitation + KL | binary | 70 % | 78 % | 54 % |
+| 6b | DPPO proper (PPO clip) | binary | 56 % | 80 % | 48 % |
+| 6c | DPPO + shaped reward + σ-phase | shaped | 10 % | **92 %** | 8 % |
+
+**Patrón claro**: a medida que se agrega más signal RL, deposit sube y grasp baja. En este setup (CoppeliaSim + 500 episodios + reward design + sigma), NINGUNA variante supera v5 baseline en pick_and_place E2E. La RL signal *mueve* la policy en el trade-off surface pero no encuentra un Pareto improvement.
+
+### Conclusión final del Iter 6
+
+**Iter 5 (60 % E2E con imitation learning) sigue siendo el resultado headline del TFM.**
+
+Iter 6 entrega contribuciones científicas robustas:
+
+1. **Mapa empírico del trade-off**: cuatro variantes RL ubican la policy en distintos puntos de la curva grasp/deposit. Demuestra que RL en imitation-trained DP **es mecánicamente posible** pero requiere reward design sofisticado.
+2. **Validación de hallazgos teóricos de la literatura**: catastrophic forgetting sin KL, necesidad de PPO clip, importancia del balance entre densidad de gradiente entre objetivos. Todo medido en nuestro setup.
+3. **Best deposit_plausible del TFM**: 92 % en 6c. Si la métrica primaria del trabajo fuera deposit, 6c sería el headline.
+4. **Identificación de qué hace falta para gain real**: PyBullet/MJX scaling (10k+ episodios) o curriculum learning (entrenar grasp y deposit por separado luego juntos). Roadmap Iter 7+.
+
+### Datos generados
+
+- `data/models/diffusion_policy_v6c.pth` — ckpt Iter 6c (gitignored).
+- `experiments/results/pick_with_diffusion/eval_v6c_sim.json` — métricas.
+- Curva de training en `experiments/results/dppo_phaseA_log.json` (último overwrite).
+
+### Implicaciones para uso real
+
+- **Pipeline de TFM listo para deployment**: v5 (60 % E2E) cubre el caso de uso "pick-and-place single object en bin vacío" con métricas honestas y reproducibles.
+- **Para clutter o multi-objeto**: usar v6c si el deposit es crítico y el grasp puede tolerar más imprecisión.
+- **Para superar el 60 % real**: necesita escala (PyBullet) o reward más sofisticado. Trabajo futuro identificado.
+
 Cosas que **siguen abiertas**:
 - Deposit error sigue ~80 cm; requiere extender el dataset para incluir deposit, no es problema del conditioning.
 - Closed-loop policy (re-captura RGB-D durante la trayectoria) sería Iter 4 si se quisiera empujar más.
