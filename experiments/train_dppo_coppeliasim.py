@@ -57,6 +57,8 @@ def main() -> int:
     parser.add_argument("--seed", type=int, default=2027)  # ≠ eval seed 2026
     parser.add_argument("--kl-coef", type=float, default=1.0,
                         help="Peso del KD anchor a la referencia v5. 0 = sin anclaje.")
+    parser.add_argument("--sigma-per-phase", action="store_true",
+                        help="Iter 6c: sigma 0.2 en grasp (k=0..5), 0.7 en deposit (k=6..15).")
     parser.add_argument("--checkpoint-in", type=Path,
                         default=REPO / "data/models/diffusion_policy_sim_v5.pth")
     parser.add_argument("--checkpoint-out", type=Path,
@@ -89,6 +91,7 @@ def main() -> int:
     agent = DPPOAgent(
         planner, value_net, k_last_denoising=4, lr=args.lr,
         kl_coef=args.kl_coef, ref_model=ref_planner.model,
+        sigma_per_phase=args.sigma_per_phase,
     )
     buffer = EpisodeBuffer()
 
@@ -181,6 +184,8 @@ def main() -> int:
         terminal_r = compute_terminal_reward(
             grasp_plausible, deposit_plausible, ik_converged,
             distractor_collision=False,
+            grasp_proximity_m=grasp_proximity_m,
+            deposit_error_m=deposit_error_m,
         )
         return steps, terminal_r, cond.cpu(), waypoints
 

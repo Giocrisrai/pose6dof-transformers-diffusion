@@ -16,13 +16,21 @@ def compute_terminal_reward(
     deposit_plausible: bool,
     ik_converged: bool,
     distractor_collision: bool,
+    grasp_proximity_m: float = 0.0,
+    deposit_error_m: float = 0.0,
 ) -> float:
     """Terminal reward al final del trajectory.
 
-    +10 si grasp + deposit ambos plausibles.
-    +5 si grasp ok pero deposit no.
-    -5 si IK falla.
-    -10 si distractor collision (Phase B+).
+    Bonuses binarios:
+    - +10 si grasp + deposit ambos plausibles.
+    - +5 si grasp ok pero deposit no.
+    - -5 si IK falla.
+    - -10 si distractor collision.
+
+    Penalty continuo (Iter 6c, balanceado):
+    - -3 * max(0, grasp_proximity - 5cm): castiga grasp impreciso
+    - -1 * min(deposit_error, 0.5m): castiga deposit lejano
+    Da gradiente denso en ambas phases — evita el bias hacia solo deposit.
     """
     r = 0.0
     if grasp_plausible and deposit_plausible:
@@ -33,6 +41,9 @@ def compute_terminal_reward(
         r -= 5.0
     if distractor_collision:
         r -= 10.0
+    # Penalty continuo (Iter 6c)
+    r -= 3.0 * max(0.0, grasp_proximity_m - 0.05)
+    r -= 1.0 * min(deposit_error_m, 0.5)
     return r
 
 

@@ -120,6 +120,7 @@ data/models/visual_encoder_iter5.pth
 data/models/diffusion_policy_v6_phase*.pth
 data/models/diffusion_policy_v6_phase*.summary.json
 data/models/diffusion_policy_v6b*.pth
+data/models/diffusion_policy_v6c*.pth
 
 # Demo reel: MP4 generados (regenerables con build_demo_reel.py)
 experiments/results/demo_reel/
