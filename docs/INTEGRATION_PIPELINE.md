@@ -648,6 +648,82 @@ Iter 6 entrega contribuciones científicas robustas:
 - **Para clutter o multi-objeto**: usar v6c si el deposit es crítico y el grasp puede tolerar más imprecisión.
 - **Para superar el 60 % real**: necesita escala (PyBullet) o reward más sofisticado. Trabajo futuro identificado.
 
+## Iter 6d (cerrado 2026-06-04): ablación σ-per-phase + reward binario
+
+Estado: **última ablación del Iter 6, confirma definitivamente el techo de RL en este setup**.
+
+### Motivación
+
+Iter 6c amplificó el bias hacia deposit por reward shaping mal calibrado. Iter 6d aísla el efecto de **σ-per-phase solo** (sigma 0.2 grasp / 0.7 deposit) **con reward binario** (sin penalties continuas que sesgan densidad de gradiente).
+
+Hipótesis: σ-per-phase debería preservar precisión de grasp (σ pequeño) sin la trampa del reward shaping.
+
+### Cambios
+
+- `experiments/train_dppo_coppeliasim.py`: nuevo flag `--binary-reward` (pasa `grasp_proximity_m=0, deposit_error_m=0` a `compute_terminal_reward` → solo bonuses binarios).
+- Mismo setup que 6c en lo demás: 500 episodios, lr=1e-4, kl_coef=0.1, sigma-per-phase, batch=16.
+
+### Curva de training (19h con throttling intermedio)
+
+- ep 16: rolling_R = 6.56
+- ep 80: 6.25 (estable)
+- ep 160: 0.62 (dip)
+- ep 243: 0.31 (lowest)
+- ep 323: 4.69 (recovering)
+- ep 403: 6.88 (back to baseline+)
+- ep 483: 4.06
+- **ep 500 (final): 0.62** (último batch outlier)
+- **peak**: 8.44 alrededor de ep 371 (más alto de cualquier Iter 6)
+
+### Resultado eval (n=50, seed=2026)
+
+| Métrica | v5 base | 6b (DPPO) | 6c (shaped+σ) | **6d (σ + binary)** |
+|---|---|---|---|---|
+| `dp_grasp_plausible_pct_sim` | **94 %** | 56 % | 10 % | 34 % |
+| `dp_deposit_plausible_pct_sim` | 64 % | 80 % | **92 %** | 78 % |
+| `dp_ik_converged_pct` | **94 %** | 92 % | 84 % | 84 % |
+| `pick_and_place_success_pct` | **60 %** | 48 % | 8 % | 28 % |
+| `mean_grasp_proximity_m` | **0.031** | 0.048 | 0.116 | 0.063 |
+
+### Lectura honesta
+
+- σ-per-phase **NO recupera grasp_plausible al nivel de baseline**. Mejora vs 6c (10→34 %) pero queda muy debajo de 6b (56 %). Probablemente porque σ=0.2 sigue siendo muy ruidoso para waypoints donde la precisión < 5 cm importa.
+- Deposit estable en 78 % (similar a 6b 80 % y a 6a v2 78 %): el binary bonus +5 vs +10 da signal modesto pero útil.
+- **E2E 28 %**: en el medio entre 6b (48 %) y 6c (8 %). Confirma que σ-per-phase añade complejidad sin ganar performance.
+
+## Iter 6 — Conclusión final consolidada
+
+### Mapa exhaustivo del policy trade-off surface
+
+| Variant | Algoritmo | Reward | grasp | deposit | E2E |
+|---|---|---|---|---|---|
+| **v5 baseline** | imitation learning (BC heuristic) | binary (impl.) | **94 %** | 64 % | **60 %** 🏆 |
+| 6a v1 | self-imitation BC | binary | 0 % | 36 % | 0 % |
+| 6a v2 | self-imitation + KL anchor | binary | 70 % | 78 % | 54 % |
+| 6b | DPPO proper (PPO clip + re-eval log-probs) | binary | 56 % | 80 % | 48 % |
+| 6c | DPPO + shaped reward + σ-per-phase | shaped | 10 % | **92 %** 🥇 | 8 % |
+| 6d | DPPO + σ-per-phase + binary | binary | 34 % | 78 % | 28 % |
+
+### Contribución del Iter 6 al TFM
+
+1. **Mapa empírico completo del policy trade-off surface**: 5 ablaciones (algoritmo × reward × σ) ubican la policy en distintos puntos. Demuestra cuantitativamente que naive RL en imitation-trained DP **mueve** pero **no mejora** Pareto en este setup.
+2. **Validación de findings teóricos**:
+   - Self-imitation sin regularización → catastrophic forgetting (6a v1).
+   - KL anchor previene colapso pero no entrega gain (6a v2).
+   - PPO clip + re-eval log-probs es mecánicamente correcto (6b).
+   - Reward shaping require balance de gradient density entre objetivos (6c contraintuitivo).
+   - σ por phase solo es una intervención débil (6d).
+3. **Identificación cuantitativa de las constraints**:
+   - 500 episodios en CoppeliaSim es insuficiente (literatura DPPO usa 100k-1M).
+   - Reward binario sesga hacia el objetivo con headroom; reward shaping requiere balance fino.
+   - Action space de 112 dims requiere dim-normalized log-prob para PPO estable.
+4. **Roadmap concreto para Iter 7+**:
+   - **Escala**: PyBullet/MJX para 10k-50k episodios.
+   - **Curriculum**: train grasp solo, después deposit solo, luego conjunto.
+   - **Multi-objective RL**: Pareto front explícito en vez de scalar reward.
+
+**Iter 5 (60 % E2E) sigue siendo el headline definitivo del TFM**. Iter 6 entrega contribución científica robusta vía 5 ablaciones que **mapean el trade-off surface** y **identifican los factores limitantes**.
+
 Cosas que **siguen abiertas**:
 - Deposit error sigue ~80 cm; requiere extender el dataset para incluir deposit, no es problema del conditioning.
 - Closed-loop policy (re-captura RGB-D durante la trayectoria) sería Iter 4 si se quisiera empujar más.

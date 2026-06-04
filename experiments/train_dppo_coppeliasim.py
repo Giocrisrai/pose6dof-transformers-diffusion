@@ -59,6 +59,8 @@ def main() -> int:
                         help="Peso del KD anchor a la referencia v5. 0 = sin anclaje.")
     parser.add_argument("--sigma-per-phase", action="store_true",
                         help="Iter 6c: sigma 0.2 en grasp (k=0..5), 0.7 en deposit (k=6..15).")
+    parser.add_argument("--binary-reward", action="store_true",
+                        help="Iter 6d: solo bonuses binarios, sin continuous penalties.")
     parser.add_argument("--checkpoint-in", type=Path,
                         default=REPO / "data/models/diffusion_policy_sim_v5.pth")
     parser.add_argument("--checkpoint-out", type=Path,
@@ -184,8 +186,8 @@ def main() -> int:
         terminal_r = compute_terminal_reward(
             grasp_plausible, deposit_plausible, ik_converged,
             distractor_collision=False,
-            grasp_proximity_m=grasp_proximity_m,
-            deposit_error_m=deposit_error_m,
+            grasp_proximity_m=0.0 if args.binary_reward else grasp_proximity_m,
+            deposit_error_m=0.0 if args.binary_reward else deposit_error_m,
         )
         return steps, terminal_r, cond.cpu(), waypoints
 
