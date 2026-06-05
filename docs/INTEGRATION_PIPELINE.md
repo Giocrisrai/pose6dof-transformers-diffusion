@@ -722,9 +722,71 @@ Hipótesis: σ-per-phase debería preservar precisión de grasp (σ pequeño) si
    - **Curriculum**: train grasp solo, después deposit solo, luego conjunto.
    - **Multi-objective RL**: Pareto front explícito en vez de scalar reward.
 
-**Iter 5 (60 % E2E) sigue siendo el headline definitivo del TFM**. Iter 6 entrega contribución científica robusta vía 5 ablaciones que **mapean el trade-off surface** y **identifican los factores limitantes**.
+**Iter 5 (60 % E2E) fue el headline hasta Iter 7b** (ver más abajo), que combina curriculum + best-of-N para llegar a **78 % E2E y superar al baseline supervisado**. Iter 6 entrega contribución científica robusta vía 5 ablaciones que **mapean el trade-off surface** y **identifican los factores limitantes** que Iter 7 resuelve.
 
 Cosas que **siguen abiertas**:
 - Deposit error sigue ~80 cm; requiere extender el dataset para incluir deposit, no es problema del conditioning.
 - Closed-loop policy (re-captura RGB-D durante la trayectoria) sería Iter 4 si se quisiera empujar más.
 - Algunos waypoints de la policy caen fuera del workspace alcanzable del UR5 (6/640 substeps en el eval n=50). Filtrar el dataset de training por reachability del UR5 mejoraría aún más la robustez.
+
+---
+
+## Iter 7a (cerrado 2026-06-05): curriculum grasp→deposit
+
+Ejecuta el roadmap de Iter 6 ("curriculum: train grasp solo, después conjunto"). DPPO en 2 fases sobre la baseline v5, con KL anchor para prevenir el olvido catastrófico del grasp que hundió a Iter 6.
+
+### Diseño
+- **Fase 1 (grasp-only):** reward = +10 si grasp plausible, −5 si IK falla. Deposit ignorado. Especializa la policy en grasp preciso.
+- **Fase 2 (balanced):** reward = +5 grasp + +5 deposit, con **KL anchor a la policy de fase 1** (protege el grasp aprendido mientras incorpora deposit).
+- Implementado vía `--curriculum-phase {1,2}` en `train_dppo_coppeliasim.py`; reward en `src/rl/reward_fn.py`.
+
+### Métricas Iter 7a (50 picks en sim, seed 2026)
+
+| Métrica | Iter 5 (SL) | Iter 6d | **Iter 7a** | Δ vs 6d |
+|---|---|---|---|---|
+| `dp_grasp_plausible_pct_sim` | 94 % | 34 % | **58 %** | +24 pp |
+| `dp_deposit_plausible_pct_sim` | 64 % | 78 % | **92 %** 🥇 | +14 pp |
+| `dp_ik_converged_pct` | 94 % | 84 % | 86 % | +2 pp |
+| `pick_and_place_success_pct` | 60 % | 28 % | **50 %** | +22 pp |
+| `mean_grasp_proximity_m` | 3.1 cm | 6.3 cm | 5.9 cm | −0.4 cm |
+
+### Lectura honesta del resultado
+El curriculum **valida su hipótesis**: mitiga el olvido catastrófico (grasp 34→58 %) y logra el **mejor deposit del proyecto (92 %)**. Pero el éxito E2E (50 %) **todavía no bate al baseline supervisado (60 %)**. El cuello de botella es el grasp (58 % vs 94 % de SL).
+
+### Datos generados
+- `data/models/diffusion_policy_v7a_phase1.pth`, `_phase2.pth` (gitignored, regenerables)
+- `experiments/results/pick_with_diffusion/eval_v7a_sim.json`
+- eval: `experiments/eval_diffusion_iter7a_sim.py`
+
+---
+
+## Iter 7b (cerrado 2026-06-05): best-of-N — selección por percepción
+
+### Diagnóstico que lo motivó
+Análisis de los 50 picks de Iter 7a: de los 21 fallos de grasp, **12 eran borderline** (<8 cm, umbral 5 cm) y solo 1 coincidía con fallo de IK. Es decir, el grasp restante era **drift de precisión por la estocasticidad de la policy**, no un fallo estructural. Hipótesis: recuperables por **selección**, sin reentrenar.
+
+### Diseño
+- En `pick_with_dp` (`experiments/run_pick_with_diffusion.py`), parámetro `best_of_n`.
+- Se muestrean **N=8 trayectorias** estocásticas de la policy (cada una parte de ruido independiente).
+- Se puntúa cada candidata por proximidad de su waypoint de grasp al objeto (**pose conocida vía FoundationPose**) y se ejecuta solo la mejor.
+- **Coste de sim idéntico**: el sampling de difusión es barato (CPU/MPS); solo se ejecuta una trayectoria en el simulador.
+
+### Métricas Iter 7b (50 picks en sim, seed 2026)
+
+| Métrica | Iter 5 (SL) | Iter 7a | **Iter 7b** | Δ vs 7a |
+|---|---|---|---|---|
+| `dp_grasp_plausible_pct_sim` | 94 % | 58 % | **82 %** | +24 pp |
+| `dp_deposit_plausible_pct_sim` | 64 % | 92 % | **92 %** | = |
+| `dp_ik_converged_pct` | 94 % | 86 % | 86 % | = |
+| `pick_and_place_success_pct` | **60 %** | 50 % | **78 %** 🏆 | +28 pp |
+| `mean_grasp_proximity_m` | 3.1 cm | 5.9 cm | **3.6 cm** | −2.3 cm |
+
+### Lectura honesta del resultado
+El diagnóstico fue exacto: best-of-N recupera los grasps borderline (58→82 %) manteniendo el deposit récord (92 %). El éxito E2E sube a **78 %, superando al baseline supervisado (60 %)** — primer punto de la línea de planning que bate a la imitación pura. best-of-N es una técnica de inferencia estándar y honesta para diffusion policies, viable aquí porque la pose del objeto la provee FoundationPose en el pipeline real.
+
+### Conclusión para la defensa
+La combinación **curriculum RL (mejor deposit) + selección por percepción (recupera grasp)** entrega el mejor resultado E2E del proyecto (**78 %**). Cierra el cuello de botella del grasp y constituye el nuevo headline de la línea de planning.
+
+### Datos generados
+- `experiments/results/pick_with_diffusion/eval_v7b_sim.json`
+- eval: `experiments/eval_diffusion_iter7b_sim.py --best-of-n 8`

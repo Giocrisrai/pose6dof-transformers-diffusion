@@ -33,9 +33,9 @@
 
 ---
 
-## Diffusion Policy re-entrenada sobre datos del sim (Iter 1-3, mayo 2026)
+## Diffusion Policy re-entrenada sobre datos del sim (Iter 1-7b, mayo–jun 2026)
 
-Cierra **Brecha B** del pipeline (DP integrada a la ejecución en sim) en tres iteraciones progresivas. Eval honesto: **50 picks en CoppeliaSim, seed=2026**, métricas medidas en cada pick.
+Cierra **Brecha B** del pipeline (DP integrada a la ejecución en sim) en iteraciones progresivas: primero aprendizaje supervisado (Iter 1-5), luego RL fine-tuning + selección por percepción (Iter 6-7b). Eval honesto: **50 picks en CoppeliaSim, seed=2026**, métricas medidas en cada pick.
 
 | Métrica (eval n=50 sim, seed 2026) | Iter 1 | Iter 2 | Iter 3 | Iter 4 (multi) | **Iter 5 (pick+place)** |
 |---|---|---|---|---|---|
@@ -53,6 +53,28 @@ Cierra **Brecha B** del pipeline (DP integrada a la ejecución en sim) en tres i
 - **Iter 3**: conditioning visual con **ResNet-18 pretrained** (backbone frozen + head `Linear(512, 52)` trainable) sobre RGB-D del sim reemplazando el zero-pad de v2. Más que duplica `grasp_plausible` a 78 %.
 - **Iter 4** (multi-object): probó conditioning visual con escenas 3-8 cubos. **Hipótesis rechazada honestamente**: DP empata al heurístico en colisiones (54%/54%) — la DP imita los defectos del demostrador. Contribución científica: roadmap para Iter 6 con RL/RRT-Connect.
 - **Iter 5** (deposit phase): **primera vez que el TFM mide pick-AND-place E2E**. 60 % éxito completo (grasp + deposit), 94 % grasp plausible, 64 % deposit en threshold 30 cm. Detalles completos: [`docs/INTEGRATION_PIPELINE.md`](docs/INTEGRATION_PIPELINE.md).
+
+### RL fine-tuning + selección por percepción (Iter 6-7b)
+
+Sobre la baseline supervisada Iter 5, una segunda línea explora **DPPO** (RL fine-tuning) y **best-of-N** (selección por percepción). Mismo protocolo de eval (50 picks, seed 2026).
+
+| Métrica (eval n=50 sim, seed 2026) | Iter 5 (SL) | Iter 6d (DPPO) | Iter 7a (curriculum) | **Iter 7b (curr.+best-of-8)** |
+|---|---|---|---|---|
+| `dp_grasp_plausible_pct_sim` | 94 % | 34 % | 58 % | **82 %** |
+| `dp_deposit_plausible_pct_sim` | 64 % | 78 % | 92 % | **92 %** |
+| `dp_ik_converged_pct` | 94 % | 84 % | 86 % | 86 % |
+| `pick_and_place_success_pct` | 60 % | 28 % | 50 % | **78 %** |
+| `mean_grasp_proximity_m` | 3.1 cm | 6.3 cm | 5.9 cm | **3.6 cm** |
+
+- **Iter 6 (a-d)** (DPPO): RL fine-tuning con PPO clip + KL anchor a v5. Sube `deposit` (64→78 %) pero **rompe el grasp** (94→34 %, olvido catastrófico) — el éxito E2E cae a 28 %. Resultado negativo honesto que motiva el curriculum.
+- **Iter 7a** (curriculum grasp→deposit): entrenamiento en 2 fases (fase 1 solo grasp → fase 2 balanceada con KL anchor a la fase 1). Recupera parte del grasp (34→58 %) y logra el **deposit récord del proyecto (92 %)**. P&P sube a 50 %, aún por debajo del baseline.
+- **Iter 7b** (best-of-N): diagnóstico de Iter 7a → 12/21 fallos de grasp eran *borderline* (<8 cm, umbral 5 cm), drift de precisión, no fallo de IK. Se muestrean **N=8 trayectorias** y se ejecuta la de menor proximidad de grasp al objeto (pose conocida vía FoundationPose). **Sin reentrenar, coste de sim idéntico.** Recupera el grasp (58→82 %) y **supera al baseline supervisado en éxito E2E: 78 % vs 60 %** — mejor resultado del proyecto.
+
+**Reproducir Iter 7b (requiere CoppeliaSim corriendo en :23000):**
+
+```bash
+python experiments/eval_diffusion_iter7b_sim.py --n 50 --best-of-n 8   # ~30 min
+```
 
 **Reproducir Iter 3 (requiere CoppeliaSim corriendo en :23000):**
 
