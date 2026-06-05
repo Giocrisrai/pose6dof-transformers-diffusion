@@ -70,6 +70,7 @@ def pick_with_dp(
     n_substeps: int = 8,
     steps_per_substep: int = 2,
     visual_encoder=None,
+    best_of_n: int = 1,
 ):
     """Ejecuta un pick usando la DP entrenada.
 
@@ -126,9 +127,28 @@ def pick_with_dp(
             visual_emb = visual_encoder(rgbd_t).cpu().numpy()[0]
     cond = planner.encode_observation(pose, visual_emb=visual_emb)
 
-    # Generar trayectoria con la policy
-    traj = planner.plan_grasp(pose, n_samples=1, cond=cond)
-    waypoints = traj[0]
+    # Generar trayectoria con la policy.
+    # best_of_n > 1 (Iter 7b): muestrea N trayectorias estocásticas y selecciona
+    # la de menor proximidad de grasp al cubo (pose conocida vía percepción).
+    # Coste de sim idéntico — solo se EJECUTA la mejor; el sampling de difusión es barato.
+    n = max(1, best_of_n)
+    traj = planner.plan_grasp(pose, n_samples=n, cond=cond)
+    if n > 1:
+        cube_xyz = [float(v) for v in pose[:3, 3]]
+        best_i, best_prox = 0, float("inf")
+        for cand_i in range(n):
+            cand = traj[cand_i]
+            g_idx = next(
+                (k for k in range(len(cand)) if float(cand[k, 6]) < 0.5), 8,
+            )
+            prox = math.sqrt(
+                sum((cube_xyz[j] - float(cand[g_idx, j])) ** 2 for j in range(3))
+            )
+            if prox < best_prox:
+                best_prox, best_i = prox, cand_i
+        waypoints = traj[best_i]
+    else:
+        waypoints = traj[0]
 
     # PROXIMITY pre-snap: distance entre el waypoint del grasp (primera vez que
     # gripper cruza < 0.5 = "cerrándose") y la pose del cubo. Mide si la DP

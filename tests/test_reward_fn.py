@@ -26,6 +26,38 @@ def test_terminal_with_continuous_penalties():
     assert abs(r - expected) < 1e-6
 
 
+def test_curriculum_phase_1_grasp_only():
+    """Iter 7a Phase 1: solo signal de grasp, deposit ignorado."""
+    r_grasp = compute_terminal_reward(
+        grasp_plausible=True, deposit_plausible=False,
+        ik_converged=True, distractor_collision=False,
+        curriculum_phase=1,
+    )
+    assert r_grasp == 10.0
+    r_no_grasp = compute_terminal_reward(
+        grasp_plausible=False, deposit_plausible=True,
+        ik_converged=True, distractor_collision=False,
+        curriculum_phase=1,
+    )
+    assert r_no_grasp == 0.0  # deposit ignorado
+
+
+def test_curriculum_phase_2_balanced():
+    """Iter 7a Phase 2: balanced +5 grasp + +5 deposit."""
+    r_both = compute_terminal_reward(
+        grasp_plausible=True, deposit_plausible=True,
+        ik_converged=True, distractor_collision=False,
+        curriculum_phase=2,
+    )
+    assert r_both == 10.0
+    r_grasp_only = compute_terminal_reward(
+        grasp_plausible=True, deposit_plausible=False,
+        ik_converged=True, distractor_collision=False,
+        curriculum_phase=2,
+    )
+    assert r_grasp_only == 5.0
+
+
 def test_terminal_penalty_caps_deposit_error():
     """deposit_error > 0.5m se clampea a 0.5 para evitar reward inf negativo."""
     r = compute_terminal_reward(
