@@ -1,0 +1,414 @@
+{
+  "n_requested": 50,
+  "n_valid": 50,
+  "n_skipped": 0,
+  "policy": "diffusion_policy_v7a_phase2",
+  "seed": 2026,
+  "dp_grasp_plausible_pct_sim": 58.0,
+  "dp_deposit_plausible_pct_sim": 92.0,
+  "dp_ik_converged_pct": 86.0,
+  "pick_and_place_success_pct": 50.0,
+  "mean_grasp_proximity_m": 0.05900847819033129,
+  "per_pick": [
+    {
+      "i": 0,
+      "grasp_proximity_m": 0.036320042612503045,
+      "deposit_error_m": 0.04869102338079692,
+      "ik_converged": false,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 1,
+      "grasp_proximity_m": 0.05458374040476832,
+      "deposit_error_m": 0.0477085145736882,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    },
+    {
+      "i": 2,
+      "grasp_proximity_m": 0.03955787073754315,
+      "deposit_error_m": 0.08030464186253625,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 3,
+      "grasp_proximity_m": 0.1066812131807327,
+      "deposit_error_m": 0.1541782395173541,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    },
+    {
+      "i": 4,
+      "grasp_proximity_m": 0.1005569367243813,
+      "deposit_error_m": 0.04478280333208688,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    },
+    {
+      "i": 5,
+      "grasp_proximity_m": 0.047040271366577964,
+      "deposit_error_m": 0.06645707815064646,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 6,
+      "grasp_proximity_m": 0.06900592163833923,
+      "deposit_error_m": 0.03529997989550067,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    },
+    {
+      "i": 7,
+      "grasp_proximity_m": 0.16088535130962547,
+      "deposit_error_m": 0.0963319793656476,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    },
+    {
+      "i": 8,
+      "grasp_proximity_m": 0.05719137623950136,
+      "deposit_error_m": 0.05425915743804092,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    },
+    {
+      "i": 9,
+      "grasp_proximity_m": 0.04995514066296498,
+      "deposit_error_m": 0.01162964826424745,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 10,
+      "grasp_proximity_m": 0.041249078750099664,
+      "deposit_error_m": 0.07361742817195432,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 11,
+      "grasp_proximity_m": 0.0422086283652366,
+      "deposit_error_m": 0.03134031992836512,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 12,
+      "grasp_proximity_m": 0.029450323989151855,
+      "deposit_error_m": 0.059331674241134336,
+      "ik_converged": false,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 13,
+      "grasp_proximity_m": 0.030639847115738608,
+      "deposit_error_m": 0.04903787051043868,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 14,
+      "grasp_proximity_m": 0.03412784163196309,
+      "deposit_error_m": 0.02928716455349519,
+      "ik_converged": false,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 15,
+      "grasp_proximity_m": 0.05448583586591552,
+      "deposit_error_m": 0.12200564358177583,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    },
+    {
+      "i": 16,
+      "grasp_proximity_m": 0.04646229469749969,
+      "deposit_error_m": 0.030930117782304038,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 17,
+      "grasp_proximity_m": 0.04271843816918084,
+      "deposit_error_m": 0.959011606511896,
+      "ik_converged": false,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 18,
+      "grasp_proximity_m": 0.03985023178893526,
+      "deposit_error_m": 0.06368995391266195,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 19,
+      "grasp_proximity_m": 0.080342970645449,
+      "deposit_error_m": 0.06691805857482998,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    },
+    {
+      "i": 20,
+      "grasp_proximity_m": 0.026398753106401263,
+      "deposit_error_m": 18.28398434731306,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 21,
+      "grasp_proximity_m": 0.039736005372419086,
+      "deposit_error_m": 0.029256966867927794,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 22,
+      "grasp_proximity_m": 0.016885545785072443,
+      "deposit_error_m": 0.03161693849868451,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 23,
+      "grasp_proximity_m": 0.04415951211456848,
+      "deposit_error_m": 1.2836605570372939,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 24,
+      "grasp_proximity_m": 0.07107818811455958,
+      "deposit_error_m": 0.0973601766056437,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    },
+    {
+      "i": 25,
+      "grasp_proximity_m": 0.04054046766822461,
+      "deposit_error_m": 0.023537022920453957,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 26,
+      "grasp_proximity_m": 0.1203169371989235,
+      "deposit_error_m": 0.0522515698672758,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    },
+    {
+      "i": 27,
+      "grasp_proximity_m": 0.037668727005720305,
+      "deposit_error_m": 0.0736938971998356,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 28,
+      "grasp_proximity_m": 0.06792946631989827,
+      "deposit_error_m": 0.02397290616732923,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    },
+    {
+      "i": 29,
+      "grasp_proximity_m": 0.09107153425094464,
+      "deposit_error_m": 0.1130220370113494,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    },
+    {
+      "i": 30,
+      "grasp_proximity_m": 0.06000104399447456,
+      "deposit_error_m": 0.27526677562924823,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    },
+    {
+      "i": 31,
+      "grasp_proximity_m": 0.04760682994133918,
+      "deposit_error_m": 0.0780932199666096,
+      "ik_converged": false,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 32,
+      "grasp_proximity_m": 0.01441118970948935,
+      "deposit_error_m": 0.022890598034746606,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 33,
+      "grasp_proximity_m": 0.0729106825127251,
+      "deposit_error_m": 0.0136660086949436,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    },
+    {
+      "i": 34,
+      "grasp_proximity_m": 0.05653905793622269,
+      "deposit_error_m": 0.02442775983479089,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    },
+    {
+      "i": 35,
+      "grasp_proximity_m": 0.048422845143210144,
+      "deposit_error_m": 0.09310238946340112,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 36,
+      "grasp_proximity_m": 0.11220098562963196,
+      "deposit_error_m": 0.11076008341892833,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    },
+    {
+      "i": 37,
+      "grasp_proximity_m": 0.04945926885148387,
+      "deposit_error_m": 0.11143895859985542,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 38,
+      "grasp_proximity_m": 0.02046508468903252,
+      "deposit_error_m": 0.13347874161743592,
+      "ik_converged": false,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 39,
+      "grasp_proximity_m": 0.018786786676608058,
+      "deposit_error_m": 0.03785151368812516,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 40,
+      "grasp_proximity_m": 0.08229360284041787,
+      "deposit_error_m": 0.004459414857865446,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    },
+    {
+      "i": 41,
+      "grasp_proximity_m": 0.03337554014714192,
+      "deposit_error_m": 0.09526592706682362,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 42,
+      "grasp_proximity_m": 0.032723463010877446,
+      "deposit_error_m": 5.411567775740388,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": false
+    },
+    {
+      "i": 43,
+      "grasp_proximity_m": 0.06515591659221665,
+      "deposit_error_m": 0.07460843282065041,
+      "ik_converged": false,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    },
+    {
+      "i": 44,
+      "grasp_proximity_m": 0.06739389405836638,
+      "deposit_error_m": 0.0831008906179244,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    },
+    {
+      "i": 45,
+      "grasp_proximity_m": 0.018154917145116155,
+      "deposit_error_m": 0.039867913585883194,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 46,
+      "grasp_proximity_m": 0.038699282975811114,
+      "deposit_error_m": 0.023170994856105406,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 47,
+      "grasp_proximity_m": 0.04891379002149514,
+      "deposit_error_m": 0.01603449238662776,
+      "ik_converged": true,
+      "grasp_plausible": true,
+      "deposit_plausible": true
+    },
+    {
+      "i": 48,
+      "grasp_proximity_m": 0.0532667652975359,
+      "deposit_error_m": 0.04073200762590907,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    },
+    {
+      "i": 49,
+      "grasp_proximity_m": 0.29054446951052865,
+      "deposit_error_m": 0.07577294209170687,
+      "ik_converged": true,
+      "grasp_plausible": false,
+      "deposit_plausible": true
+    }
+  ]
+}

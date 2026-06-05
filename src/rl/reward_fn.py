@@ -18,6 +18,7 @@ def compute_terminal_reward(
     distractor_collision: bool,
     grasp_proximity_m: float = 0.0,
     deposit_error_m: float = 0.0,
+    curriculum_phase: int = 0,  # 0 = full reward, 1 = grasp-only, 2 = balanced both
 ) -> float:
     """Terminal reward al final del trajectory.
 
@@ -32,6 +33,24 @@ def compute_terminal_reward(
     - -1 * min(deposit_error, 0.5m): castiga deposit lejano
     Da gradiente denso en ambas phases — evita el bias hacia solo deposit.
     """
+    if curriculum_phase == 1:
+        # Phase 1 (Iter 7a): solo signal de grasp. Deposit ignorado.
+        r = 10.0 if grasp_plausible else 0.0
+        if not ik_converged:
+            r -= 5.0
+        return r
+    if curriculum_phase == 2:
+        # Phase 2 (Iter 7a): balanceado +5 grasp + +5 deposit. KL anchor a Phase 1
+        # protege el grasp (manejado en el agent, no aqui).
+        r = 0.0
+        if grasp_plausible:
+            r += 5.0
+        if deposit_plausible:
+            r += 5.0
+        if not ik_converged:
+            r -= 5.0
+        return r
+    # Default (curriculum_phase=0): reward full Iter 6
     r = 0.0
     if grasp_plausible and deposit_plausible:
         r += 10.0
