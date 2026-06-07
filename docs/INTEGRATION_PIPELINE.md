@@ -790,3 +790,18 @@ La combinación **curriculum RL (mejor deposit) + selección por percepción (re
 ### Datos generados
 - `experiments/results/pick_with_diffusion/eval_v7b_sim.json`
 - eval: `experiments/eval_diffusion_iter7b_sim.py --best-of-n 8`
+
+### Ablación best-of-N (justificación del punto de operación N=8)
+
+Barrido del número de candidatos N (misma policy v7a_phase2, 50 picks, seed 2026):
+
+| N | grasp | deposit | ik | pick&place E2E | prox grasp |
+|---|---|---|---|---|---|
+| 1 (sin selección) | 58 % | 92 % | 86 % | 50 % | 5.9 cm |
+| 4 | 78 % | 86 % | 86 % | 68 % | 4.0 cm |
+| **8** | 82 % | 92 % | 86 % | **78 %** | 3.6 cm |
+| 16 | 88 % | 86 % | 76 % | 76 % | 3.2 cm |
+
+**Lectura:** la plausibilidad de agarre y la proximidad mejoran monótonamente con N (la selección es cada vez más fina: 5.9→3.2 cm). Sin embargo, el **éxito end-to-end se satura en N=8 (78 %) y no mejora en N=16 (76 %, dentro del ruido de ±2 pp para n=50)**. La causa es que el criterio de selección optimiza *solo* la proximidad de agarre: a N=16 favorece trayectorias con mejor grasp pero peor convergencia de IK (86→76 %) y depósito (92→86 %). Es decir, el rendimiento del agarre y el éxito E2E divergen más allá de N=8. **N=8 es el punto de operación elegido** (mejor E2E con coste de sampling moderado). Una extensión natural sería un criterio de selección multi-objetivo (grasp + reachability IK + deposit) en vez de solo proximidad de grasp.
+
+Datos: `eval_v7b_bon4_sim.json`, `eval_v7b_sim.json` (N=8), `eval_v7b_bon16_sim.json`.
