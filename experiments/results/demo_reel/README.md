@@ -28,3 +28,13 @@ Si la corrida en vivo en CoppeliaSim falla, proyectar `reel_resumen.mp4`.
 ```bash
 .venv/bin/python experiments/build_demo_reel.py
 ```
+
+## Reel showcase (alto impacto)
+
+`reel_showcase.mp4` — hero pick cinematográfico de Iter 7c (cámara dedicada
+1280×720, coreografía órbita→seguimiento→retroceso, eje óptico +Z) + segmento
+de valor y aplicaciones (logros, costo accesible, casos de uso, honestidad).
+Separado del `reel_resumen.mp4` técnico (que queda para la defensa formal); este
+es para producto/pitch. Regenerar:
+
+    .venv/bin/python experiments/make_showcase_reel.py
