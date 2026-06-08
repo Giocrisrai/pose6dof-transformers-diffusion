@@ -23,7 +23,9 @@ OUT = REPO / "experiments/results/demo_reel"
 WORKSPACE_CENTER = (0.0, -0.30, 0.10)  # centro aproximado bin/deposit
 POSE_INDEX = 49
 TORCH_SEED = 3
-TOTAL_FRAMES_ESTIM = 16 * 8 + 30  # 16 waypoints × n_substeps(8) + settle
+# 16 waypoints × (n_substeps=8 × steps_per_substep=2 + settle=30 por waypoint) = 736
+# (verificado: el pick captura 736 frames; progress = i/TOTAL recorre todo el clip)
+TOTAL_FRAMES_ESTIM = 16 * (8 * 2 + 30)
 
 
 def run_hero_pick(frames_dir: Path) -> dict:
