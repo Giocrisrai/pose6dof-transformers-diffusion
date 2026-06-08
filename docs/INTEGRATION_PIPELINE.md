@@ -16,6 +16,8 @@
 
 ## Estado real de cada bloque (HONESTO, post-Iter 3)
 
+> ⚠ **Este cuadro refleja el estado post-Iter 3** (checkpoint `diffusion_policy_sim_v3.pth`, IK 90 %). El estado ACTUAL es **Iter 7c**: checkpoint `diffusion_policy_v7a_phase2.pth` (curriculum) + best-of-N + fix de IK → **pick-and-place E2E 84 %, IK 100 %, grasp 88 %, deposit 94 %** (n=50, seed 2026). Ver las secciones Iter 7a/7b/7c más abajo.
+
 | Componente | Existe | Entrenado | Conectado al sim |
 |---|---|---|---|
 | **Captura RGB-D** | ✓ `bridge.capture_rgbd()` (handleVisionSensor explícito) | n/a | ✓ Sí (vision sensor de la escena) |
@@ -49,7 +51,7 @@ si FP falla la detección.
 
 ### Brecha B: Diffusion Policy ↔ Trayectoria del pick
 
-**ESTADO: cerrada por Iter 1 (mínima viable), profundizada en Iter 2 (escalado + loss ponderado) e Iter 3 (conditioning visual ResNet-18). Resultado actual: 78 % `grasp_plausible_pct_sim` en 50 picks ejecutados.** Pipeline: `pick_with_dp(planner, pose, bridge, visual_encoder)` captura RGB-D, codifica el cond y genera 16 waypoints 7-D vía DDPM reverse. Cada waypoint se ejecuta con IK damped least squares.
+**ESTADO: cerrada. Iter 1 (mínima viable) → Iter 2/3 (escalado + conditioning ResNet-18, grasp 78 %) → Iter 5 (pick-and-place E2E) → Iter 7a/7b/7c (curriculum + best-of-N + fix IK). Resultado ACTUAL: pick-and-place E2E 84 %, IK 100 %, grasp 88 %, deposit 94 % (n=50, seed 2026). Ver Iter 7c más abajo.** Pipeline: `pick_with_dp(planner, pose, bridge, visual_encoder)` captura RGB-D, codifica el cond y genera 16 waypoints 7-D vía DDPM reverse. Cada waypoint se ejecuta con IK damped least squares.
 
 ---
 

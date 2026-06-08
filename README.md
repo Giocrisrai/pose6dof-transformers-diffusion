@@ -5,7 +5,7 @@
 [![Tests](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/actions/workflows/tests.yml/badge.svg)](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/actions/workflows/tests.yml)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
 [![License](https://img.shields.io/badge/license-Academic-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-207%20passing-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/tests-255%20passing-brightgreen)](tests/)
 [![Bootstrap CI](https://img.shields.io/badge/bootstrap-CI%2095%25-purple)](experiments/results/local_metrics_with_bootstrap.json)
 [![Exploraciones post-TFM](https://img.shields.io/badge/exploraciones-13%2F13%20%E2%9C%85-success)](docs/PLAN_EXPLORACIONES_POST_TFM.md)
 [![PyPI version](https://img.shields.io/pypi/v/bop-bootstrap-ci?label=PyPI%20bop-bootstrap-ci&color=blue)](https://pypi.org/project/bop-bootstrap-ci/)
@@ -33,7 +33,7 @@
 
 ---
 
-## Diffusion Policy re-entrenada sobre datos del sim (Iter 1-7b, mayo–jun 2026)
+## Diffusion Policy re-entrenada sobre datos del sim (Iter 1-7c, mayo–jun 2026)
 
 Cierra **Brecha B** del pipeline (DP integrada a la ejecución en sim) en iteraciones progresivas: primero aprendizaje supervisado (Iter 1-5), luego RL fine-tuning + selección por percepción (Iter 6-7b). Eval honesto: **50 picks en CoppeliaSim, seed=2026**, métricas medidas en cada pick.
 
@@ -58,13 +58,13 @@ Cierra **Brecha B** del pipeline (DP integrada a la ejecución en sim) en iterac
 
 Sobre la baseline supervisada Iter 5, una segunda línea explora **DPPO** (RL fine-tuning) y **best-of-N** (selección por percepción). Mismo protocolo de eval (50 picks, seed 2026).
 
-| Métrica (eval n=50 sim, seed 2026) | Iter 5 (SL) | Iter 6d (DPPO) | Iter 7a (curriculum) | **Iter 7b (curr.+best-of-8)** |
-|---|---|---|---|---|
-| `dp_grasp_plausible_pct_sim` | 94 % | 34 % | 58 % | **82 %** |
-| `dp_deposit_plausible_pct_sim` | 64 % | 78 % | 92 % | **92 %** |
-| `dp_ik_converged_pct` | 94 % | 84 % | 86 % | 86 % |
-| `pick_and_place_success_pct` | 60 % | 28 % | 50 % | **78 %** |
-| `mean_grasp_proximity_m` | 3.1 cm | 6.3 cm | 5.9 cm | **3.6 cm** |
+| Métrica (eval n=50 sim, seed 2026) | Iter 5 (SL) | Iter 6d (DPPO) | Iter 7a (curriculum) | Iter 7b (curr.+best-of-8) | **Iter 7c (+fix IK)** |
+|---|---|---|---|---|---|
+| `dp_grasp_plausible_pct_sim` | 94 % | 34 % | 58 % | 82 % | **88 %** |
+| `dp_deposit_plausible_pct_sim` | 64 % | 78 % | 92 % | 92 % | **94 %** |
+| `dp_ik_converged_pct` | 94 % | 84 % | 86 % | 86 % | **100 %** |
+| `pick_and_place_success_pct` | 60 % | 28 % | 50 % | 78 % | **84 %** |
+| `mean_grasp_proximity_m` | 3.1 cm | 6.3 cm | 5.9 cm | 3.6 cm | **3.3 cm** |
 
 - **Iter 6 (a-d)** (DPPO): RL fine-tuning con PPO clip + KL anchor a v5. Sube `deposit` (64→78 %) pero **rompe el grasp** (94→34 %, olvido catastrófico) — el éxito E2E cae a 28 %. Resultado negativo honesto que motiva el curriculum.
 - **Iter 7a** (curriculum grasp→deposit): entrenamiento en 2 fases (fase 1 solo grasp → fase 2 balanceada con KL anchor a la fase 1). Recupera parte del grasp (34→58 %) y logra el **deposit récord del proyecto (92 %)**. P&P sube a 50 %, aún por debajo del baseline.
@@ -192,7 +192,7 @@ pose6dof-transformers-diffusion/
 │   │   ├── 00_colab_setup.ipynb
 │   │   └── 01_foundationpose_eval.ipynb
 │   └── 04_math_foundations.ipynb  # Demos matematicas
-├── tests/                   # pytest (171/171 passing — TFM + exploraciones)
+├── tests/                   # pytest (228 passing — TFM + exploraciones)
 ├── packages/                # Paquetes PyPI (bop-bootstrap-ci 0.1.0)
 ├── docs/exploraciones/      # 5 documentos de cierre de exploraciones
 ├── docker/                  # ROS 2 Humble + MoveIt 2
@@ -218,7 +218,7 @@ uv sync
 pip install -e ".[dev,colab]"
 
 # Tests
-pytest tests/ packages/bop_bootstrap_ci/tests/ -v  # 171/171 passing (sin GPU)
+pytest tests/ packages/bop_bootstrap_ci/tests/ -v  # 255 passing (sin GPU)
 
 # Descargar datasets BOP (requiere ~30 GB)
 bash scripts/download_datasets.sh

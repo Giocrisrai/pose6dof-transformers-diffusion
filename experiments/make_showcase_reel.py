@@ -81,6 +81,9 @@ def run_hero_pick(frames_dir: Path) -> dict:
 
 # Cada tupla es (texto, escala_de_fuente) — la escala la consume make_title_card
 # (NO es duración). La duración por tarjeta es fija (SECONDS_PER_CARD).
+# Cifras ancladas en datos canónicos: E2E 84% / IK 100% / deposit 94% (eval_v7c_ikfix_sim.json,
+# n=50, seed 2026); coste ~USD 1.920 = Apple M1 Pro + cuota Colab T4 (TFM Cap.5 H3, vs setups
+# industriales USD 15k-150k, ver docs/EXTRAPOLACION_INDUSTRIAL.md).
 VALUE_CARDS = [
     [("Sistema bin-picking 6-DoF", 1.3),
      ("FoundationPose  +  Diffusion Policy", 0.7)],
