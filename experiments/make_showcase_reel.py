@@ -96,7 +96,35 @@ VALUE_CARDS = [
      ("grasp por snap+attach (estandar en sims)", 0.7),
      ("siguiente: grasp fisico + robot real", 0.65)],
 ]
-SECONDS_PER_CARD = 4.0
+SECONDS_PER_CARD = 8.0
+GRASP_START_FRAC = 0.35
+GRASP_END_FRAC = 0.70
+SLOWMO_HOLD = 3  # cada frame del grasp se repite 3× → ~0.33× velocidad
+
+
+def build_slowmo_replay(hero_frames_dir: Path, out_frames_dir: Path) -> int:
+    """Replay en cámara lenta del close-up del grasp (fase seguimiento de la
+    coreografía). Lee los PNG del hero, toma la ventana del grasp y repite cada
+    frame SLOWMO_HOLD veces con una etiqueta. Devuelve nº de frames escritos."""
+    import cv2
+    from PIL import Image
+    hero = sorted(hero_frames_dir.glob("*.png"))
+    total = len(hero)
+    start = int(GRASP_START_FRAC * total)
+    end = int(GRASP_END_FRAC * total)
+    out_frames_dir.mkdir(parents=True, exist_ok=True)
+    idx = 0
+    for fp in hero[start:end]:
+        arr = np.asarray(Image.open(fp)).copy()  # RGB
+        # etiqueta: banda oscura inferior + texto blanco (blanco es seguro en RGB/BGR)
+        h, w = arr.shape[:2]
+        cv2.rectangle(arr, (0, h - 60), (w, h), (0, 0, 0), -1)
+        cv2.putText(arr, "REPLAY  -  camara lenta (grasp)", (30, h - 20),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2, cv2.LINE_AA)
+        for _ in range(SLOWMO_HOLD):
+            Image.fromarray(arr).save(out_frames_dir / f"{idx:06d}.png")
+            idx += 1
+    return idx
 
 
 def build_value_clip(frames_dir: Path, fps: int = 30) -> int:
@@ -127,6 +155,13 @@ def main() -> int:
 
     part_a = OUT / "_showcase_partA.mp4"
     compile_mp4(frames_a, part_a, fps=fps)
+
+    frames_slow = OUT / "frames_slowmo"
+    shutil.rmtree(frames_slow, ignore_errors=True)
+    n_slow = build_slowmo_replay(frames_a, frames_slow)
+    part_slow = OUT / "_showcase_slow.mp4"
+    compile_mp4(frames_slow, part_slow, fps=fps)
+
     frames_b = OUT / "frames_value"
     shutil.rmtree(frames_b, ignore_errors=True)
     build_value_clip(frames_b, fps=fps)
@@ -135,16 +170,21 @@ def main() -> int:
 
     import subprocess
     listf = OUT / "_showcase_concat.txt"
-    listf.write_text(f"file '{part_a.resolve()}'\nfile '{part_b.resolve()}'\n")
+    listf.write_text(
+        f"file '{part_a.resolve()}'\n"
+        f"file '{part_slow.resolve()}'\n"
+        f"file '{part_b.resolve()}'\n"
+    )
     final = OUT / "reel_showcase.mp4"
     subprocess.run(["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(listf),
                     "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "20", str(final)],
                    check=True, capture_output=True)
-    for p in (part_a, part_b, listf):
+    for p in (part_a, part_slow, part_b, listf):
         p.unlink(missing_ok=True)
     print(f"reel_showcase.mp4 listo: {final}")
     print(f"  hero frames={result['frames_captured']} grasp={result['grasp_proximity_m']*100:.1f}cm "
-          f"deposit={result['deposit_error_m']*100:.1f}cm ik={result['ik_converged']}")
+          f"deposit={result['deposit_error_m']*100:.1f}cm ik={result['ik_converged']} "
+          f"slowmo_frames={n_slow}")
     return 0
 
 
