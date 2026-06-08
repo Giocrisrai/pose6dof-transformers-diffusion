@@ -166,18 +166,31 @@ def _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
         IK_POS_TOLERANCE_M = 0.02
         result = simIK.handleGroup(env, ik_group)
         converged = True
-        if isinstance(result, (list, tuple)) and len(result) > 0:
-            if result[0] != 1:
-                precision_pos = (
-                    float(result[2][0])
-                    if len(result) > 2 and isinstance(result[2], (list, tuple))
-                    else float("inf")
-                )
-                if precision_pos > IK_POS_TOLERANCE_M:
-                    converged = False
+        if isinstance(result, (list, tuple)) and len(result) > 0 and result[0] != 1:
+            precision_pos = (
+                float(result[2][0])
+                if len(result) > 2 and isinstance(result[2], (list, tuple))
+                else float("inf")
+            )
+            if precision_pos > IK_POS_TOLERANCE_M:
+                # Re-seed desde home y reintentar. Causa raíz (verificada): el target
+                # es alcanzable, pero el solver diverge desde la semilla heredada del
+                # estado del sim, que se va a la deriva en transiciones grandes entre
+                # waypoints. Re-sembrar desde la configuración home (joints a 0) rescata
+                # estos casos sin tocar threshold/maxIter (que el fix #11 ya ajustó).
+                for j in ik_joints:
+                    simIK.setJointPosition(env, j, 0.0)
+                retry = simIK.handleGroup(env, ik_group)
+                if isinstance(retry, (list, tuple)) and len(retry) > 2 \
+                        and isinstance(retry[2], (list, tuple)):
+                    precision_pos = float(retry[2][0])
+                converged = (
+                    isinstance(retry, (list, tuple)) and retry[0] == 1
+                ) or precision_pos <= IK_POS_TOLERANCE_M
+                if not converged:
                     logger.warning(
-                        f"IK no convergió en substep {i}: result={result} "
-                        f"(precision_pos={precision_pos:.4f} m > {IK_POS_TOLERANCE_M})"
+                        f"IK no convergió en substep {i} (ni tras re-seed desde home): "
+                        f"precision_pos={precision_pos:.4f} m > {IK_POS_TOLERANCE_M}"
                     )
         if convergence_tracker is not None:
             convergence_tracker.append(converged)

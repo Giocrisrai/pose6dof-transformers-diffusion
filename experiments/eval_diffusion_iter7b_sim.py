@@ -44,7 +44,12 @@ def main() -> int:
     parser.add_argument("--policy-name", default="diffusion_policy_v7a_phase2+bon")
     parser.add_argument("--out", type=Path,
                         default=REPO / "experiments/results/pick_with_diffusion/eval_v7b_sim.json")
+    parser.add_argument("--torch-seed", type=int, default=None,
+                        help="Fija la semilla de torch para reproducibilidad del sampling.")
     args = parser.parse_args()
+
+    if args.torch_seed is not None:
+        torch.manual_seed(args.torch_seed)
 
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     ckpt = torch.load(args.checkpoint, map_location=device, weights_only=True)
