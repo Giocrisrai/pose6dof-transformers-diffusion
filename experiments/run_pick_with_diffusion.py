@@ -17,6 +17,7 @@ import logging
 import os
 import sys
 from pathlib import Path
+from typing import Callable, Optional
 
 import numpy as np
 import torch
@@ -71,6 +72,7 @@ def pick_with_dp(
     steps_per_substep: int = 2,
     visual_encoder=None,
     best_of_n: int = 1,
+    frame_hook: Optional[Callable[[], None]] = None,
 ):
     """Ejecuta un pick usando la DP entrenada.
 
@@ -204,6 +206,7 @@ def pick_with_dp(
             [x, y, z], frames_dir, counter,
             n_substeps=n_substeps, steps_per_substep=steps_per_substep,
             convergence_tracker=ik_convergence,
+            frame_hook=frame_hook,
         )
 
     # Settle post-release para que el cubo asiente

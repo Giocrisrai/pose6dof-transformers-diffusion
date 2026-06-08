@@ -1,0 +1,148 @@
+"""Cámara cinematográfica dedicada para el showcase reel.
+
+Vision sensor de alta resolución, SEPARADO de la cámara de percepción
+(/rgb_camera), creado en runtime. La de percepción queda fija para no
+corromper el RGB-D que recibe la Diffusion Policy.
+
+Dos partes:
+- Helpers de geometría puros (lerp, orbit_position, look_at_matrix, choreograph):
+  testeables sin simulador.
+- Clase CineCamera: ciclo de vida del vision sensor + captura (tarea posterior).
+"""
+from __future__ import annotations
+
+import logging
+import math
+from pathlib import Path
+from typing import Optional
+
+import numpy as np
+
+logger = logging.getLogger(__name__)
+
+Vec3 = tuple[float, float, float]
+
+
+def lerp(a: float, b: float, t: float) -> float:
+    """Interpolación lineal a→b para t en [0,1]."""
+    return a + (b - a) * t
+
+
+def orbit_position(center: Vec3, radius: float, angle_rad: float, height: float) -> Vec3:
+    """Posición sobre un círculo de radio `radius` alrededor de `center` en el
+    plano xy, a altura absoluta `height` (NO relativa a center[2]). angle_rad=0 → dirección +x."""
+    return (
+        center[0] + radius * math.cos(angle_rad),
+        center[1] + radius * math.sin(angle_rad),
+        height,
+    )
+
+
+def look_at_matrix(pos: Vec3, target: Vec3, up_world: Vec3 = (0.0, 0.0, 1.0)) -> list[float]:
+    """Matriz 3x4 (12 floats, fila-mayor) para `sim.setObjectMatrix`: cámara en
+    `pos` con su eje +Z (eje óptico del vision sensor de CoppeliaSim) apuntando a
+    `target`. Las columnas son los ejes locales (Xc,Yc,Zc) y la última, la posición.
+    """
+    p = np.array(pos, dtype=float)
+    t = np.array(target, dtype=float)
+    f = t - p
+    n = np.linalg.norm(f)
+    f = np.array([0.0, 0.0, 1.0]) if n < 1e-9 else f / n
+    up = np.array(up_world, dtype=float)
+    if abs(float(np.dot(f, up))) > 0.99:
+        up = np.array([0.0, 1.0, 0.0])
+    right = np.cross(up, f)
+    right /= np.linalg.norm(right)
+    trueup = np.cross(f, right)
+    # +Z = forward (eje óptico). Frame derecha-mano (det=+1): Xc=right, Yc=trueup, Zc=f.
+    return [
+        float(right[0]), float(trueup[0]), float(f[0]), float(p[0]),
+        float(right[1]), float(trueup[1]), float(f[1]), float(p[1]),
+        float(right[2]), float(trueup[2]), float(f[2]), float(p[2]),
+    ]
+
+
+def choreograph(progress: float, tcp: Vec3, workspace_center: Vec3) -> tuple[Vec3, Vec3]:
+    """Devuelve (posición_cámara, target_lookat) para un `progress` en [0,1]
+    del pick. Tres fases:
+      - [0.00,0.35) establecimiento: órbita amplia mirando al workspace.
+      - [0.35,0.70) seguimiento: acercamiento mirando al TCP.
+      - [0.70,1.00] retroceso: alejamiento mirando al workspace.
+    """
+    p = max(0.0, min(1.0, progress))
+    if p < 0.35:
+        a = p / 0.35
+        angle = lerp(math.radians(20), math.radians(80), a)
+        pos = orbit_position(workspace_center, radius=lerp(1.0, 0.7, a),
+                             angle_rad=angle, height=lerp(0.9, 0.7, a))
+        return pos, workspace_center
+    if p < 0.70:
+        a = (p - 0.35) / 0.35
+        angle = lerp(math.radians(80), math.radians(110), a)
+        pos = orbit_position(tcp, radius=lerp(0.55, 0.32, a),
+                             angle_rad=angle, height=lerp(0.55, 0.35, a))
+        return pos, tcp
+    a = (p - 0.70) / 0.30
+    angle = lerp(math.radians(110), math.radians(150), a)
+    pos = orbit_position(workspace_center, radius=lerp(0.5, 1.0, a),
+                         angle_rad=angle, height=lerp(0.45, 0.85, a))
+    return pos, workspace_center
+
+
+class CineCamera:
+    """Vision sensor cinematográfico dedicado en CoppeliaSim.
+
+    Uso:
+        cam = CineCamera(bridge, res=(1280, 720))
+        cam.create()
+        ...  # por frame: cam.aim(progress, tcp, center); cam.capture(frames_dir, idx)
+        cam.remove()
+    """
+
+    def __init__(self, bridge, res: tuple[int, int] = (1280, 720),
+                 fov_deg: float = 60.0):
+        self.bridge = bridge
+        self.res = res
+        self.fov_deg = fov_deg
+        self.handle: Optional[int] = None
+
+    def _require_handle(self) -> None:
+        if self.handle is None:
+            raise RuntimeError("CineCamera.create() debe llamarse antes de aim()/capture().")
+
+    def create(self) -> int:
+        """Crea el vision sensor con explicit handling. Devuelve el handle."""
+        sim = self.bridge.sim
+        floatp = [0.01, 10.0, math.radians(self.fov_deg),
+                  0.05, 0.05, 0.05, 0, 0, 0, 0, 0]
+        self.handle = sim.createVisionSensor(0, [self.res[0], self.res[1], 0, 0], floatp)
+        sim.setExplicitHandling(self.handle, 1)
+        return self.handle
+
+    def aim(self, progress: float, tcp: Vec3, workspace_center: Vec3) -> None:
+        """Posiciona/orienta la cámara según la coreografía para `progress`."""
+        self._require_handle()
+        pos, target = choreograph(progress, tcp, workspace_center)
+        self.bridge.sim.setObjectMatrix(self.handle, -1, look_at_matrix(pos, target))
+
+    def capture(self, frames_dir: Path, idx: int) -> None:
+        """Renderiza y guarda un PNG del frame actual."""
+        self._require_handle()
+        from PIL import Image
+        sim = self.bridge.sim
+        sim.handleVisionSensor(self.handle)
+        img_raw, res = sim.getVisionSensorImg(self.handle)
+        w, h = res[0], res[1]
+        arr = np.frombuffer(img_raw, dtype=np.uint8).reshape(h, w, 3)
+        arr = np.flipud(arr)
+        frames_dir.mkdir(parents=True, exist_ok=True)
+        Image.fromarray(arr).save(frames_dir / f"{idx:06d}.png")
+
+    def remove(self) -> None:
+        """Elimina el vision sensor de la escena."""
+        if self.handle is not None:
+            try:
+                self.bridge.sim.removeObjects([self.handle])
+            except Exception as e:
+                logger.debug("CineCamera.remove: %s", e)
+            self.handle = None
