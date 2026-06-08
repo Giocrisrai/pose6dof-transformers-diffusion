@@ -11,9 +11,12 @@ Dos partes:
 """
 from __future__ import annotations
 
+import logging
 import math
 from pathlib import Path
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 import numpy as np
 
@@ -96,6 +99,10 @@ class CineCamera:
         self.fov_deg = fov_deg
         self.handle: Optional[int] = None
 
+    def _require_handle(self) -> None:
+        if self.handle is None:
+            raise RuntimeError("CineCamera.create() debe llamarse antes de aim()/capture().")
+
     def create(self) -> int:
         """Crea el vision sensor con explicit handling. Devuelve el handle."""
         sim = self.bridge.sim
@@ -107,6 +114,7 @@ class CineCamera:
 
     def aim(self, progress: float, tcp: Vec3, workspace_center: Vec3) -> None:
         """Posiciona/orienta la cámara según la coreografía para `progress`."""
+        self._require_handle()
         sim = self.bridge.sim
         pos, target = choreograph(progress, tcp, workspace_center)
         sim.setObjectPosition(self.handle, -1, list(pos))
@@ -114,6 +122,7 @@ class CineCamera:
 
     def capture(self, frames_dir: Path, idx: int) -> None:
         """Renderiza y guarda un PNG del frame actual."""
+        self._require_handle()
         from PIL import Image
         sim = self.bridge.sim
         sim.handleVisionSensor(self.handle)
@@ -129,6 +138,6 @@ class CineCamera:
         if self.handle is not None:
             try:
                 self.bridge.sim.removeObjects([self.handle])
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("CineCamera.remove: %s", e)
             self.handle = None
