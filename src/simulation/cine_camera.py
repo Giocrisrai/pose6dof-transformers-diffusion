@@ -12,6 +12,8 @@ Dos partes:
 from __future__ import annotations
 
 import math
+from pathlib import Path
+from typing import Optional
 
 import numpy as np
 
@@ -75,3 +77,58 @@ def choreograph(progress: float, tcp: Vec3, workspace_center: Vec3) -> tuple[Vec
     pos = orbit_position(workspace_center, radius=lerp(0.5, 1.0, a),
                          angle_rad=angle, height=lerp(0.45, 0.85, a))
     return pos, workspace_center
+
+
+class CineCamera:
+    """Vision sensor cinematográfico dedicado en CoppeliaSim.
+
+    Uso:
+        cam = CineCamera(bridge, res=(1280, 720))
+        cam.create()
+        ...  # por frame: cam.aim(progress, tcp, center); cam.capture(frames_dir, idx)
+        cam.remove()
+    """
+
+    def __init__(self, bridge, res: tuple[int, int] = (1280, 720),
+                 fov_deg: float = 60.0):
+        self.bridge = bridge
+        self.res = res
+        self.fov_deg = fov_deg
+        self.handle: Optional[int] = None
+
+    def create(self) -> int:
+        """Crea el vision sensor con explicit handling. Devuelve el handle."""
+        sim = self.bridge.sim
+        floatp = [0.01, 10.0, math.radians(self.fov_deg),
+                  0.05, 0.05, 0.05, 0, 0, 0, 0, 0]
+        self.handle = sim.createVisionSensor(0, [self.res[0], self.res[1], 0, 0], floatp)
+        sim.setExplicitHandling(self.handle, 1)
+        return self.handle
+
+    def aim(self, progress: float, tcp: Vec3, workspace_center: Vec3) -> None:
+        """Posiciona/orienta la cámara según la coreografía para `progress`."""
+        sim = self.bridge.sim
+        pos, target = choreograph(progress, tcp, workspace_center)
+        sim.setObjectPosition(self.handle, -1, list(pos))
+        sim.setObjectOrientation(self.handle, -1, list(look_at_euler(pos, target)))
+
+    def capture(self, frames_dir: Path, idx: int) -> None:
+        """Renderiza y guarda un PNG del frame actual."""
+        from PIL import Image
+        sim = self.bridge.sim
+        sim.handleVisionSensor(self.handle)
+        img_raw, res = sim.getVisionSensorImg(self.handle)
+        w, h = res[0], res[1]
+        arr = np.frombuffer(img_raw, dtype=np.uint8).reshape(h, w, 3)
+        arr = np.flipud(arr)
+        frames_dir.mkdir(parents=True, exist_ok=True)
+        Image.fromarray(arr).save(frames_dir / f"{idx:06d}.png")
+
+    def remove(self) -> None:
+        """Elimina el vision sensor de la escena."""
+        if self.handle is not None:
+            try:
+                self.bridge.sim.removeObjects([self.handle])
+            except Exception:
+                pass
+            self.handle = None
