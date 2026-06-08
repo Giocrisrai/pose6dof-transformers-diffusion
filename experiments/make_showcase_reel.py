@@ -65,4 +65,12 @@ def run_hero_pick(frames_dir: Path) -> dict:
                               visual_encoder=enc, best_of_n=8, frame_hook=hook)
         cam.remove()
     result["frames_captured"] = state["i"]
+    # Guarda contra drift: si los constantes internas de pick_with_dp cambian,
+    # TOTAL_FRAMES_ESTIM dejaría de coincidir y la cámara se congelaría/overshooting.
+    drift = abs(result["frames_captured"] - TOTAL_FRAMES_ESTIM)
+    assert drift <= 46, (
+        f"frames_captured={result['frames_captured']} difiere de "
+        f"TOTAL_FRAMES_ESTIM={TOTAL_FRAMES_ESTIM} en {drift} (>46); "
+        f"actualizá TOTAL_FRAMES_ESTIM si cambiaron los internals de pick_with_dp"
+    )
     return result
