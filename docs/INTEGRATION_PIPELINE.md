@@ -785,7 +785,7 @@ Análisis de los 50 picks de Iter 7a: de los 21 fallos de grasp, **12 eran borde
 El diagnóstico fue exacto: best-of-N recupera los grasps borderline (58→82 %) manteniendo el deposit récord (92 %). El éxito E2E sube a **78 %, superando al baseline supervisado (60 %)** — primer punto de la línea de planning que bate a la imitación pura. best-of-N es una técnica de inferencia estándar y honesta para diffusion policies, viable aquí porque la pose del objeto la provee FoundationPose en el pipeline real.
 
 ### Conclusión para la defensa
-La combinación **curriculum RL (mejor deposit) + selección por percepción (recupera grasp)** entrega el mejor resultado E2E del proyecto (**78 %**). Cierra el cuello de botella del grasp y constituye el nuevo headline de la línea de planning.
+La combinación **curriculum RL (mejor deposit) + selección por percepción (recupera grasp)** supera por primera vez al baseline supervisado en éxito E2E (**78 % vs 60 %**), cerrando el cuello de botella del grasp. El fix de IK de Iter 7c (ver más abajo) lo eleva luego al **84 %**, que es el headline actual de la línea de planning.
 
 ### Datos generados
 - `experiments/results/pick_with_diffusion/eval_v7b_sim.json`
