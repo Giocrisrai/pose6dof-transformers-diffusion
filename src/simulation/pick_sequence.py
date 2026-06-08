@@ -148,7 +148,8 @@ def _setup_ik(bridge: CoppeliaSimBridge):
 def _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
                       target_xyz, frames_dir, counter,
                       n_substeps: int = 40, steps_per_substep: int = 3,
-                      convergence_tracker: Optional[list] = None) -> None:
+                      convergence_tracker: Optional[list] = None,
+                      frame_hook=None) -> None:
     """Mueve TCP a target_xyz interpolando linealmente + IK por substep +
     comandando joints como PID target. Captura frame por step."""
     sim = bridge.sim
@@ -199,12 +200,18 @@ def _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
             sim.setJointTargetPosition(h, v)
         for _ in range(steps_per_substep):
             bridge.step()
-            _capture_frame(bridge, frames_dir, counter[0])
+            if frame_hook is not None:
+                frame_hook()
+            else:
+                _capture_frame(bridge, frames_dir, counter[0])
             counter[0] += 1
     # Settle
     for _ in range(30):
         bridge.step()
-        _capture_frame(bridge, frames_dir, counter[0])
+        if frame_hook is not None:
+            frame_hook()
+        else:
+            _capture_frame(bridge, frames_dir, counter[0])
         counter[0] += 1
 
 
