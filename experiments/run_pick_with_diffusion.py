@@ -17,6 +17,7 @@ import logging
 import os
 import sys
 from pathlib import Path
+from typing import Callable, Optional
 
 import numpy as np
 import torch
@@ -71,7 +72,7 @@ def pick_with_dp(
     steps_per_substep: int = 2,
     visual_encoder=None,
     best_of_n: int = 1,
-    frame_hook=None,
+    frame_hook: Optional[Callable[[], None]] = None,
 ):
     """Ejecuta un pick usando la DP entrenada.
 

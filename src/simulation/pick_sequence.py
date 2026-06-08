@@ -19,7 +19,7 @@ import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 
 import numpy as np
 
@@ -149,7 +149,7 @@ def _move_tcp_via_ik(bridge, env, ik_group, target_dummy, ik_joints, simIK,
                       target_xyz, frames_dir, counter,
                       n_substeps: int = 40, steps_per_substep: int = 3,
                       convergence_tracker: Optional[list] = None,
-                      frame_hook=None) -> None:
+                      frame_hook: Optional[Callable[[], None]] = None) -> None:
     """Mueve TCP a target_xyz interpolando linealmente + IK por substep +
     comandando joints como PID target. Captura frame por step."""
     sim = bridge.sim
