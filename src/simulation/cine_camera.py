@@ -25,7 +25,7 @@ def lerp(a: float, b: float, t: float) -> float:
 
 def orbit_position(center: Vec3, radius: float, angle_rad: float, height: float) -> Vec3:
     """Posición sobre un círculo de radio `radius` alrededor de `center` en el
-    plano xy, a altura absoluta `height`. angle_rad=0 → dirección +x."""
+    plano xy, a altura absoluta `height` (NO relativa a center[2]). angle_rad=0 → dirección +x."""
     return (
         center[0] + radius * math.cos(angle_rad),
         center[1] + radius * math.sin(angle_rad),

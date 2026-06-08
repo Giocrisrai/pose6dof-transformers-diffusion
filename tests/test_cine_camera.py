@@ -20,19 +20,40 @@ def test_orbit_position_radius_and_height():
     assert abs(math.hypot(p90[0], p90[1]) - 0.8) < 1e-6
 
 
-def test_look_at_euler_points_down_toward_target():
+def test_look_at_euler_camara_arriba_mira_abajo():
+    # cam en (0,0,1) mirando al origen → d=(0,0,-1): yaw=0, pitch=-pi/2
+    # → alpha=0, beta=0, gamma=pi/2
     eul = look_at_euler(cam_pos=(0.0, 0.0, 1.0), target=(0.0, 0.0, 0.0))
-    assert len(eul) == 3
-    assert all(isinstance(v, float) for v in eul)
+    assert abs(eul[0] - 0.0) < 1e-9
+    assert abs(eul[1] - 0.0) < 1e-9
+    assert abs(eul[2] - math.pi / 2) < 1e-9
+
+
+def test_look_at_euler_horizontal():
+    # cam en +y mirando al origen → d=(0,-1,0): yaw=-pi/2, pitch=0
+    # → alpha=-pi/2, beta=0, gamma=0
+    eul = look_at_euler(cam_pos=(0.0, 1.0, 0.0), target=(0.0, 0.0, 0.0))
+    assert abs(eul[0] - (-math.pi / 2)) < 1e-9
+    assert abs(eul[1] - 0.0) < 1e-9
+    assert abs(eul[2] - 0.0) < 1e-9
+
+
+def test_choreograph_clamps_progress_out_of_range():
+    tcp = (0.45, -0.12, 0.20)
+    center = (0.3, -0.3, 0.1)
+    # progress fuera de [0,1] se clampea: <0 == 0.0, >1 == 1.0
+    assert choreograph(-0.5, tcp, center) == choreograph(0.0, tcp, center)
+    assert choreograph(1.5, tcp, center) == choreograph(1.0, tcp, center)
 
 
 def test_choreograph_phases_move_camera_closer():
     tcp = (0.45, -0.12, 0.20)
     center = (0.3, -0.3, 0.1)
-    cam_far, tgt0 = choreograph(0.0, tcp, center)
-    cam_near, tgt1 = choreograph(0.5, tcp, center)
-    cam_pull, tgt2 = choreograph(1.0, tcp, center)
-    d_near = math.dist(cam_near, tcp)
-    d_pull = math.dist(cam_pull, center)
-    assert d_near < math.dist(cam_far, tcp)
-    assert d_pull > d_near
+    cam_far, _ = choreograph(0.0, tcp, center)
+    cam_near, _ = choreograph(0.5, tcp, center)
+    cam_pull, _ = choreograph(1.0, tcp, center)
+    d_near_tcp = math.dist(cam_near, tcp)
+    # en seguimiento la cámara está más cerca del TCP que en establecimiento
+    assert d_near_tcp < math.dist(cam_far, tcp)
+    # en retroceso vuelve a alejarse del TCP respecto al seguimiento
+    assert math.dist(cam_pull, tcp) > d_near_tcp
