@@ -17,6 +17,7 @@ from src.planning.diffusion_policy import DiffusionGraspPlanner
 from src.planning.visual_encoder import ResNet18RGBDEncoder
 from src.simulation.cine_camera import CineCamera
 from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
+from src.simulation.reel_overlay import make_title_card
 
 SCENE = REPO / "data/scenes/bin_base.ttt"
 OUT = REPO / "experiments/results/demo_reel"
@@ -74,3 +75,74 @@ def run_hero_pick(frames_dir: Path) -> dict:
         f"actualizá TOTAL_FRAMES_ESTIM si cambiaron los internals de pick_with_dp"
     )
     return result
+
+
+# Cada tupla es (texto, escala_de_fuente) — la escala la consume make_title_card
+# (NO es duración). La duración por tarjeta es fija (SECONDS_PER_CARD).
+VALUE_CARDS = [
+    [("Sistema bin-picking 6-DoF", 1.3),
+     ("FoundationPose  +  Diffusion Policy", 0.7)],
+    [("Lo que se logro", 1.1),
+     ("pick-and-place E2E 84%", 0.8),
+     ("IK 100%  -  ciclo p95 < 10 s", 0.7)],
+    [("Por que es mejor", 1.1),
+     ("corre en hardware accesible (~USD 1.920)", 0.7),
+     ("vs setups industriales USD 15k-150k", 0.7)],
+    [("Aplicaciones", 1.1),
+     ("logistica / e-commerce  -  manufactura  -  clasificacion", 0.65)],
+    [("Honestidad declarada", 1.0),
+     ("grasp por snap+attach (estandar en sims)", 0.7),
+     ("siguiente: grasp fisico + robot real", 0.65)],
+]
+SECONDS_PER_CARD = 4.0
+
+
+def build_value_clip(frames_dir: Path, fps: int = 30) -> int:
+    """Genera frames de las tarjetas de valor (SECONDS_PER_CARD c/u).
+    Devuelve nº de frames escritos."""
+    from PIL import Image
+    frames_dir.mkdir(parents=True, exist_ok=True)
+    idx = 0
+    n_per_card = int(round(SECONDS_PER_CARD * fps))
+    for lines in VALUE_CARDS:
+        card = make_title_card(lines)  # (H,W,3) uint8; el float de cada línea = escala
+        for _ in range(n_per_card):
+            Image.fromarray(card).save(frames_dir / f"{idx:06d}.png")
+            idx += 1
+    return idx
+
+
+def main() -> int:
+    fps = 30
+    frames_a = OUT / "frames_showcase"
+    import shutil
+    shutil.rmtree(frames_a, ignore_errors=True)
+    result = run_hero_pick(frames_a)
+    assert result["grasp_plausible"] and result["deposit_plausible"] and result["ik_converged"], \
+        f"pick no limpio: {result}"
+
+    part_a = OUT / "_showcase_partA.mp4"
+    compile_mp4(frames_a, part_a, fps=fps)
+    frames_b = OUT / "frames_value"
+    shutil.rmtree(frames_b, ignore_errors=True)
+    build_value_clip(frames_b, fps=fps)
+    part_b = OUT / "_showcase_partB.mp4"
+    compile_mp4(frames_b, part_b, fps=fps)
+
+    import subprocess
+    listf = OUT / "_showcase_concat.txt"
+    listf.write_text(f"file '{part_a.resolve()}'\nfile '{part_b.resolve()}'\n")
+    final = OUT / "reel_showcase.mp4"
+    subprocess.run(["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(listf),
+                    "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "20", str(final)],
+                   check=True, capture_output=True)
+    for p in (part_a, part_b, listf):
+        p.unlink(missing_ok=True)
+    print(f"reel_showcase.mp4 listo: {final}")
+    print(f"  hero frames={result['frames_captured']} grasp={result['grasp_proximity_m']*100:.1f}cm "
+          f"deposit={result['deposit_error_m']*100:.1f}cm ik={result['ik_converged']}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
