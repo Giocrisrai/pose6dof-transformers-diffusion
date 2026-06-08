@@ -9,6 +9,8 @@ Un video nuevo y separado (`reel_showcase.mp4`, ~90-120 s) de alto impacto que c
 
 Resuelve la brecha actual: el reel técnico usa una cámara fija de baja resolución (la de percepción), tomas cortas (~15 s) y no comunica la potencialidad/valor del sistema.
 
+**Entregado (2026-06-08):** `reel_showcase.mp4` de **~90 s, 1280×720**, en tres segmentos: (A) hero pick cinematográfico (~24,5 s), (B) replay en cámara lenta del close-up del grasp (~25,8 s), (C) 5 tarjetas de valor/aplicaciones (8 s c/u). Cámara dedicada con eje óptico +Z y coreografía órbita→seguimiento→retroceso vía matriz look-at.
+
 ## Decisiones de diseño (confirmadas con el usuario)
 
 1. **Objetivo:** balanceado — cinematografía mejorada + narrativa de valor.
