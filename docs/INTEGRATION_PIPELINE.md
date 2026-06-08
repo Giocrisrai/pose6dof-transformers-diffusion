@@ -805,3 +805,39 @@ Barrido del número de candidatos N (misma policy v7a_phase2, 50 picks, seed 202
 **Lectura:** la plausibilidad de agarre y la proximidad mejoran monótonamente con N (la selección es cada vez más fina: 5.9→3.2 cm). Sin embargo, el **éxito end-to-end se satura en N=8 (78 %) y no mejora en N=16 (76 %, dentro del ruido de ±2 pp para n=50)**. La causa es que el criterio de selección optimiza *solo* la proximidad de agarre: a N=16 favorece trayectorias con mejor grasp pero peor convergencia de IK (86→76 %) y depósito (92→86 %). Es decir, el rendimiento del agarre y el éxito E2E divergen más allá de N=8. **N=8 es el punto de operación elegido** (mejor E2E con coste de sampling moderado). Una extensión natural sería un criterio de selección multi-objetivo (grasp + reachability IK + deposit) en vez de solo proximidad de grasp.
 
 Datos: `eval_v7b_bon4_sim.json`, `eval_v7b_sim.json` (N=8), `eval_v7b_bon16_sim.json`.
+
+---
+
+## Iter 7c (cerrado 2026-06-07): fix de convergencia de IK — re-seed desde home
+
+### Diagnóstico (debugging sistemático, hipótesis refutadas con evidencia)
+
+La convergencia de IK rondaba el 76–86 % (varianza por la estocasticidad del sampling). Investigación de causa raíz, refutando hipótesis antes de fijar nada:
+
+| Hipótesis | Evidencia | Veredicto |
+|---|---|---|
+| Waypoints fuera del reach del UR5 | 0/50 picks con waypoints fuera de la esfera de 0.85 m (máx 0.62 m del origen) | ❌ refutada |
+| Singularidad de hombro | substeps fallidos a radial_xy 0.33–0.55 m del eje z (lejos del eje) | ❌ refutada |
+| Threshold/maxIter insuficientes | ya ajustados en Iter 3 (#11): tolerancia 2 cm, maxIter 200 | ❌ no aplica |
+| **Semilla del solver divergente** | los 11 targets fallidos convergen a **precision 0.0000 desde la config home**; durante la trayectoria fallan con errores de hasta 0.94 m e `iters=112` constante | ✅ **confirmada** |
+
+La causa: `_move_tcp_via_ik` hace `syncFromSim` para sembrar el IK desde el estado de joints del sim. En transiciones grandes entre waypoints, el PID no sigue la solución y el estado del sim se va a la deriva; el solver DLS se siembra desde esa config divergente y se atasca, en cascada por el resto de la transición. Los targets **son alcanzables** — falla la semilla, no la geometría.
+
+### Fix
+
+En `_move_tcp_via_ik`, cuando un substep falla (precision > 2 cm), se re-siembran los joints del IK env desde home (0) y se reintenta `handleGroup`. Mínimo y dirigido a la raíz; no toca threshold/maxIter.
+
+### Verificación pareada (misma semilla `torch=2026`, trayectorias idénticas, n=50)
+
+| Métrica | baseline | ik-fix | Δ |
+|---|---|---|---|
+| `dp_ik_converged_pct` | 76 % | **100 %** | +24 pp |
+| `dp_grasp_plausible_pct_sim` | 88 % | 88 % | 0 (sin regresión) |
+| `dp_deposit_plausible_pct_sim` | 90 % | 94 % | +4 pp |
+| `pick_and_place_success_pct` | 78 % | **84 %** | +6 pp |
+| `mean_grasp_proximity_m` | 3.0 cm | 3.0 cm | 0 |
+
+12 picks rescatados (fail→ok), 0 rotos (ok→fail): mejora estricta. El fix vive en código de ejecución compartido, así que aplica a todos los picks del pipeline. Datos: `eval_v7c_baseline_sim.json`, `eval_v7c_ikfix_sim.json`. Para reproducibilidad se añadió `--torch-seed` al eval.
+
+### Conclusión para la defensa
+La convergencia de IK deja de ser un factor limitante (100 % con la corrección), y el éxito end-to-end de pick-and-place sube a 84 %. El diagnóstico ilustra el método: refutar hipótesis plausibles (reach, singularidad) con evidencia antes de corregir, y atacar la causa raíz (semilla del solver) en vez del síntoma.
