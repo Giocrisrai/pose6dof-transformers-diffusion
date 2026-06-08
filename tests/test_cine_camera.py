@@ -1,7 +1,9 @@
 """Tests para los helpers de geometría de src/simulation/cine_camera.py."""
 import math
 
-from src.simulation.cine_camera import choreograph, lerp, look_at_euler, orbit_position
+import numpy as np
+
+from src.simulation.cine_camera import choreograph, lerp, look_at_matrix, orbit_position
 
 
 def test_lerp_endpoints_and_mid():
@@ -20,22 +22,29 @@ def test_orbit_position_radius_and_height():
     assert abs(math.hypot(p90[0], p90[1]) - 0.8) < 1e-6
 
 
-def test_look_at_euler_camara_arriba_mira_abajo():
-    # cam en (0,0,1) mirando al origen → d=(0,0,-1): yaw=0, pitch=-pi/2
-    # → alpha=0, beta=0, gamma=pi/2
-    eul = look_at_euler(cam_pos=(0.0, 0.0, 1.0), target=(0.0, 0.0, 0.0))
-    assert abs(eul[0] - 0.0) < 1e-9
-    assert abs(eul[1] - 0.0) < 1e-9
-    assert abs(eul[2] - math.pi / 2) < 1e-9
+def test_look_at_matrix_z_axis_points_at_target():
+    # +Z (índices 2,6,10) debe ser el vector normalizado pos→target
+    m = look_at_matrix((0.0, 0.0, 1.0), (0.0, 0.0, 0.0))
+    zc = (m[2], m[6], m[10])
+    # cámara arriba mirando abajo → forward = (0,0,-1)
+    assert abs(zc[0] - 0.0) < 1e-9
+    assert abs(zc[1] - 0.0) < 1e-9
+    assert abs(zc[2] - (-1.0)) < 1e-9
 
 
-def test_look_at_euler_horizontal():
-    # cam en +y mirando al origen → d=(0,-1,0): yaw=-pi/2, pitch=0
-    # → alpha=-pi/2, beta=0, gamma=0
-    eul = look_at_euler(cam_pos=(0.0, 1.0, 0.0), target=(0.0, 0.0, 0.0))
-    assert abs(eul[0] - (-math.pi / 2)) < 1e-9
-    assert abs(eul[1] - 0.0) < 1e-9
-    assert abs(eul[2] - 0.0) < 1e-9
+def test_look_at_matrix_orthonormal_and_position():
+    m = look_at_matrix((0.6, -0.6, 0.7), (0.0, -0.30, 0.10))
+    Xc = np.array([m[0], m[4], m[8]])
+    Yc = np.array([m[1], m[5], m[9]])
+    Zc = np.array([m[2], m[6], m[10]])
+    # ortonormalidad
+    for v in (Xc, Yc, Zc):
+        assert abs(np.linalg.norm(v) - 1.0) < 1e-6
+    assert abs(np.dot(Xc, Yc)) < 1e-6
+    assert abs(np.dot(Xc, Zc)) < 1e-6
+    assert abs(np.dot(Yc, Zc)) < 1e-6
+    # última columna = posición
+    assert (m[3], m[7], m[11]) == (0.6, -0.6, 0.7)
 
 
 def test_choreograph_clamps_progress_out_of_range():

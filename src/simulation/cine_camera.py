@@ -5,7 +5,7 @@ Vision sensor de alta resolución, SEPARADO de la cámara de percepción
 corromper el RGB-D que recibe la Diffusion Policy.
 
 Dos partes:
-- Helpers de geometría puros (lerp, orbit_position, look_at_euler, choreograph):
+- Helpers de geometría puros (lerp, orbit_position, look_at_matrix, choreograph):
   testeables sin simulador.
 - Clase CineCamera: ciclo de vida del vision sensor + captura (tarea posterior).
 """
@@ -16,9 +16,9 @@ import math
 from pathlib import Path
 from typing import Optional
 
-logger = logging.getLogger(__name__)
-
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 Vec3 = tuple[float, float, float]
 
@@ -38,21 +38,28 @@ def orbit_position(center: Vec3, radius: float, angle_rad: float, height: float)
     )
 
 
-def look_at_euler(cam_pos: Vec3, target: Vec3) -> Vec3:
-    """Ángulos de Euler (alpha,beta,gamma, convención XYZ de CoppeliaSim) para
-    que una cámara en `cam_pos` mire hacia `target`. El eje -Z de la cámara
-    apunta al target."""
-    d = np.array(target, dtype=float) - np.array(cam_pos, dtype=float)
-    n = np.linalg.norm(d)
-    if n < 1e-9:
-        return (0.0, 0.0, 0.0)
-    d /= n
-    yaw = math.atan2(d[1], d[0])
-    pitch = math.asin(max(-1.0, min(1.0, d[2])))
-    alpha = -(math.pi / 2 + pitch)
-    beta = 0.0
-    gamma = yaw + math.pi / 2
-    return (float(alpha), float(beta), float(gamma))
+def look_at_matrix(pos: Vec3, target: Vec3, up_world: Vec3 = (0.0, 0.0, 1.0)) -> list[float]:
+    """Matriz 3x4 (12 floats, fila-mayor) para `sim.setObjectMatrix`: cámara en
+    `pos` con su eje +Z (eje óptico del vision sensor de CoppeliaSim) apuntando a
+    `target`. Las columnas son los ejes locales (Xc,Yc,Zc) y la última, la posición.
+    """
+    p = np.array(pos, dtype=float)
+    t = np.array(target, dtype=float)
+    f = t - p
+    n = np.linalg.norm(f)
+    f = np.array([0.0, 0.0, 1.0]) if n < 1e-9 else f / n
+    up = np.array(up_world, dtype=float)
+    if abs(float(np.dot(f, up))) > 0.99:
+        up = np.array([0.0, 1.0, 0.0])
+    right = np.cross(f, up)
+    right /= np.linalg.norm(right)
+    trueup = np.cross(right, f)
+    # +Z = forward (eje óptico). Columnas: Xc=right, Yc=trueup, Zc=f.
+    return [
+        float(right[0]), float(trueup[0]), float(f[0]), float(p[0]),
+        float(right[1]), float(trueup[1]), float(f[1]), float(p[1]),
+        float(right[2]), float(trueup[2]), float(f[2]), float(p[2]),
+    ]
 
 
 def choreograph(progress: float, tcp: Vec3, workspace_center: Vec3) -> tuple[Vec3, Vec3]:
@@ -115,10 +122,8 @@ class CineCamera:
     def aim(self, progress: float, tcp: Vec3, workspace_center: Vec3) -> None:
         """Posiciona/orienta la cámara según la coreografía para `progress`."""
         self._require_handle()
-        sim = self.bridge.sim
         pos, target = choreograph(progress, tcp, workspace_center)
-        sim.setObjectPosition(self.handle, -1, list(pos))
-        sim.setObjectOrientation(self.handle, -1, list(look_at_euler(pos, target)))
+        self.bridge.sim.setObjectMatrix(self.handle, -1, look_at_matrix(pos, target))
 
     def capture(self, frames_dir: Path, idx: int) -> None:
         """Renderiza y guarda un PNG del frame actual."""
