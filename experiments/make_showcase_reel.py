@@ -52,19 +52,21 @@ def run_hero_pick(frames_dir: Path) -> dict:
         bridge.load_scene(SCENE)
         cam = CineCamera(bridge)
         cam.create()
-        tip = bridge.sim.getObject("/tip")
-        state = {"i": 0}
+        try:
+            tip = bridge.sim.getObject("/tip")
+            state = {"i": 0}
 
-        def hook():
-            tcp = tuple(bridge.sim.getObjectPosition(tip, -1))
-            progress = min(1.0, state["i"] / TOTAL_FRAMES_ESTIM)
-            cam.aim(progress, tcp, WORKSPACE_CENTER)
-            cam.capture(frames_dir, state["i"])
-            state["i"] += 1
+            def hook():
+                tcp = tuple(bridge.sim.getObjectPosition(tip, -1))
+                progress = min(1.0, state["i"] / TOTAL_FRAMES_ESTIM)
+                cam.aim(progress, tcp, WORKSPACE_CENTER)
+                cam.capture(frames_dir, state["i"])
+                state["i"] += 1
 
-        result = pick_with_dp(planner, pose, bridge, frames_dir=None,
-                              visual_encoder=enc, best_of_n=8, frame_hook=hook)
-        cam.remove()
+            result = pick_with_dp(planner, pose, bridge, frames_dir=None,
+                                  visual_encoder=enc, best_of_n=8, frame_hook=hook)
+        finally:
+            cam.remove()
     result["frames_captured"] = state["i"]
     # Guarda contra drift: si los constantes internas de pick_with_dp cambian,
     # TOTAL_FRAMES_ESTIM dejaría de coincidir y la cámara se congelaría/overshooting.
