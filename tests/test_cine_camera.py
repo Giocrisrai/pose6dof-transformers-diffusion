@@ -43,6 +43,13 @@ def test_look_at_matrix_orthonormal_and_position():
     assert abs(np.dot(Xc, Yc)) < 1e-6
     assert abs(np.dot(Xc, Zc)) < 1e-6
     assert abs(np.dot(Yc, Zc)) < 1e-6
+    # rotación propia (frame derecha-mano): det = +1, no espejado
+    R = np.array([
+        [m[0], m[1], m[2]],
+        [m[4], m[5], m[6]],
+        [m[8], m[9], m[10]],
+    ])
+    assert abs(np.linalg.det(R) - 1.0) < 1e-6
     # última columna = posición
     assert (m[3], m[7], m[11]) == (0.6, -0.6, 0.7)
 

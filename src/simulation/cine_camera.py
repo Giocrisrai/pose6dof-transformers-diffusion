@@ -51,10 +51,10 @@ def look_at_matrix(pos: Vec3, target: Vec3, up_world: Vec3 = (0.0, 0.0, 1.0)) ->
     up = np.array(up_world, dtype=float)
     if abs(float(np.dot(f, up))) > 0.99:
         up = np.array([0.0, 1.0, 0.0])
-    right = np.cross(f, up)
+    right = np.cross(up, f)
     right /= np.linalg.norm(right)
-    trueup = np.cross(right, f)
-    # +Z = forward (eje óptico). Columnas: Xc=right, Yc=trueup, Zc=f.
+    trueup = np.cross(f, right)
+    # +Z = forward (eje óptico). Frame derecha-mano (det=+1): Xc=right, Yc=trueup, Zc=f.
     return [
         float(right[0]), float(trueup[0]), float(f[0]), float(p[0]),
         float(right[1]), float(trueup[1]), float(f[1]), float(p[1]),

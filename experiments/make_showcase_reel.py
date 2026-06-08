@@ -118,8 +118,10 @@ def main() -> int:
     import shutil
     shutil.rmtree(frames_a, ignore_errors=True)
     result = run_hero_pick(frames_a)
-    assert result["grasp_plausible"] and result["deposit_plausible"] and result["ik_converged"], \
-        f"pick no limpio: {result}"
+    assert result["grasp_plausible"] and result["deposit_plausible"] and result["ik_converged"], (
+        f"pick no limpio: grasp_plausible={result['grasp_plausible']} "
+        f"deposit_plausible={result['deposit_plausible']} ik={result['ik_converged']}"
+    )
 
     part_a = OUT / "_showcase_partA.mp4"
     compile_mp4(frames_a, part_a, fps=fps)
