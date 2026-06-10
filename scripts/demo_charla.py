@@ -4,7 +4,9 @@ y la Diffusion Policy genera N trayectorias en tiempo real.
 
 Tres vistas:
   1. Nube de caminos (multimodalidad) — gráfico 3D.
-  2. 🎬 Animación: un brazo estilizado ejecuta el mejor camino y levanta la pieza.
+  2. 🎬 Visor 3D interactivo (three.js, vendorizado — funciona sin internet):
+     un brazo robótico con luces y sombras ejecuta el mejor camino en tiempo
+     real; se puede rotar/zoomear con el mouse durante la charla.
   3. 🤖 Ejecución REAL en CoppeliaSim (si está abierto): el UR del simulador
      hace el pick con la pieza donde el público la puso (stack Iter 7c:
      policy v7a_phase2 + best-of-8 + fix IK).
@@ -14,11 +16,11 @@ Uso:
 """
 from __future__ import annotations
 
+import html as html_mod
+import json
 import math
 import socket
-import subprocess
 import sys
-import tempfile
 import threading
 import time
 from pathlib import Path
@@ -37,7 +39,8 @@ import matplotlib.pyplot as plt
 MODELO = "diffusion_policy_ultra.pth"  # el de mejor MSE (0.00221)
 HIDDEN_DIM = 256
 NAVY, CIAN, AMARILLO, ROJO, VERDE = "#0F2A43", "#7FD4F0", "#FFD166", "#EF476F", "#00E08F"
-GRIS_ARM, AZUL_ARM = "#C9D4DE", "#7EC8E3"
+
+ASSETS = REPO / "scripts/assets_demo_charla"
 
 PRESETS = {
     "Centro de la mesa": (0.00, 0.00, 0.80),
@@ -117,7 +120,7 @@ def _fig_nube(trajs, x, y, z, n, ms):
     return fig
 
 
-# ─────────────────── animación del brazo estilizado ───────────────────
+# ─────────────── brazo: IK + visor 3D interactivo (three.js) ───────────────
 L1, L2, Z_BASE = 0.68, 0.68, 0.14
 
 
@@ -135,7 +138,6 @@ def _ik_brazo(p, base_xy):
     codo = np.array([bx + math.cos(ang_h) * math.cos(yaw) * L1,
                      by + math.cos(ang_h) * math.sin(yaw) * L1,
                      Z_BASE + math.sin(ang_h) * L1])
-    # efector exactamente donde alcanza la cadena (clampeado si p está fuera)
     ee = np.array([bx + math.cos(yaw) * r, by + math.sin(yaw) * r, Z_BASE + dz])
     base, hombro = np.array([bx, by, 0.0]), np.array([bx, by, Z_BASE])
     return base, hombro, codo, ee, yaw
@@ -156,8 +158,118 @@ def _suavizar(path, sub=3):
     return arr
 
 
-def _video_brazo(trajs, x, y, z):
-    """Renderiza la animación del brazo siguiendo el mejor camino → mp4."""
+def _a3(p):
+    """Coordenadas robot (Z arriba) → three.js (Y arriba)."""
+    return [round(float(p[0]), 4), round(float(p[2]), 4), round(float(-p[1]), 4)]
+
+
+_PLANTILLA_VISOR = """<!doctype html><html><head><meta charset="utf-8">
+<style>body{margin:0;overflow:hidden;background:#0F2A43;font-family:-apple-system,sans-serif}
+.hud{position:fixed;z-index:9;color:#fff;font-weight:600}</style>
+<script type="importmap">{"imports":{"three":"__THREE__"}}</script></head>
+<body>
+<div class="hud" style="left:14px;top:10px;font-size:16px">El robot ejecuta el mejor camino</div>
+<div class="hud" id="fase" style="right:14px;top:10px;color:#FFD166;font-size:15px"></div>
+<div class="hud" style="left:14px;bottom:8px;color:#9FD8EE;font-size:12px;font-weight:400">
+arrastra para girar · rueda para acercar</div>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from '__ORBIT__';
+const D = __DATA__;
+const v = a => new THREE.Vector3(a[0], a[1], a[2]);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0F2A43);
+scene.fog = new THREE.Fog(0x0F2A43, 4.0, 8.0);
+const cam = new THREE.PerspectiveCamera(42, innerWidth/innerHeight, .01, 60);
+cam.position.copy(v(D.cam));
+const ren = new THREE.WebGLRenderer({antialias:true});
+ren.setSize(innerWidth, innerHeight);
+ren.setPixelRatio(Math.min(devicePixelRatio, 2));
+ren.shadowMap.enabled = true; ren.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(ren.domElement);
+const ctl = new OrbitControls(cam, ren.domElement);
+ctl.target.copy(v(D.look)); ctl.enableDamping = true; ctl.maxPolarAngle = 1.52;
+
+scene.add(new THREE.HemisphereLight(0xbfdcec, 0x16324a, 0.9));
+const sun = new THREE.DirectionalLight(0xffffff, 1.7);
+sun.position.set(2.2, 4.5, 1.8); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, {left:-2.5, right:2.5, top:2.5, bottom:-2.5});
+scene.add(sun);
+
+const piso = new THREE.Mesh(new THREE.CircleGeometry(2.6, 64),
+  new THREE.MeshStandardMaterial({color:0x16324a, roughness:.92}));
+piso.rotation.x = -Math.PI/2; piso.receiveShadow = true; scene.add(piso);
+const grid = new THREE.GridHelper(5, 32, 0x2a5878, 0x1c4360);
+grid.position.y = .002; scene.add(grid);
+
+for (const tr of D.cloud) {
+  const g = new THREE.BufferGeometry().setFromPoints(tr.map(v));
+  scene.add(new THREE.Line(g, new THREE.LineBasicMaterial(
+    {color:0x7FD4F0, transparent:true, opacity:.22})));
+}
+const trailG = new THREE.BufferGeometry().setFromPoints(D.trail.map(v));
+trailG.setDrawRange(0, 1);
+scene.add(new THREE.Line(trailG, new THREE.LineBasicMaterial(
+  {color:0x00E08F, transparent:true, opacity:.95})));
+
+const pieza = new THREE.Mesh(new THREE.BoxGeometry(.072, .072, .072),
+  new THREE.MeshStandardMaterial({color:0xFFD166, emissive:0x553f08, roughness:.45}));
+pieza.castShadow = true; pieza.position.copy(v(D.target)); scene.add(pieza);
+
+const matArm = new THREE.MeshStandardMaterial({color:0xD8DEE6, metalness:.62, roughness:.34});
+const matAcc = new THREE.MeshStandardMaterial({color:0x7EC8E3, metalness:.45, roughness:.30});
+const mk = (geo, mat) => {const m = new THREE.Mesh(geo, mat); m.castShadow = true; scene.add(m); return m;};
+const segs = [[.058,.050],[.048,.040],[.036,.028]].map(
+  ([r1,r2]) => mk(new THREE.CylinderGeometry(r2, r1, 1, 24), matArm));
+const joints = [.085,.072,.058,.045].map(r => mk(new THREE.SphereGeometry(r, 26, 18), matAcc));
+const dedos = [0,1].map(() => mk(new THREE.BoxGeometry(.018, .105, .03), matAcc));
+const ped = mk(new THREE.CylinderGeometry(.13, .16, .05, 32), matAcc);
+ped.position.copy(v(D.frames[0].j[0])); ped.position.y = .025;
+
+const up = new THREE.Vector3(0,1,0), q = new THREE.Quaternion(), dir = new THREE.Vector3();
+function setSeg(m, a, b) {
+  dir.subVectors(b, a); const L = Math.max(dir.length(), 1e-5);
+  m.position.copy(a).addScaledVector(dir, .5);
+  q.setFromUnitVectors(up, dir.normalize());
+  m.quaternion.copy(q); m.scale.set(1, L, 1);
+}
+const F = D.frames, N = F.length, FPS = 26, HOLD = 1100;
+const total = N / FPS * 1000;
+const J = [0,1,2,3].map(() => new THREE.Vector3());
+const t0 = performance.now();
+function animate(now) {
+  requestAnimationFrame(animate);
+  const t = Math.min(((now - t0) % (total + HOLD)) / 1000 * FPS, N - 1);
+  const i = Math.floor(t), f = t - i;
+  const A = F[i], B = F[Math.min(i + 1, N - 1)];
+  for (let k = 0; k < 4; k++) J[k].copy(v(A.j[k])).lerp(v(B.j[k]), f);
+  setSeg(segs[0], J[0], J[1]); setSeg(segs[1], J[1], J[2]); setSeg(segs[2], J[2], J[3]);
+  J.forEach((p, k) => joints[k].position.copy(p));
+  const lat = v(A.lat), eje = J[3].clone().sub(J[2]).normalize();
+  const ap = A.g ? .046 : .075;
+  dedos.forEach((d, k) => {
+    d.position.copy(J[3]).addScaledVector(lat, k ? -ap : ap).addScaledVector(eje, .055);
+    q.setFromUnitVectors(up, eje); d.quaternion.copy(q);
+  });
+  if (A.g) pieza.position.copy(J[3]).addScaledVector(eje, .095);
+  else pieza.position.copy(v(D.target));
+  trailG.setDrawRange(0, Math.max(2, Math.floor((i + f) / N * D.trail.length)));
+  document.getElementById('fase').textContent =
+    A.g ? '¡la tiene!' : (i < D.nPre - 10 ? 'siguiendo el camino de la IA…' : 'tomando la pieza…');
+  ctl.update(); ren.render(scene, cam);
+}
+requestAnimationFrame(animate);
+addEventListener('resize', () => {
+  cam.aspect = innerWidth/innerHeight; cam.updateProjectionMatrix();
+  ren.setSize(innerWidth, innerHeight);
+});
+</script></body></html>"""
+
+
+def _visor_3d(trajs, x, y, z):
+    """Visor three.js interactivo: el brazo ejecuta el mejor camino → iframe HTML."""
     target = np.array([x, y, z])
     best = trajs[np.argmin(np.linalg.norm(trajs[:, -1, :3] - target, axis=1))]
     wps = best[:, :3]
@@ -168,76 +280,42 @@ def _video_brazo(trajs, x, y, z):
     base_xy = target[:2] - dir_xy * 0.75
 
     inicio = np.array([*(base_xy + dir_xy * 0.30), 0.70])
-    aproximacion = np.linspace(inicio, wps[0], 10)
+    aproximacion = np.linspace(inicio, wps[0], 12)
     descenso = _suavizar(wps, sub=3)
     contacto = np.linspace(descenso[-1], target, 8)
-    levante = np.linspace(target, target + [0, 0, 0.22], 12)
+    levante = np.linspace(target, target + [0, 0, 0.24], 14)
     path = np.vstack([aproximacion, descenso, contacto, levante])
-    n_pre = len(aproximacion) + len(descenso) + len(contacto)  # frame donde agarra
+    n_pre = len(aproximacion) + len(descenso) + len(contacto)
 
-    lims_pts = np.vstack([path, [[*base_xy, 0]], [target]])
-    lo, hi = lims_pts.min(0), lims_pts.max(0)
-    margen = 0.18 * (hi - lo).max()
-    azim = math.degrees(math.atan2(dir_xy[1], dir_xy[0])) + 105  # perfil del brazo
-
-    tmpdir = Path(tempfile.mkdtemp(prefix="brazo_"))
-    fig = plt.figure(figsize=(8.8, 6.2), facecolor=NAVY)
-    ax = fig.add_subplot(111, projection="3d")
-
-    # piso de referencia
-    fx = np.linspace(lo[0] - margen, hi[0] + margen, 2)
-    fy = np.linspace(lo[1] - margen, hi[1] + margen, 2)
-    FX, FY = np.meshgrid(fx, fy)
-
+    frames = []
     for i, p in enumerate(path):
-        ax.cla()
-        ax.set_facecolor(NAVY)
-        ax.view_init(elev=16, azim=azim)
-        agarrada = i >= n_pre
-        ax.plot_surface(FX, FY, np.zeros_like(FX), color=CIAN, alpha=0.06)
-        for tr in trajs[:10]:  # nube de fondo, tenue
-            ax.plot(tr[:, 0], tr[:, 1], tr[:, 2], color=CIAN, alpha=0.08, lw=1.0)
-        ax.plot(path[: i + 1, 0], path[: i + 1, 1], path[: i + 1, 2],
-                color=VERDE, alpha=0.85, lw=2.4)  # rastro recorrido
         base, hombro, codo, ee, yaw = _ik_brazo(p, base_xy)
-        ax.plot(*zip(base, hombro), color=GRIS_ARM, lw=11, solid_capstyle="round")
-        ax.plot(*zip(hombro, codo), color=GRIS_ARM, lw=9, solid_capstyle="round")
-        ax.plot(*zip(codo, ee), color=GRIS_ARM, lw=7, solid_capstyle="round")
-        for joint, s in ((base, 180), (hombro, 150), (codo, 120)):
-            ax.scatter(*joint, color=AZUL_ARM, s=s, zorder=9, edgecolors="white", linewidths=0.8)
-        # pinza: dos dedos que se cierran al agarrar
-        apertura = 0.022 if agarrada else 0.065
-        lateral = np.array([-math.sin(yaw), math.cos(yaw), 0.0]) * apertura
-        eje = (ee - codo) / (np.linalg.norm(ee - codo) + 1e-9) * 0.10
-        for sgn in (+1, -1):
-            dedo = ee + sgn * lateral
-            ax.plot(*zip(dedo, dedo + eje), color=AZUL_ARM, lw=5, solid_capstyle="round")
-        pieza = ee + eje if agarrada else target
-        ax.scatter(*pieza, color=AMARILLO, s=420, marker="s",
-                   edgecolors="white", linewidths=1.5, zorder=10)
-        for setlim, lo_i, hi_i in zip((ax.set_xlim, ax.set_ylim, ax.set_zlim), lo, hi):
-            setlim(lo_i - margen, hi_i + margen)
-        ax.set_zlim(0, hi[2] + margen)
-        for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
-            axis.pane.set_alpha(0.02)
-        ax.set_xticks([]), ax.set_yticks([]), ax.set_zticks([])
-        ax.grid(False)
-        ax.set_box_aspect((1, 1, 0.85))
-        fase = "acercándose..." if i < n_pre - 8 else ("tomando la pieza" if not agarrada else "¡la tiene!")
-        ax.set_title(f"El robot ejecuta el mejor camino — {fase}",
-                     color="white", fontsize=15, fontweight="bold", pad=10)
-        fig.savefig(tmpdir / f"f_{i:04d}.png", dpi=85, facecolor=NAVY)
-    plt.close(fig)
+        frames.append({
+            "j": [_a3(base), _a3(hombro), _a3(codo), _a3(ee)],
+            "lat": _a3([-math.sin(yaw), math.cos(yaw), 0.0]),
+            "g": 1 if i >= n_pre else 0,
+        })
 
-    mp4 = tmpdir / "brazo.mp4"
-    subprocess.run(
-        ["ffmpeg", "-y", "-loglevel", "error", "-framerate", "16",
-         "-i", str(tmpdir / "f_%04d.png"),
-         "-vf", "crop=trunc(iw/2)*2:trunc(ih/2)*2",
-         "-c:v", "libx264", "-pix_fmt", "yuv420p", str(mp4)],
-        check=True,
-    )
-    return str(mp4)
+    centro = np.array([*((base_xy + target[:2]) / 2), 0.45])
+    perp = np.array([-dir_xy[1], dir_xy[0]])
+    cam_pos = np.array([*(centro[:2] + perp * 1.55 - dir_xy * 0.25), 0.95])
+
+    data = {
+        "frames": frames,
+        "cloud": [[_a3(pt) for pt in tr] for tr in trajs[:10, :, :3].tolist()],
+        "trail": [_a3(p) for p in path],
+        "target": _a3(target),
+        "nPre": n_pre,
+        "cam": _a3(cam_pos),
+        "look": _a3(centro),
+    }
+    pagina = (_PLANTILLA_VISOR
+              .replace("__THREE__", f"/gradio_api/file={ASSETS}/three.module.min.js")
+              .replace("__ORBIT__", f"/gradio_api/file={ASSETS}/OrbitControls.js")
+              .replace("__DATA__", json.dumps(data)))
+    return (f'<iframe srcdoc="{html_mod.escape(pagina, quote=True)}" '
+            'style="width:100%;height:640px;border:none;border-radius:12px;'
+            'background:#0F2A43"></iframe>')
 
 
 def generar(x, y, z, n):
@@ -253,12 +331,12 @@ def generar(x, y, z, n):
     ms = (time.time() - t0) * 1000
 
     fig = _fig_nube(trajs, x, y, z, n, ms)
-    video = _video_brazo(trajs, x, y, z)
+    visor = _visor_3d(trajs, x, y, z)
 
     spread = np.std(trajs[:, -1, :3], axis=0).mean() * 100
     resumen = (f"**{int(n)} trayectorias** en **{ms:.0f} ms** ({ms / n:.0f} ms c/u, en `{device}`) · "
                f"los finales coinciden dentro de **{spread:.1f} cm** — diversidad con propósito.")
-    return fig, video, resumen
+    return fig, visor, resumen
 
 
 # ──────────────── ejecución real en CoppeliaSim (Iter 7c) ────────────────
@@ -365,19 +443,20 @@ with gr.Blocks(title="¿Dónde está la pieza?") as demo:
                 estado_sim = gr.Markdown()
         with gr.Column(scale=2):
             with gr.Tabs():
+                with gr.Tab("🎬 El robot en acción (3D interactivo)"):
+                    visor = gr.HTML()
                 with gr.Tab("🌀 Los caminos posibles"):
                     plot = gr.Plot(label="", container=False)
-                with gr.Tab("🎬 El robot en acción"):
-                    video = gr.Video(label="", autoplay=True, loop=True, container=False)
 
-    btn.click(generar, [sx, sy, sz, sn], [plot, video, resumen])
+    btn.click(generar, [sx, sy, sz, sn], [plot, visor, resumen])
     for b, (nombre, (px, py, pz)) in zip(botones, PRESETS.items()):
         b.click(lambda px=px, py=py, pz=pz: (px, py, pz), outputs=[sx, sy, sz])
     btn_sim.click(ejecutar_en_sim, [cx, cy, crot], [estado_sim])
     # ejemplo al abrir: el público nunca ve un panel vacío
-    demo.load(generar, [sx, sy, sz, sn], [plot, video, resumen])
+    demo.load(generar, [sx, sy, sz, sn], [plot, visor, resumen])
 
 if __name__ == "__main__":
+    gr.set_static_paths(paths=[ASSETS])
     print("Cargando modelo (una vez)...")
     _load()
     print("Listo → http://127.0.0.1:7860")
