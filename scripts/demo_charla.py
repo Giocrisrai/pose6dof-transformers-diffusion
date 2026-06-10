@@ -5,11 +5,12 @@ y la Diffusion Policy genera N trayectorias en tiempo real.
 Tres vistas:
   1. Nube de caminos (multimodalidad) — gráfico 3D.
   2. 🎬 Visor 3D interactivo (three.js, vendorizado — funciona sin internet):
-     un brazo robótico con luces y sombras ejecuta el mejor camino en tiempo
-     real; se puede rotar/zoomear con el mouse durante la charla.
+     ciclo didáctico VER → IMAGINAR CAMINOS → ELEGIR → EJECUTAR → DEPOSITAR,
+     con física de caída en la bandeja, 4 cámaras conmutables y un botón de
+     PERTURBACIÓN: empuja la pieza en plena ejecución y el sistema re-planifica
+     (nueva nube de difusión hacia la nueva posición) y completa el pick igual.
   3. 🤖 Ejecución REAL en CoppeliaSim (si está abierto): el UR del simulador
-     hace el pick con la pieza donde el público la puso (stack Iter 7c:
-     policy v7a_phase2 + best-of-8 + fix IK).
+     hace el pick con la pieza donde el público la puso (stack Iter 7c).
 
 Uso:
     .venv/bin/python scripts/demo_charla.py     # → http://127.0.0.1:7860
@@ -89,6 +90,17 @@ def _ddim(model, scheduler, cond, device, n_steps=25):
     return x.cpu().numpy()[0]
 
 
+def _muestrear(xyz, n):
+    """Genera n trayectorias condicionadas a la posición xyz."""
+    import torch
+
+    model, scheduler, device = _load()
+    cond_vec = np.zeros(64, dtype=np.float32)
+    cond_vec[:3] = xyz
+    cond = torch.tensor(cond_vec, device=device).unsqueeze(0)
+    return np.array([_ddim(model, scheduler, cond, device) for _ in range(int(n))])
+
+
 # ─────────────────────── nube de caminos (3D) ───────────────────────
 def _fig_nube(trajs, x, y, z, n, ms):
     fig = plt.figure(figsize=(11, 7.6), facecolor=NAVY)
@@ -125,8 +137,7 @@ L1, L2, Z_BASE = 0.68, 0.68, 0.14
 
 
 def _ik_brazo(p, base_xy):
-    """IK analítica: giro de base + 2 eslabones (codo arriba), base en base_xy.
-    Devuelve los puntos 3D: base, hombro, codo, efector y el yaw."""
+    """IK analítica: giro de base + 2 eslabones (codo arriba), base en base_xy."""
     bx, by = base_xy
     x, y, z = p
     yaw = math.atan2(y - by, x - bx)
@@ -163,15 +174,76 @@ def _a3(p):
     return [round(float(p[0]), 4), round(float(p[2]), 4), round(float(-p[1]), 4)]
 
 
+def _ciclo(target, wps, base_xy, tray, inicio):
+    """Construye el ciclo completo de frames (joints + apertura de pinza) para
+    un objetivo: aproximación → descenso → cierre → levante → traslado → suelta."""
+    aproximacion = np.linspace(inicio, wps[0], 12)
+    descenso = _suavizar(wps, sub=3)
+    contacto = np.linspace(descenso[-1], target, 8)
+    levante = np.linspace(target, target + [0, 0, 0.26], 14)
+    sobre_bandeja = np.array([tray[0], tray[1], 0.42])
+    traslado = []
+    for t in np.linspace(0, 1, 24):
+        p = (1 - t) * levante[-1] + t * sobre_bandeja
+        p[2] += 0.12 * math.sin(math.pi * t)
+        traslado.append(p)
+    traslado = np.array(traslado)
+    retirada = np.linspace(sobre_bandeja, sobre_bandeja + [0, 0, 0.16], 10)
+    path = np.vstack([aproximacion, descenso, contacto, levante, traslado, retirada])
+
+    n_pre = len(aproximacion) + len(descenso) + len(contacto)
+    lift_idx = n_pre + len(levante)
+    release_idx = lift_idx + len(traslado)
+
+    frames = []
+    for i, p in enumerate(path):
+        base, hombro, codo, ee, yaw = _ik_brazo(p, base_xy)
+        if i < n_pre - len(contacto):
+            ap = 1.0
+        elif i < n_pre:
+            ap = 1.0 - (i - (n_pre - len(contacto))) / len(contacto)
+        elif i < release_idx:
+            ap = 0.0
+        else:
+            ap = min(1.0, (i - release_idx) / 5)
+        frames.append({
+            "j": [_a3(base), _a3(hombro), _a3(codo), _a3(ee)],
+            "lat": _a3([-math.sin(yaw), math.cos(yaw), 0.0]),
+            "ap": round(float(ap), 3),
+        })
+    trail = [_a3(p) for p in path[:lift_idx]]
+    return frames, trail, n_pre, lift_idx, release_idx
+
+
 _PLANTILLA_VISOR = """<!doctype html><html><head><meta charset="utf-8">
-<style>body{margin:0;overflow:hidden;background:#0F2A43;font-family:-apple-system,sans-serif}
-.hud{position:fixed;z-index:9;color:#fff;font-weight:600}</style>
+<style>
+body{margin:0;overflow:hidden;background:#0F2A43;font-family:-apple-system,sans-serif}
+.hud{position:fixed;z-index:9;color:#fff;font-weight:600}
+#fases{position:fixed;z-index:9;left:50%;bottom:10px;transform:translateX(-50%);
+display:flex;gap:6px;font-size:12.5px;font-weight:600}
+#fases span{padding:4px 10px;border-radius:12px;background:rgba(127,212,240,.10);
+color:#7FD4F0;transition:all .3s;white-space:nowrap}
+#fases span.on{background:#FFD166;color:#0F2A43}
+#cams{position:fixed;z-index:9;right:12px;top:38px;display:flex;flex-direction:column;gap:5px}
+#cams button{font:600 12px -apple-system;color:#9FD8EE;background:rgba(127,212,240,.12);
+border:1px solid rgba(127,212,240,.25);border-radius:8px;padding:5px 10px;cursor:pointer}
+#cams button.on{background:#7FD4F0;color:#0F2A43}
+#perturbar{position:fixed;z-index:9;left:12px;top:40px;font:700 14px -apple-system;
+padding:9px 14px;border-radius:10px;border:1px solid rgba(239,71,111,.5);cursor:pointer;
+background:rgba(239,71,111,.15);color:#ffb3c4;opacity:.45;transition:all .3s}
+#perturbar.armed{opacity:1;background:#EF476F;color:#fff;box-shadow:0 0 18px rgba(239,71,111,.6)}
+</style>
 <script type="importmap">{"imports":{"three":"__THREE__"}}</script></head>
 <body>
-<div class="hud" style="left:14px;top:10px;font-size:16px">El robot ejecuta el mejor camino</div>
-<div class="hud" id="fase" style="right:14px;top:10px;color:#FFD166;font-size:15px"></div>
-<div class="hud" style="left:14px;bottom:8px;color:#9FD8EE;font-size:12px;font-weight:400">
-arrastra para girar · rueda para acercar</div>
+<div class="hud" style="left:14px;top:10px;font-size:16px">Así actúa el sistema</div>
+<div class="hud" id="fase" style="right:12px;top:10px;color:#FFD166;font-size:15px"></div>
+<button id="perturbar">🫳 perturbar la pieza</button>
+<div id="cams">
+<button id="cG" class="on">🎥 general</button><button id="cP">perfil</button>
+<button id="cC">cenital</button><button id="cS">seguir pinza</button></div>
+<div id="fases">
+<span id="f0">1 ver</span><span id="f1">2 imaginar caminos</span>
+<span id="f2">3 elegir el mejor</span><span id="f3">4 ejecutar</span><span id="f4">5 depositar</span></div>
 <script type="module">
 import * as THREE from 'three';
 import {OrbitControls} from '__ORBIT__';
@@ -180,7 +252,7 @@ const v = a => new THREE.Vector3(a[0], a[1], a[2]);
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0F2A43);
-scene.fog = new THREE.Fog(0x0F2A43, 4.0, 8.0);
+scene.fog = new THREE.Fog(0x0F2A43, 4.5, 9.5);
 const cam = new THREE.PerspectiveCamera(42, innerWidth/innerHeight, .01, 60);
 cam.position.copy(v(D.cam));
 const ren = new THREE.WebGLRenderer({antialias:true});
@@ -198,26 +270,64 @@ sun.shadow.mapSize.set(2048, 2048);
 Object.assign(sun.shadow.camera, {left:-2.5, right:2.5, top:2.5, bottom:-2.5});
 scene.add(sun);
 
-const piso = new THREE.Mesh(new THREE.CircleGeometry(2.6, 64),
+const piso = new THREE.Mesh(new THREE.CircleGeometry(2.9, 64),
   new THREE.MeshStandardMaterial({color:0x16324a, roughness:.92}));
 piso.rotation.x = -Math.PI/2; piso.receiveShadow = true; scene.add(piso);
-const grid = new THREE.GridHelper(5, 32, 0x2a5878, 0x1c4360);
+const grid = new THREE.GridHelper(5.8, 36, 0x2a5878, 0x1c4360);
 grid.position.y = .002; scene.add(grid);
 
-for (const tr of D.cloud) {
-  const g = new THREE.BufferGeometry().setFromPoints(tr.map(v));
-  scene.add(new THREE.Line(g, new THREE.LineBasicMaterial(
-    {color:0x7FD4F0, transparent:true, opacity:.22})));
+// ── escenografía: mesa bajo la pieza (cubre target y target2) y bandeja ──
+const tMid = [(D.target[0]+D.target2[0])/2, D.target[1], (D.target[2]+D.target2[2])/2];
+const hMesa = D.target[1] - .037;
+const matMesa = new THREE.MeshStandardMaterial({color:0x4a7390, roughness:.55, metalness:.15});
+const fuste = new THREE.Mesh(new THREE.CylinderGeometry(.055, .09, hMesa - .03, 28), matMesa);
+fuste.position.set(tMid[0], (hMesa - .03)/2, tMid[2]);
+const tapa = new THREE.Mesh(new THREE.CylinderGeometry(.18, .18, .03, 40), matMesa);
+tapa.position.set(tMid[0], hMesa - .015, tMid[2]);
+for (const m of [fuste, tapa]) { m.castShadow = m.receiveShadow = true; scene.add(m); }
+const bandeja = new THREE.Group();
+const bBase = new THREE.Mesh(new THREE.BoxGeometry(.30, .035, .30),
+  new THREE.MeshStandardMaterial({color:0x1f4a63, roughness:.6}));
+bBase.castShadow = bBase.receiveShadow = true; bandeja.add(bBase);
+for (const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+  const lado = new THREE.Mesh(new THREE.BoxGeometry(dx? .02:.30, .07, dz? .02:.30),
+    new THREE.MeshStandardMaterial({color:0x2a5878, roughness:.6}));
+  lado.position.set(dx*.14, .035, dz*.14); lado.castShadow = true; bandeja.add(lado);
 }
-const trailG = new THREE.BufferGeometry().setFromPoints(D.trail.map(v));
-trailG.setDrawRange(0, 1);
-scene.add(new THREE.Line(trailG, new THREE.LineBasicMaterial(
-  {color:0x00E08F, transparent:true, opacity:.95})));
+bandeja.position.set(D.tray[0], .02, D.tray[2]); scene.add(bandeja);
+
+// anillo de "percepción"
+const anillo = new THREE.Mesh(new THREE.RingGeometry(.09, .115, 48),
+  new THREE.MeshBasicMaterial({color:0xFFD166, transparent:true, side:THREE.DoubleSide}));
+anillo.rotation.x = -Math.PI/2;
+anillo.position.set(D.target[0], D.target[1]+.04, D.target[2]); scene.add(anillo);
+
+// nubes de caminos (nominal y re-plan) y rastros
+function hazNube(cloud, color) {
+  return cloud.map(tr => {
+    const g = new THREE.BufferGeometry().setFromPoints(tr.map(v));
+    g.setDrawRange(0, 0);
+    const ln = new THREE.Line(g, new THREE.LineBasicMaterial(
+      {color, transparent:true, opacity:.45}));
+    scene.add(ln); return ln;
+  });
+}
+const nube = hazNube(D.cloud, 0x7FD4F0);
+const nube2 = hazNube(D.cloud2, 0xffa3b8);
+function hazTrail(pts) {
+  const g = new THREE.BufferGeometry().setFromPoints(pts.map(v));
+  g.setDrawRange(0, 0);
+  const m = new THREE.LineBasicMaterial({color:0x00E08F, transparent:true, opacity:.95});
+  scene.add(new THREE.Line(g, m)); return [g, m];
+}
+const [trailG, trailM] = hazTrail(D.trail);
+const [trail2G, trail2M] = hazTrail(D.trail2);
 
 const pieza = new THREE.Mesh(new THREE.BoxGeometry(.072, .072, .072),
   new THREE.MeshStandardMaterial({color:0xFFD166, emissive:0x553f08, roughness:.45}));
 pieza.castShadow = true; pieza.position.copy(v(D.target)); scene.add(pieza);
 
+// ── brazo ──
 const matArm = new THREE.MeshStandardMaterial({color:0xD8DEE6, metalness:.62, roughness:.34});
 const matAcc = new THREE.MeshStandardMaterial({color:0x7EC8E3, metalness:.45, roughness:.30});
 const mk = (geo, mat) => {const m = new THREE.Mesh(geo, mat); m.castShadow = true; scene.add(m); return m;};
@@ -229,35 +339,202 @@ const ped = mk(new THREE.CylinderGeometry(.13, .16, .05, 32), matAcc);
 ped.position.copy(v(D.frames[0].j[0])); ped.position.y = .025;
 
 const up = new THREE.Vector3(0,1,0), q = new THREE.Quaternion(), dir = new THREE.Vector3();
+const J = [0,1,2,3].map(() => new THREE.Vector3());
+let latAct = new THREE.Vector3(), ejeAct = new THREE.Vector3(0,1,0), apAct = 1;
 function setSeg(m, a, b) {
   dir.subVectors(b, a); const L = Math.max(dir.length(), 1e-5);
   m.position.copy(a).addScaledVector(dir, .5);
   q.setFromUnitVectors(up, dir.normalize());
   m.quaternion.copy(q); m.scale.set(1, L, 1);
 }
-const F = D.frames, N = F.length, FPS = 26, HOLD = 1100;
-const total = N / FPS * 1000;
-const J = [0,1,2,3].map(() => new THREE.Vector3());
-const t0 = performance.now();
-function animate(now) {
-  requestAnimationFrame(animate);
-  const t = Math.min(((now - t0) % (total + HOLD)) / 1000 * FPS, N - 1);
-  const i = Math.floor(t), f = t - i;
-  const A = F[i], B = F[Math.min(i + 1, N - 1)];
-  for (let k = 0; k < 4; k++) J[k].copy(v(A.j[k])).lerp(v(B.j[k]), f);
+function dibujaBrazo() {
   setSeg(segs[0], J[0], J[1]); setSeg(segs[1], J[1], J[2]); setSeg(segs[2], J[2], J[3]);
   J.forEach((p, k) => joints[k].position.copy(p));
-  const lat = v(A.lat), eje = J[3].clone().sub(J[2]).normalize();
-  const ap = A.g ? .046 : .075;
+  ejeAct.copy(J[3]).sub(J[2]).normalize();
+  const ap = .046 + apAct * .032;
   dedos.forEach((d, k) => {
-    d.position.copy(J[3]).addScaledVector(lat, k ? -ap : ap).addScaledVector(eje, .055);
-    q.setFromUnitVectors(up, eje); d.quaternion.copy(q);
+    d.position.copy(J[3]).addScaledVector(latAct, k ? -ap : ap).addScaledVector(ejeAct, .055);
+    q.setFromUnitVectors(up, ejeAct); d.quaternion.copy(q);
   });
-  if (A.g) pieza.position.copy(J[3]).addScaledVector(eje, .095);
-  else pieza.position.copy(v(D.target));
-  trailG.setDrawRange(0, Math.max(2, Math.floor((i + f) / N * D.trail.length)));
-  document.getElementById('fase').textContent =
-    A.g ? '¡la tiene!' : (i < D.nPre - 10 ? 'siguiendo el camino de la IA…' : 'tomando la pieza…');
+}
+function poseDe(frames, i, f) {
+  const A = frames[i], B = frames[Math.min(i+1, frames.length-1)];
+  for (let k = 0; k < 4; k++) J[k].copy(v(A.j[k])).lerp(v(B.j[k]), f);
+  latAct.copy(v(A.lat)).lerp(v(B.lat), f);
+  apAct = A.ap + (B.ap - A.ap) * f;
+  dibujaBrazo();
+}
+
+// ── cámaras conmutables ──
+const centro = v(D.look);
+const dGen = v(D.cam).sub(centro);
+const CAMS = {
+  cG: {pos: () => centro.clone().addScaledVector(dGen, 1.22).add(new THREE.Vector3(0,.5,0)), look: () => centro},
+  cP: {pos: () => centro.clone().add(dGen), look: () => centro},
+  cC: {pos: () => centro.clone().add(new THREE.Vector3(.01, 2.8, .01)), look: () => centro},
+  cS: {pos: () => J[3].clone().addScaledVector(dGen.clone().normalize(), .85).add(new THREE.Vector3(0,.32,0)),
+       look: () => J[3].clone()},
+};
+let camMode = 'cG', camTween = 0;
+for (const id of Object.keys(CAMS)) {
+  document.getElementById(id).onclick = () => {
+    camMode = id; camTween = 0;
+    document.querySelectorAll('#cams button').forEach(b => b.classList.toggle('on', b.id === id));
+  };
+}
+
+// ── máquina de estados del ciclo ──
+const Q = new URLSearchParams(location.search || location.hash.slice(1));
+const SKIP = Q.get('skip') === '1', VEL = parseFloat(Q.get('vel') || '1');
+const AUTOPERTURB = Q.get('perturb') === '1';
+if (Q.get('wait') === '1') { const im = new Image(); im.src = 'http://10.255.255.1/x'; }
+const DUR = SKIP ? {ver:60, nube:90, elegir:60} : {ver:1400, nube:1800, elegir:1200};
+const FPS = 26;
+const fase = document.getElementById('fase');
+const chips = [0,1,2,3,4].map(i => document.getElementById('f' + i));
+const btnPerturbar = document.getElementById('perturbar');
+function marca(i, txt) {
+  chips.forEach((c, k) => c.classList.toggle('on', k === i));
+  fase.textContent = txt;
+}
+const sueloBandeja = .02 + .0175 + .036;
+let estado = 'ver', tEstado = performance.now(), fIdx = 0, cae = null;
+let perturbado = false, slide0 = null, jSnap = null, latSnap = null;
+function pasaA(e) { estado = e; tEstado = performance.now(); }
+
+btnPerturbar.onclick = () => {
+  if (estado === 'exec' && fIdx < D.nPre - 8 && !perturbado) {
+    perturbado = true; slide0 = pieza.position.clone();
+    jSnap = J.map(p => p.clone()); latSnap = latAct.clone();
+    btnPerturbar.classList.remove('armed');
+    pasaA('replan');
+  }
+};
+
+function reset() {
+  cae = null; perturbado = false; fIdx = 0;
+  pieza.position.copy(v(D.target));
+  nube.forEach(l => l.geometry.setDrawRange(0, 0));
+  nube2.forEach(l => { l.geometry.setDrawRange(0, 0); l.material.opacity = .5; });
+  trailG.setDrawRange(0, 0); trail2G.setDrawRange(0, 0);
+  anillo.position.set(D.target[0], D.target[1]+.04, D.target[2]);
+}
+
+function fisicaCaida(dt) {
+  if (!cae.reposo) {
+    cae.v.y -= 3.2 * dt; cae.p.addScaledVector(cae.v, dt * 3.2);
+    if (cae.p.y <= sueloBandeja) {
+      cae.p.y = sueloBandeja;
+      if (Math.abs(cae.v.y) > .25) cae.v.y = -cae.v.y * .35;
+      else { cae.v.set(0, 0, 0); cae.reposo = true; }
+    }
+  }
+  pieza.position.copy(cae.p);
+}
+
+let prev = performance.now();
+function animate(now) {
+  requestAnimationFrame(animate);
+  const dt = Math.min((now - prev) / 1000, .05); prev = now;
+  const te = now - tEstado;
+  btnPerturbar.classList.toggle('armed',
+    estado === 'exec' && fIdx < D.nPre - 8 && !perturbado);
+
+  if (estado === 'ver') {
+    marca(0, 'el robot VE la pieza (pose 6-DoF)');
+    const p = .5 + .5 * Math.sin(te / 140);
+    anillo.material.opacity = .35 + .55 * p;
+    anillo.scale.setScalar(1 + .25 * p);
+    pieza.material.emissiveIntensity = 1 + 1.6 * p;
+    poseDe(D.frames, 0, 0);
+    if (te > DUR.ver) pasaA('nube');
+  } else if (estado === 'nube') {
+    marca(1, D.cloud.length + ' caminos imaginados por difusión');
+    anillo.material.opacity = .15; anillo.scale.setScalar(1);
+    pieza.material.emissiveIntensity = 1;
+    const u = te / DUR.nube;
+    nube.forEach((l, k) => {
+      const uk = Math.min(Math.max(u * 1.6 - k * .05, 0), 1);
+      l.geometry.setDrawRange(0, Math.floor(uk * D.cloud[k].length));
+    });
+    if (te > DUR.nube) pasaA('elegir');
+  } else if (estado === 'elegir') {
+    marca(2, 'elige el de mejor agarre (best-of-N)');
+    const u = Math.min(te / DUR.elegir, 1);
+    nube.forEach(l => { l.material.opacity = .45 - .33 * u; });
+    trailG.setDrawRange(0, D.trail.length);
+    trailM.opacity = .4 + .6 * Math.abs(Math.sin(u * 6));
+    if (te > DUR.elegir) { trailM.opacity = .95; trailG.setDrawRange(0, 2); pasaA('exec'); }
+  } else if (estado === 'exec') {
+    if (AUTOPERTURB && fIdx > 22 && !perturbado) btnPerturbar.onclick();
+    fIdx = Math.min(fIdx + dt * FPS * VEL, D.frames.length - 1);
+    const i = Math.floor(fIdx);
+    poseDe(D.frames, i, fIdx - i);
+    trailG.setDrawRange(0, Math.max(2, Math.floor(fIdx / D.frames.length * D.trail.length)));
+    if (i >= D.releaseIdx && !cae)
+      cae = {p: pieza.position.clone(), v: new THREE.Vector3(0,0,0), reposo: false};
+    if (cae) { fisicaCaida(dt); marca(4, 'pieza depositada — caída con gravedad'); }
+    else if (i >= D.nPre) {
+      pieza.position.copy(J[3]).addScaledVector(ejeAct, .095);
+      marca(i < D.liftIdx ? 3 : 4, i < D.liftIdx ? 'la levanta' : 'llevándola a la bandeja');
+    } else marca(3, i > D.nPre - 12 ? 'cerrando la pinza…' : 'ejecutando el camino elegido');
+    if (fIdx >= D.frames.length - 1) pasaA('hold');
+  } else if (estado === 'replan') {                      // ⚡ perturbación
+    const u = Math.min(te / 500, 1);                     // la pieza se desliza
+    pieza.position.lerpVectors(slide0, v(D.target2), u);
+    pieza.position.y = D.target[1] + .06 * Math.sin(Math.PI * u);
+    anillo.position.set(pieza.position.x, D.target[1]+.04, pieza.position.z);
+    anillo.material.opacity = .7; anillo.scale.setScalar(1.1);
+    nube.forEach(l => { l.material.opacity = Math.max(.02, .12 - u * .1); });
+    if (te > 500) {                                      // nueva nube de difusión
+      const u2 = Math.min((te - 500) / 1100, 1);
+      nube2.forEach((l, k) => {
+        const uk = Math.min(Math.max(u2 * 1.6 - k * .05, 0), 1);
+        l.geometry.setDrawRange(0, Math.floor(uk * D.cloud2[k].length));
+      });
+      trail2G.setDrawRange(0, D.trail2.length);
+      trail2M.opacity = .4 + .6 * Math.abs(Math.sin(u2 * 6));
+    }
+    marca(2, '⚡ ¡la pieza se movió! re-planificando…');
+    if (te > 1700) { fIdx = 0; trail2M.opacity = .95; trail2G.setDrawRange(0, 2); pasaA('puente'); }
+  } else if (estado === 'puente') {                      // transición suave al plan 2
+    const u = Math.min(te / 450, 1), s = u * u * (3 - 2 * u);
+    const F0 = D.frames2[0];
+    for (let k = 0; k < 4; k++) J[k].copy(jSnap[k]).lerp(v(F0.j[k]), s);
+    latAct.copy(latSnap).lerp(v(F0.lat), s); apAct = 1;
+    dibujaBrazo();
+    nube2.forEach(l => { l.material.opacity = .45 - .3 * u; });
+    marca(3, 'nuevo plan listo — ejecutando');
+    if (te > 450) { fIdx = 0; pasaA('exec2'); }
+  } else if (estado === 'exec2') {
+    fIdx = Math.min(fIdx + dt * FPS * VEL, D.frames2.length - 1);
+    const i = Math.floor(fIdx);
+    poseDe(D.frames2, i, fIdx - i);
+    trail2G.setDrawRange(0, Math.max(2, Math.floor(fIdx / D.frames2.length * D.trail2.length)));
+    if (i >= D.releaseIdx2 && !cae)
+      cae = {p: pieza.position.clone(), v: new THREE.Vector3(0,0,0), reposo: false};
+    if (cae) { fisicaCaida(dt); marca(4, 'pieza depositada — caída con gravedad'); }
+    else if (i >= D.nPre2) {
+      pieza.position.copy(J[3]).addScaledVector(ejeAct, .095);
+      marca(i < D.liftIdx2 ? 3 : 4, i < D.liftIdx2 ? 'la levanta (pese a la perturbación)'
+                                                   : 'llevándola a la bandeja');
+    } else {
+      pieza.position.copy(v(D.target2));
+      marca(3, i > D.nPre2 - 12 ? 'cerrando la pinza…' : 'ejecutando el plan re-calculado');
+    }
+    if (fIdx >= D.frames2.length - 1) pasaA('hold');
+  } else if (estado === 'hold') {
+    marca(4, perturbado ? 'ciclo completo ✓ — superó la perturbación' : 'ciclo completo ✓ — se repite');
+    if (cae) fisicaCaida(dt);
+    if (te > 2200) { reset(); pasaA('ver'); }
+  }
+
+  if (camTween < 1) camTween = Math.min(camTween + .02, 1);
+  const C = CAMS[camMode];
+  if (camMode === 'cS' || camTween < 1) {
+    cam.position.lerp(C.pos(), camMode === 'cS' ? .08 : .06);
+    ctl.target.lerp(C.look(), camMode === 'cS' ? .12 : .06);
+  }
   ctl.update(); ren.render(scene, cam);
 }
 requestAnimationFrame(animate);
@@ -269,73 +546,61 @@ addEventListener('resize', () => {
 
 
 def _visor_3d(trajs, x, y, z):
-    """Visor three.js interactivo: el brazo ejecuta el mejor camino → iframe HTML."""
+    """Visor three.js: ciclo VER → IMAGINAR → ELEGIR → EJECUTAR → DEPOSITAR,
+    con perturbación interactiva (re-planificación con una segunda nube real)."""
     target = np.array([x, y, z])
     best = trajs[np.argmin(np.linalg.norm(trajs[:, -1, :3] - target, axis=1))]
-    wps = best[:, :3]
 
-    # base del robot 0.75 m "detrás" de la pieza (alcance frontal natural)
     dir_xy = target[:2] if np.linalg.norm(target[:2]) > 0.05 else np.array([1.0, 0.0])
     dir_xy = dir_xy / np.linalg.norm(dir_xy)
     base_xy = target[:2] - dir_xy * 0.75
-
-    inicio = np.array([*(base_xy + dir_xy * 0.30), 0.70])
-    aproximacion = np.linspace(inicio, wps[0], 12)
-    descenso = _suavizar(wps, sub=3)
-    contacto = np.linspace(descenso[-1], target, 8)
-    levante = np.linspace(target, target + [0, 0, 0.24], 14)
-    path = np.vstack([aproximacion, descenso, contacto, levante])
-    n_pre = len(aproximacion) + len(descenso) + len(contacto)
-
-    frames = []
-    for i, p in enumerate(path):
-        base, hombro, codo, ee, yaw = _ik_brazo(p, base_xy)
-        frames.append({
-            "j": [_a3(base), _a3(hombro), _a3(codo), _a3(ee)],
-            "lat": _a3([-math.sin(yaw), math.cos(yaw), 0.0]),
-            "g": 1 if i >= n_pre else 0,
-        })
-
-    centro = np.array([*((base_xy + target[:2]) / 2), 0.45])
     perp = np.array([-dir_xy[1], dir_xy[0]])
-    cam_pos = np.array([*(centro[:2] + perp * 1.55 - dir_xy * 0.25), 0.95])
+    tray = np.array([*(base_xy + perp * 0.62), 0.0])
+    inicio = np.array([*(base_xy + dir_xy * 0.30), 0.70])
+
+    frames, trail, n_pre, lift_idx, release_idx = _ciclo(target, best[:, :3], base_xy, tray, inicio)
+
+    # objetivo perturbado (sobre la misma mesa) + re-plan REAL con la difusión
+    target2 = target + np.array([*(perp * 0.13 - dir_xy * 0.05), 0.0])
+    trajs2 = _muestrear(target2, 12)
+    best2 = trajs2[np.argmin(np.linalg.norm(trajs2[:, -1, :3] - target2, axis=1))]
+    frames2, trail2, n_pre2, lift_idx2, release_idx2 = _ciclo(
+        target2, best2[:, :3], base_xy, tray, inicio)
+
+    centro = np.array([*((base_xy + target[:2] + tray[:2]) / 3), 0.42])
+    cam_pos = np.array([*(centro[:2] + perp * 1.7 - dir_xy * 0.35), 1.00])
 
     data = {
-        "frames": frames,
-        "cloud": [[_a3(pt) for pt in tr] for tr in trajs[:10, :, :3].tolist()],
-        "trail": [_a3(p) for p in path],
-        "target": _a3(target),
-        "nPre": n_pre,
-        "cam": _a3(cam_pos),
-        "look": _a3(centro),
+        "frames": frames, "trail": trail,
+        "nPre": n_pre, "liftIdx": lift_idx, "releaseIdx": release_idx,
+        "frames2": frames2, "trail2": trail2,
+        "nPre2": n_pre2, "liftIdx2": lift_idx2, "releaseIdx2": release_idx2,
+        "cloud": [[_a3(pt) for pt in tr] for tr in trajs[:14, :, :3].tolist()],
+        "cloud2": [[_a3(pt) for pt in tr] for tr in trajs2[:, :, :3].tolist()],
+        "target": _a3(target), "target2": _a3(target2), "tray": _a3(tray),
+        "cam": _a3(cam_pos), "look": _a3(centro),
     }
     pagina = (_PLANTILLA_VISOR
               .replace("__THREE__", f"/gradio_api/file={ASSETS}/three.module.min.js")
               .replace("__ORBIT__", f"/gradio_api/file={ASSETS}/OrbitControls.js")
               .replace("__DATA__", json.dumps(data)))
     return (f'<iframe srcdoc="{html_mod.escape(pagina, quote=True)}" '
-            'style="width:100%;height:640px;border:none;border-radius:12px;'
+            'style="width:100%;height:660px;border:none;border-radius:12px;'
             'background:#0F2A43"></iframe>')
 
 
 def generar(x, y, z, n):
-    import torch
-
-    model, scheduler, device = _load()
-    cond_vec = np.zeros(64, dtype=np.float32)
-    cond_vec[:3] = [x, y, z]
-    cond = torch.tensor(cond_vec, device=device).unsqueeze(0)
-
     t0 = time.time()
-    trajs = np.array([_ddim(model, scheduler, cond, device) for _ in range(int(n))])
+    trajs = _muestrear([x, y, z], n)
     ms = (time.time() - t0) * 1000
 
     fig = _fig_nube(trajs, x, y, z, n, ms)
     visor = _visor_3d(trajs, x, y, z)
 
     spread = np.std(trajs[:, -1, :3], axis=0).mean() * 100
-    resumen = (f"**{int(n)} trayectorias** en **{ms:.0f} ms** ({ms / n:.0f} ms c/u, en `{device}`) · "
-               f"los finales coinciden dentro de **{spread:.1f} cm** — diversidad con propósito.")
+    resumen = (f"**{int(n)} trayectorias** en **{ms:.0f} ms** ({ms / n:.0f} ms c/u) · "
+               f"los finales coinciden dentro de **{spread:.1f} cm** — diversidad con propósito. "
+               "En el visor 3D: prueba **🫳 perturbar la pieza** durante la ejecución.")
     return fig, visor, resumen
 
 
