@@ -115,7 +115,7 @@ def fig01_pipeline_architecture():
               fontweight="bold", color=COLORS["success_dark"])
     ax.text(3.05, 9.00, "AUC ADD-S 0.91 YCB-V  /  0.96 T-LESS",
               ha="center", fontsize=12, color=COLORS["ink"])
-    ax.text(3.05, 8.65, "Cycle p95 < 7 s   ·   173 tests passing",
+    ax.text(3.05, 8.65, "Cycle p95 < 7 s   ·   255 tests passing",
               ha="center", fontsize=11, color=COLORS["ink_soft"])
 
     # Hardware — arriba derecha
@@ -167,7 +167,7 @@ def fig02_exploraciones_dashboard():
     # Titulo
     fig.suptitle("13 Exploraciones post-TFM — Resumen ejecutivo",
                   fontsize=26, fontweight="bold", y=0.97, color=COLORS["ink"])
-    ax.text(10, 14.5, "Todas mergeadas a main · 173 tests passing · paquete PyPI publicado oficialmente",
+    ax.text(10, 14.5, "Todas mergeadas a main · 255 tests passing · paquete PyPI publicado oficialmente",
               ha="center", fontsize=15, style="italic", color=COLORS["muted"])
 
     # Grid 4 columnas × 4 filas (cuarta fila solo 1 card — centrada)
@@ -228,7 +228,7 @@ def fig02_exploraciones_dashboard():
                                    facecolor=COLORS["surface"],
                                    edgecolor=COLORS["border"], linewidth=1.5)
     ax.add_patch(footer_box)
-    ax.text(10, 1.4, "Total acumulado: 13/13 exitos · 173 tests · 10 modelos Diffusion · 30+ renders 3D",
+    ax.text(10, 1.4, "Total acumulado: 13/13 exitos · 255 tests · 10 modelos Diffusion · 30+ renders 3D",
               ha="center", fontsize=15, fontweight="bold", color=COLORS["ink"])
     ax.text(10, 0.75, "pip install bop-bootstrap-ci  ·  docs/exploraciones/ (13 cierres)  ·  listo para defensa",
               ha="center", fontsize=13, color=COLORS["muted"])

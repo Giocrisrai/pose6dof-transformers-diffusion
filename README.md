@@ -191,7 +191,7 @@ pose6dof-transformers-diffusion/
 │   ├── colab/               # Notebooks para Google Colab (GPU)
 │   │   ├── 00_colab_setup.ipynb
 │   │   └── 01_foundationpose_eval.ipynb
-│   └── 04_math_foundations.ipynb  # Demos matematicas
+│   └── 07_pipeline_tutorial_completo.ipynb  # Tutorial E2E
 ├── tests/                   # pytest (228 passing — TFM + exploraciones)
 ├── packages/                # Paquetes PyPI (bop-bootstrap-ci 0.1.0)
 ├── docs/exploraciones/      # 5 documentos de cierre de exploraciones
