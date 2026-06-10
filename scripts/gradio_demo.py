@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Demo Gradio interactivo del pipeline TFM Pose 6-DoF (UX para publico general).
 
+DEPRECADO para charlas en vivo: usar scripts/demo_charla.py (minimalista, tipografia
+grande, pensado para proyector). Este demo completo se mantiene como referencia.
+
 Ejecucion:
     .venv/bin/python scripts/gradio_demo.py
 """
@@ -447,8 +450,7 @@ with gr.Blocks(title="TFM Pose 6-DoF Demo") as demo:
         with gr.Accordion("📐 Flujo end-to-end del modulo VLA-lite", open=False):
             _diag_vla = REPO / "docs/figures_hero/11_vla_lite_flow.png"
             if _diag_vla.exists():
-                gr.Image(str(_diag_vla), show_label=False, container=False,
-                         show_download_button=False)
+                gr.Image(str(_diag_vla), show_label=False, container=False)
 
         with gr.Row():
             with gr.Column(scale=1):
@@ -796,7 +798,7 @@ Esta es la exploracion #4 del TFM: VLA-lite con coste 1000x menor que RDT-1B / p
         _diag_pipeline = REPO / "docs/figures_hero/10_pipeline_full.png"
         if _diag_pipeline.exists():
             gr.Image(str(_diag_pipeline), label="Pipeline E2E (camara → comando articular)",
-                     show_label=False, container=False, show_download_button=False)
+                     show_label=False, container=False)
         gr.Markdown("""
         > Diagrama con flechas tipadas: entradas (camara, CAD) → percepcion (FoundationPose) →
         > planificacion (Diffusion Policy) → control (PBVS en SE(3)) → robot real.
