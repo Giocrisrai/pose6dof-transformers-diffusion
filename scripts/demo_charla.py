@@ -285,7 +285,7 @@ grid.position.y = .002; scene.add(grid);
 
 // ── escenografía: mesa bajo la pieza (cubre target y target2) y bandeja ──
 const tMid = [(D.target[0]+D.target2[0])/2, D.target[1], (D.target[2]+D.target2[2])/2];
-const hMesa = D.target[1] - .037;
+const hMesa = D.target[1] - D.mitadPieza - .001;
 const matMesa = new THREE.MeshStandardMaterial({color:0x4a7390, roughness:.55, metalness:.15});
 const fuste = new THREE.Mesh(new THREE.CylinderGeometry(.055, .09, hMesa - .03, 28), matMesa);
 fuste.position.set(tMid[0], (hMesa - .03)/2, tMid[2]);
@@ -330,8 +330,13 @@ function hazTrail(pts) {
 const [trailG, trailM] = hazTrail(D.trail);
 const [trail2G, trail2M] = hazTrail(D.trail2);
 
-const pieza = new THREE.Mesh(new THREE.BoxGeometry(.072, .072, .072),
-  new THREE.MeshStandardMaterial({color:0xFFD166, emissive:0x553f08, roughness:.45}));
+const geoPieza = [new THREE.BoxGeometry(.072, .072, .072),
+  new THREE.SphereGeometry(.045, 28, 20),
+  new THREE.CylinderGeometry(.04, .04, .076, 28)][D.forma];
+const colPieza = new THREE.Color(D.colorPieza);
+const pieza = new THREE.Mesh(geoPieza,
+  new THREE.MeshStandardMaterial({color:colPieza,
+    emissive:colPieza.clone().multiplyScalar(.35), roughness:.45}));
 pieza.castShadow = true; pieza.position.copy(v(D.target)); scene.add(pieza);
 
 // ── brazo ──
@@ -404,7 +409,7 @@ function marca(i, txt) {
   chips.forEach((c, k) => c.classList.toggle('on', k === i));
   fase.textContent = txt;
 }
-const sueloBandeja = .02 + .0175 + .036;
+const sueloBandeja = .02 + .0175 + D.mitadPieza;
 let estado = 'ver', tEstado = performance.now(), fIdx = 0, cae = null;
 let perturbado = false, slide0 = null, jSnap = null, latSnap = null;
 function pasaA(e) { estado = e; tEstado = performance.now(); }
@@ -552,7 +557,13 @@ addEventListener('resize', () => {
 </script></body></html>"""
 
 
-def _visor_3d(trajs, x, y, z):
+FORMAS_WEB = {"cubo": 0, "esfera": 1, "cilindro": 2}
+COLORES_WEB = {"amarillo": "#FFD166", "rojo": "#EF6461", "verde": "#39C77F", "azul": "#5AA9E6"}
+# mitad de la altura de la pieza por forma (para la física de la caída)
+MITAD_PIEZA = {"cubo": 0.036, "esfera": 0.045, "cilindro": 0.038}
+
+
+def _visor_3d(trajs, x, y, z, forma="cubo", color="amarillo"):
     """Visor three.js: ciclo VER → IMAGINAR → ELEGIR → EJECUTAR → DEPOSITAR,
     con perturbación interactiva (re-planificación con una segunda nube real)."""
     target = np.array([x, y, z])
@@ -586,6 +597,9 @@ def _visor_3d(trajs, x, y, z):
         "cloud2": [[_a3(pt) for pt in tr] for tr in trajs2[:, :, :3].tolist()],
         "target": _a3(target), "target2": _a3(target2), "tray": _a3(tray),
         "cam": _a3(cam_pos), "look": _a3(centro),
+        "forma": FORMAS_WEB.get(forma, 0),
+        "colorPieza": COLORES_WEB.get(color, "#FFD166"),
+        "mitadPieza": MITAD_PIEZA.get(forma, 0.036),
     }
     pagina = (_PLANTILLA_VISOR
               .replace("__THREE__", f"/gradio_api/file={ASSETS}/three.module.min.js")
@@ -596,13 +610,13 @@ def _visor_3d(trajs, x, y, z):
             'background:#0F2A43"></iframe>')
 
 
-def generar(x, y, z, n):
+def generar(x, y, z, n, forma="cubo", color="amarillo"):
     t0 = time.time()
     trajs = _muestrear([x, y, z], n)
     ms = (time.time() - t0) * 1000
 
     fig = _fig_nube(trajs, x, y, z, n, ms)
-    visor = _visor_3d(trajs, x, y, z)
+    visor = _visor_3d(trajs, x, y, z, forma, color)
 
     spread = np.std(trajs[:, -1, :3], axis=0).mean() * 100
     resumen = (f"**{int(n)} trayectorias** en **{ms:.0f} ms** ({ms / n:.0f} ms c/u) · "
@@ -642,6 +656,35 @@ def _load_sim_stack():
     return _cache["sim"]
 
 
+COLORES_SIM = {
+    "rojo": (0.85, 0.15, 0.15), "verde": (0.20, 0.75, 0.20),
+    "azul": (0.15, 0.30, 0.85), "amarillo": (0.95, 0.78, 0.18),
+}
+
+
+def _preparar_pieza_sim(sim, forma: str, color: str):
+    """Deja /object_1 con la forma y color pedidos (la política se entrenó con
+    cubos rojos: otras formas/colores son un test de robustez del encoder)."""
+    h = sim.getObject("/object_1")
+    if forma != "cubo":
+        # estacionar el cubo original y crear una primitiva dinámica en su lugar
+        sim.setObjectAlias(h, "object_1_off")
+        sim.setObjectPosition(h, -1, [-1.0, -1.0, -1.0])
+        tipo = sim.primitiveshape_spheroid if forma == "esfera" else sim.primitiveshape_cylinder
+        try:
+            h = sim.createPrimitiveShape(tipo, [0.05, 0.05, 0.05], 0)
+        except Exception:                      # API antigua (<4.5)
+            h = sim.createPureShape(1 if forma == "esfera" else 2, 8, [0.05, 0.05, 0.05], 0.05)
+        sim.setObjectAlias(h, "object_1")
+        sim.setObjectInt32Param(h, sim.shapeintparam_static, 0)
+        sim.setObjectInt32Param(h, sim.shapeintparam_respondable, 1)
+        try:
+            sim.setShapeMass(h, 0.05)
+        except Exception:
+            pass
+    sim.setShapeColor(h, None, sim.colorcomponent_ambient_diffuse, list(COLORES_SIM[color]))
+
+
 def chequear_conexion():
     if _coppelia_disponible():
         return "🟢 **CoppeliaSim detectado** (puerto 23000) — listo para ejecutar."
@@ -649,7 +692,7 @@ def chequear_conexion():
             "entrar a esta pestaña.")
 
 
-def ejecutar_en_sim(sx, sy, rot_deg):
+def ejecutar_en_sim(sx, sy, rot_deg, forma, color):
     """Generador: va informando el progreso mientras el UR ejecuta el pick."""
     if not _coppelia_disponible():
         yield ("❌ **CoppeliaSim no está corriendo.** Ábrelo primero "
@@ -670,8 +713,11 @@ def ejecutar_en_sim(sx, sy, rot_deg):
         pose[:3, :3] = np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])
         pose[:3, 3] = [float(sx), float(sy), 0.033]
 
-        yield (f"🤖 **Ejecutando en el simulador** — pieza en x={sx:.2f}, y={sy:.2f}, "
-               f"rotación {int(float(rot_deg))}°.\n\n👀 **Miren la ventana de CoppeliaSim**: "
+        nota = ("" if (forma, color) == ("cubo", "rojo") else
+                "\n\n_Nota: la política se entrenó con cubos rojos — esta forma/color "
+                "es un test de robustez del encoder visual._")
+        yield (f"🤖 **Ejecutando en el simulador** — {forma} {color} en x={sx:.2f}, y={sy:.2f}, "
+               f"rotación {int(float(rot_deg))}°.{nota}\n\n👀 **Miren la ventana de CoppeliaSim**: "
                "el robot ve la pieza, genera 8 trayectorias, ejecuta la mejor y la deposita (~1 min).")
         t0 = time.time()
         with CoppeliaSimBridge() as bridge:
@@ -688,16 +734,28 @@ def ejecutar_en_sim(sx, sy, rot_deg):
                            "■ (stop) en CoppeliaSim y vuelve a intentar.")
                     return
             bridge.load_scene(REPO / "data/scenes/bin_base.ttt")
+            _preparar_pieza_sim(bridge.sim, forma, color)
             r = pick_with_dp(planner, pose, bridge, frames_dir=None,
                              visual_encoder=encoder, best_of_n=8)
         dt = time.time() - t0
         ok = r["grasp_plausible"] and r["deposit_plausible"] and r["ik_converged"]
-        icono = "✅" if ok else "⚠️"
-        yield (f"{icono} **Pick {'completado' if ok else 'terminado con observaciones'}** en {dt:.0f} s\n\n"
-               f"- Precisión del agarre: **{r['grasp_proximity_m']*100:.1f} cm** de la pieza\n"
-               f"- Depósito a **{r['deposit_error_m']*100:.1f} cm** del objetivo\n"
-               f"- Brazo (IK): {'convergió ✓' if r['ik_converged'] else 'no convergió'}\n\n"
-               "_Mismo pipeline del estudio: percepción → difusión best-of-8 → control._")
+        ood = (forma, color) != ("cubo", "rojo")
+        metricas = (f"- Precisión del agarre: **{r['grasp_proximity_m']*100:.1f} cm** de la pieza\n"
+                    f"- Depósito a **{r['deposit_error_m']*100:.1f} cm** del objetivo\n"
+                    f"- Brazo (IK): {'convergió ✓' if r['ik_converged'] else 'no convergió'}\n\n")
+        if ok:
+            yield (f"✅ **Pick completado** en {dt:.0f} s\n\n" + metricas +
+                   "_Mismo pipeline del estudio: percepción → difusión best-of-8 → control._")
+        elif ood:
+            yield (f"🔬 **Resultado del experimento de robustez** ({dt:.0f} s): el sistema se degradó.\n\n"
+                   + metricas +
+                   "**La lección de IA**: la política se entrenó SOLO con cubos rojos — con una pieza "
+                   "fuera de esa distribución, la percepción visual pierde precisión y el agarre falla "
+                   "o la pieza sale empujada (física real). Con **cubo rojo** el pick es confiable. "
+                   "_Así de importante es la distribución de entrenamiento._")
+        else:
+            yield (f"⚠️ **Pick terminado con observaciones** en {dt:.0f} s\n\n" + metricas +
+                   "_Puede pasar (~16 % de los casos según la eval); reintenta con otra posición._")
     except Exception as e:  # noqa: BLE001 — en vivo, cualquier fallo se informa y se sigue
         yield f"❌ Algo falló: `{e}`\n\nPlan B: video grabado en la slide 13 de la charla."
     finally:
@@ -719,6 +777,9 @@ with gr.Blocks(title="¿Dónde está la pieza?") as demo:
             sy = gr.Slider(-0.4, 0.4, value=0.0, step=0.05, label="y — cerca / lejos (m)")
             sz = gr.Slider(0.6, 1.1, value=0.8, step=0.05, label="z — altura (m)")
             sn = gr.Slider(5, 50, value=20, step=5, label="¿cuántas trayectorias?")
+            with gr.Row():
+                sforma = gr.Radio(["cubo", "esfera", "cilindro"], value="cubo", label="forma de la pieza")
+                scolor = gr.Radio(["amarillo", "rojo", "verde", "azul"], value="amarillo", label="color")
             btn = gr.Button("✨ Generar trayectorias", variant="primary")
             with gr.Row():
                 botones = [gr.Button(p, size="sm") for p in PRESETS]
@@ -741,17 +802,22 @@ with gr.Blocks(title="¿Dónde está la pieza?") as demo:
                                        label="posición — cerca / lejos (m)")
                         cy = gr.Slider(-0.15, -0.05, value=-0.10, step=0.01,
                                        label="posición — izquierda / derecha (m)")
-                    crot = gr.Radio(["0", "45", "90"], value="0", label="rotación de la pieza (°)")
+                    with gr.Row():
+                        crot = gr.Radio(["0", "45", "90"], value="0", label="rotación (°)")
+                        cforma = gr.Radio(["cubo", "esfera", "cilindro"], value="cubo",
+                                          label="forma 🔬 (≠cubo = test de robustez)")
+                        ccolor = gr.Radio(["rojo", "verde", "azul", "amarillo"], value="rojo",
+                                          label="color 🔬 (≠rojo = test de robustez)")
                     btn_sim = gr.Button("🤖 Ejecutar en el simulador", variant="primary")
                     estado_sim = gr.Markdown()
 
-    btn.click(generar, [sx, sy, sz, sn], [plot, visor, resumen])
+    btn.click(generar, [sx, sy, sz, sn, sforma, scolor], [plot, visor, resumen])
     for b, (nombre, (px, py, pz)) in zip(botones, PRESETS.items()):
         b.click(lambda px=px, py=py, pz=pz: (px, py, pz), outputs=[sx, sy, sz])
-    btn_sim.click(ejecutar_en_sim, [cx, cy, crot], [estado_sim])
+    btn_sim.click(ejecutar_en_sim, [cx, cy, crot, cforma, ccolor], [estado_sim])
     tab_sim.select(chequear_conexion, outputs=[estado_con])
     # ejemplo al abrir: el público nunca ve un panel vacío
-    demo.load(generar, [sx, sy, sz, sn], [plot, visor, resumen])
+    demo.load(generar, [sx, sy, sz, sn, sforma, scolor], [plot, visor, resumen])
 
 if __name__ == "__main__":
     gr.set_static_paths(paths=[ASSETS])
