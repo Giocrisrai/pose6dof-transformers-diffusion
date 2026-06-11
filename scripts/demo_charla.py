@@ -179,8 +179,15 @@ def _ciclo(target, wps, base_xy, tray, inicio):
     un objetivo: aproximación → descenso → cierre → levante → traslado → suelta."""
     aproximacion = np.linspace(inicio, wps[0], 12)
     descenso = _suavizar(wps, sub=3)
-    contacto = np.linspace(descenso[-1], target, 8)
-    levante = np.linspace(target, target + [0, 0, 0.26], 14)
+    # el efector frena ANTES del centro de la pieza: el punto de agarre de la
+    # pinza queda 0.095 m más adelante sobre el eje del último eslabón, así la
+    # pieza no "salta" al engancharse
+    _, _, codo_g, ee_g, _ = _ik_brazo(target, base_xy)
+    eje_g = (ee_g - codo_g) / (np.linalg.norm(ee_g - codo_g) + 1e-9)
+    ee_grasp = target - eje_g * 0.095
+    contacto = np.linspace(descenso[-1], ee_grasp, 10)
+    cierre = np.repeat(ee_grasp[None, :], 7, axis=0)   # quieto mientras cierra
+    levante = np.linspace(ee_grasp, ee_grasp + [0, 0, 0.26], 14)
     sobre_bandeja = np.array([tray[0], tray[1], 0.42])
     traslado = []
     for t in np.linspace(0, 1, 24):
@@ -189,19 +196,19 @@ def _ciclo(target, wps, base_xy, tray, inicio):
         traslado.append(p)
     traslado = np.array(traslado)
     retirada = np.linspace(sobre_bandeja, sobre_bandeja + [0, 0, 0.16], 10)
-    path = np.vstack([aproximacion, descenso, contacto, levante, traslado, retirada])
+    path = np.vstack([aproximacion, descenso, contacto, cierre, levante, traslado, retirada])
 
-    n_pre = len(aproximacion) + len(descenso) + len(contacto)
+    n_pre = len(aproximacion) + len(descenso) + len(contacto) + len(cierre)
     lift_idx = n_pre + len(levante)
     release_idx = lift_idx + len(traslado)
 
     frames = []
     for i, p in enumerate(path):
         base, hombro, codo, ee, yaw = _ik_brazo(p, base_xy)
-        if i < n_pre - len(contacto):
-            ap = 1.0
+        if i < n_pre - len(cierre):
+            ap = 1.0                                       # abierta hasta llegar
         elif i < n_pre:
-            ap = 1.0 - (i - (n_pre - len(contacto))) / len(contacto)
+            ap = 1.0 - (i - (n_pre - len(cierre))) / len(cierre)  # cierra quieta
         elif i < release_idx:
             ap = 0.0
         else:
