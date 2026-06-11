@@ -642,6 +642,13 @@ def _load_sim_stack():
     return _cache["sim"]
 
 
+def chequear_conexion():
+    if _coppelia_disponible():
+        return "🟢 **CoppeliaSim detectado** (puerto 23000) — listo para ejecutar."
+    return ("🔴 **CoppeliaSim no detectado.** Abre la app CoppeliaSim y vuelve a "
+            "entrar a esta pestaña.")
+
+
 def ejecutar_en_sim(sx, sy, rot_deg):
     """Generador: va informando el progreso mientras el UR ejecuta el pick."""
     if not _coppelia_disponible():
@@ -668,6 +675,18 @@ def ejecutar_en_sim(sx, sy, rot_deg):
                "el robot ve la pieza, genera 8 trayectorias, ejecuta la mejor y la deposita (~1 min).")
         t0 = time.time()
         with CoppeliaSimBridge() as bridge:
+            # robustez: si quedó una simulación corriendo (run interrumpido o
+            # play manual en la GUI), detenerla y esperar el estado 'stopped'
+            if bridge.get_simulation_state() != 0:
+                bridge.stop_simulation()
+                for _ in range(60):
+                    if bridge.get_simulation_state() == 0:
+                        break
+                    time.sleep(0.1)
+                else:
+                    yield ("⚠️ El simulador no terminó de detenerse. Pulsa el botón "
+                           "■ (stop) en CoppeliaSim y vuelve a intentar.")
+                    return
             bridge.load_scene(REPO / "data/scenes/bin_base.ttt")
             r = pick_with_dp(planner, pose, bridge, frames_dir=None,
                              visual_encoder=encoder, best_of_n=8)
@@ -705,25 +724,32 @@ with gr.Blocks(title="¿Dónde está la pieza?") as demo:
                 botones = [gr.Button(p, size="sm") for p in PRESETS]
             resumen = gr.Markdown()
 
-            with gr.Accordion("🤖 Ejecutarlo de verdad — CoppeliaSim", open=False):
-                gr.Markdown("La pieza se coloca donde ustedes digan **sobre la mesa del simulador** "
-                            "y el brazo UR hace el pick completo (pipeline Iter 7c).")
-                cx = gr.Slider(0.40, 0.55, value=0.47, step=0.01, label="posición — cerca / lejos (m)")
-                cy = gr.Slider(-0.15, -0.05, value=-0.10, step=0.01, label="posición — izquierda / derecha (m)")
-                crot = gr.Radio(["0", "45", "90"], value="0", label="rotación de la pieza (°)")
-                btn_sim = gr.Button("🤖 Ejecutar en el simulador", variant="primary")
-                estado_sim = gr.Markdown()
         with gr.Column(scale=2):
             with gr.Tabs():
                 with gr.Tab("🎬 El robot en acción (3D interactivo)"):
                     visor = gr.HTML()
                 with gr.Tab("🌀 Los caminos posibles"):
                     plot = gr.Plot(label="", container=False)
+                with gr.Tab("🤖 CoppeliaSim — ejecución real") as tab_sim:
+                    estado_con = gr.Markdown()
+                    gr.Markdown("**El pick de verdad**: la pieza se coloca sobre la mesa del "
+                                "simulador donde ustedes digan, y el brazo UR ejecuta el pipeline "
+                                "completo (percepción → difusión best-of-8 → control). "
+                                "👀 *Miren la ventana de CoppeliaSim mientras corre (~35 s).*")
+                    with gr.Row():
+                        cx = gr.Slider(0.40, 0.55, value=0.47, step=0.01,
+                                       label="posición — cerca / lejos (m)")
+                        cy = gr.Slider(-0.15, -0.05, value=-0.10, step=0.01,
+                                       label="posición — izquierda / derecha (m)")
+                    crot = gr.Radio(["0", "45", "90"], value="0", label="rotación de la pieza (°)")
+                    btn_sim = gr.Button("🤖 Ejecutar en el simulador", variant="primary")
+                    estado_sim = gr.Markdown()
 
     btn.click(generar, [sx, sy, sz, sn], [plot, visor, resumen])
     for b, (nombre, (px, py, pz)) in zip(botones, PRESETS.items()):
         b.click(lambda px=px, py=py, pz=pz: (px, py, pz), outputs=[sx, sy, sz])
     btn_sim.click(ejecutar_en_sim, [cx, cy, crot], [estado_sim])
+    tab_sim.select(chequear_conexion, outputs=[estado_con])
     # ejemplo al abrir: el público nunca ve un panel vacío
     demo.load(generar, [sx, sy, sz, sn], [plot, visor, resumen])
 
