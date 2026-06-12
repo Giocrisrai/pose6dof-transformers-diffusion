@@ -642,8 +642,10 @@ POLITICAS_SIM = {
         ("diffusion_policy_v7a_phase2", "visual_encoder_iter5"),
     "robusta (Iter 8 — formas y colores variados)":
         ("diffusion_policy_v8_randomized", "visual_encoder_iter8rand"),
+    "clutter (Iter 9 — elige entre varias piezas)":
+        ("diffusion_policy_v9_clutter", "visual_encoder_iter9clut"),
 }
-POLITICA_ORIGINAL, POLITICA_ROBUSTA = tuple(POLITICAS_SIM)
+POLITICA_ORIGINAL, POLITICA_ROBUSTA, POLITICA_CLUTTER = tuple(POLITICAS_SIM)
 
 
 def _load_sim_stack(politica: str):
@@ -703,6 +705,48 @@ def _preparar_pieza_sim(sim, forma: str, color: str):
     sim.setShapeColor(h, None, sim.colorcomponent_ambient_diffuse, list(COLORES_SIM[color]))
 
 
+FORMAS_SIM = ("cubo", "esfera", "cilindro")
+
+
+def _crear_distractores_sim(sim, n: int, target_xy, target_app, rng):
+    """Crea n piezas extra de apariencia ≠ a la pedida, separadas ≥9 cm del
+    objetivo y entre sí. El robot debe ir por la pieza indicada (su pose),
+    ignorando estas — el test de selección en clutter."""
+    puestos = [tuple(target_xy)]
+    creados = []
+    while len(creados) < n:
+        x = float(rng.uniform(0.38, 0.58))
+        y = float(rng.uniform(-0.19, -0.01))
+        if any((x - px) ** 2 + (y - py) ** 2 < 0.09**2 for px, py in puestos):
+            continue
+        while True:
+            forma = FORMAS_SIM[int(rng.integers(0, 3))]
+            color = list(COLORES_SIM)[int(rng.integers(0, len(COLORES_SIM)))]
+            if (forma, color) != tuple(target_app):
+                break
+        try:
+            tipo = {"cubo": sim.primitiveshape_cuboid,
+                    "esfera": sim.primitiveshape_spheroid,
+                    "cilindro": sim.primitiveshape_cylinder}[forma]
+            h = sim.createPrimitiveShape(tipo, [0.05, 0.05, 0.05], 0)
+        except Exception:                      # API antigua (<4.5)
+            h = sim.createPureShape({"cubo": 0, "esfera": 1, "cilindro": 2}[forma],
+                                    8, [0.05, 0.05, 0.05], 0.05)
+        sim.setObjectAlias(h, "distractor")
+        sim.setObjectInt32Param(h, sim.shapeintparam_static, 0)
+        sim.setObjectInt32Param(h, sim.shapeintparam_respondable, 1)
+        try:
+            sim.setShapeMass(h, 0.05)
+        except Exception:
+            pass
+        sim.setShapeColor(h, None, sim.colorcomponent_ambient_diffuse,
+                          list(COLORES_SIM[color]))
+        sim.setObjectPosition(h, -1, [x, y, 0.033])
+        puestos.append((x, y))
+        creados.append(f"{forma} {color}")
+    return creados
+
+
 def chequear_conexion():
     if _coppelia_disponible():
         return "🟢 **CoppeliaSim detectado** (puerto 23000) — listo para ejecutar."
@@ -710,7 +754,7 @@ def chequear_conexion():
             "entrar a esta pestaña.")
 
 
-def ejecutar_en_sim(sx, sy, rot_deg, forma, color, politica):
+def ejecutar_en_sim(sx, sy, rot_deg, forma, color, politica, n_dist):
     """Generador: va informando el progreso mientras el UR ejecuta el pick."""
     if not _coppelia_disponible():
         yield ("❌ **CoppeliaSim no está corriendo.** Ábrelo primero "
@@ -720,7 +764,7 @@ def ejecutar_en_sim(sx, sy, rot_deg, forma, color, politica):
         yield "⏳ Ya hay una ejecución en curso — espera a que termine."
         return
     try:
-        robusta = politica == POLITICA_ROBUSTA
+        robusta = politica != POLITICA_ORIGINAL
         yield f"🔌 Conectando con CoppeliaSim y cargando la política {politica}..."
         from experiments.run_pick_with_diffusion import pick_with_dp
         from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
@@ -740,9 +784,18 @@ def ejecutar_en_sim(sx, sy, rot_deg, forma, color, politica):
         else:
             nota = ("\n\n_Nota: esta política se entrenó solo con cubos rojos — esta "
                     "forma/color es un test de robustez del encoder visual._")
-        yield (f"🤖 **Ejecutando en el simulador** — {forma} {color} en x={sx:.2f}, y={sy:.2f}, "
-               f"rotación {int(float(rot_deg))}°.{nota}\n\n👀 **Miren la ventana de CoppeliaSim**: "
-               "el robot ve la pieza, genera 8 trayectorias, ejecuta la mejor y la deposita (~1 min).")
+        n_dist = int(n_dist)
+        objetivo = (f"la **{forma} {color}**" if n_dist
+                    else f"{forma} {color}")
+        clutter_txt = (f" La mesa tendrá además **{n_dist} pieza(s) distractora(s)** — "
+                       "el robot debe ir SOLO por la indicada." if n_dist else "")
+        if n_dist and politica != POLITICA_CLUTTER:
+            clutter_txt += (" _Esta política no se entrenó con varias piezas en escena "
+                            "— la de clutter (Iter 9) es la especialista._")
+        yield (f"🤖 **Ejecutando en el simulador** — {objetivo} en x={sx:.2f}, y={sy:.2f}, "
+               f"rotación {int(float(rot_deg))}°.{clutter_txt}{nota}\n\n"
+               "👀 **Miren la ventana de CoppeliaSim**: el robot ve la escena, genera "
+               "8 trayectorias, ejecuta la mejor y la deposita (~1 min).")
         t0 = time.time()
         with CoppeliaSimBridge() as bridge:
             # robustez: si quedó una simulación corriendo (run interrumpido o
@@ -759,6 +812,11 @@ def ejecutar_en_sim(sx, sy, rot_deg, forma, color, politica):
                     return
             bridge.load_scene(REPO / "data/scenes/bin_base.ttt")
             _preparar_pieza_sim(bridge.sim, forma, color)
+            distractores = []
+            if n_dist:
+                distractores = _crear_distractores_sim(
+                    bridge.sim, n_dist, (float(sx), float(sy)), (forma, color),
+                    np.random.default_rng())
             r = pick_with_dp(planner, pose, bridge, frames_dir=None,
                              visual_encoder=encoder, best_of_n=8)
         dt = time.time() - t0
@@ -766,12 +824,18 @@ def ejecutar_en_sim(sx, sy, rot_deg, forma, color, politica):
         ood = (forma, color) != ("cubo", "rojo")
         metricas = (f"- Precisión del agarre: **{r['grasp_proximity_m']*100:.1f} cm** de la pieza\n"
                     f"- Depósito a **{r['deposit_error_m']*100:.1f} cm** del objetivo\n"
-                    f"- Brazo (IK): {'convergió ✓' if r['ik_converged'] else 'no convergió'}\n\n")
+                    f"- Brazo (IK): {'convergió ✓' if r['ik_converged'] else 'no convergió'}\n")
+        if distractores:
+            metricas += f"- En mesa también había: {', '.join(distractores)}\n"
+        metricas += "\n"
         if ok:
             extra = (" Esta política se entrenó con apariencias randomizadas — agarra "
                      "lo que se le pida." if (ood and robusta) else "")
+            sel = (f" **Fue por la pieza indicada ({forma} {color})** entre "
+                   f"{1 + len(distractores)} piezas." if distractores else "")
             yield (f"✅ **Pick completado** en {dt:.0f} s\n\n" + metricas +
-                   "_Mismo pipeline del estudio: percepción → difusión best-of-8 → control._" + extra)
+                   "_Mismo pipeline del estudio: percepción → difusión best-of-8 → control._"
+                   + sel + extra)
         elif ood and robusta:
             rodo = r["grasp_plausible"] and forma in ("esfera", "cilindro")
             detalle = ("**La agarró bien** pero la pieza **rodó al depositarla** — limitación "
@@ -847,15 +911,18 @@ with gr.Blocks(title="¿Dónde está la pieza?") as demo:
                     _pols_disp = [p for p, (m, _) in POLITICAS_SIM.items()
                                   if (REPO / f"data/models/{m}.pth").exists()] \
                         or list(POLITICAS_SIM)
-                    cpol = gr.Radio(_pols_disp, value=_pols_disp[0],
-                                    label="política 🧠 (antes/después del entrenamiento robusto)")
+                    with gr.Row():
+                        cpol = gr.Radio(_pols_disp, value=_pols_disp[0], scale=3,
+                                        label="política 🧠 (antes/después del entrenamiento robusto)")
+                        cdist = gr.Radio(["0", "1", "2"], value="0", scale=1,
+                                         label="piezas distractoras 🎯 (va solo por la indicada)")
                     btn_sim = gr.Button("🤖 Ejecutar en el simulador", variant="primary")
                     estado_sim = gr.Markdown()
 
     btn.click(generar, [sx, sy, sz, sn, sforma, scolor], [plot, visor, resumen])
     for b, (nombre, (px, py, pz)) in zip(botones, PRESETS.items()):
         b.click(lambda px=px, py=py, pz=pz: (px, py, pz), outputs=[sx, sy, sz])
-    btn_sim.click(ejecutar_en_sim, [cx, cy, crot, cforma, ccolor, cpol], [estado_sim])
+    btn_sim.click(ejecutar_en_sim, [cx, cy, crot, cforma, ccolor, cpol, cdist], [estado_sim])
     tab_sim.select(chequear_conexion, outputs=[estado_con])
     # ejemplo al abrir: el público nunca ve un panel vacío
     demo.load(generar, [sx, sy, sz, sn, sforma, scolor], [plot, visor, resumen])
