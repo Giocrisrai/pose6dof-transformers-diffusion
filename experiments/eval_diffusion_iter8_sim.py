@@ -130,24 +130,41 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--n", type=int, default=25)
     parser.add_argument("--torch-seed", type=int, default=2026)
+    parser.add_argument("--politicas", nargs="+",
+                        default=["v7a_phase2", "v8_randomized"])
     args = parser.parse_args()
 
     torch.manual_seed(args.torch_seed)
     device = "mps" if torch.backends.mps.is_available() else "cpu"
-    enc_state = torch.load(REPO / "data/models/visual_encoder_iter5.pth",
-                           map_location=device, weights_only=True)
-    encoder = ResNet18RGBDEncoder(out_dim=enc_state["out_dim"]).to(device).eval()
-    encoder.load_state_dict(enc_state["state_dict"])
 
+    def _cargar_encoder(nombre_enc: str) -> ResNet18RGBDEncoder:
+        enc_state = torch.load(REPO / f"data/models/{nombre_enc}.pth",
+                               map_location=device, weights_only=True)
+        enc = ResNet18RGBDEncoder(out_dim=enc_state["out_dim"]).to(device).eval()
+        enc.load_state_dict(enc_state["state_dict"])
+        return enc
+
+    # CRÍTICO: cada política con el encoder de SU entrenamiento (la cabeza de
+    # proyección se inicializa al azar en precompute_visual_cond, así que los
+    # espacios de embedding NO son intercambiables entre iteraciones).
     politicas = {
-        "v7a_phase2": REPO / "data/models/diffusion_policy_v7a_phase2.pth",
-        "v8_randomized": REPO / "data/models/diffusion_policy_v8_randomized.pth",
+        "v7a_phase2": (REPO / "data/models/diffusion_policy_v7a_phase2.pth",
+                       "visual_encoder_iter5"),
+        "v8_randomized": (REPO / "data/models/diffusion_policy_v8_randomized.pth",
+                          "visual_encoder_iter8rand"),
     }
+    out_path = OUT / "eval_v8_robustez.json"
     salida: dict = {"n": args.n, "torch_seed": args.torch_seed, "condiciones": {}}
-    for nombre, path in politicas.items():
+    if out_path.exists():                       # merge con resultados previos
+        salida = json.loads(out_path.read_text())
+        salida["condiciones"] = salida.get("condiciones", {})
+    for nombre, (path, enc_nombre) in politicas.items():
+        if nombre not in args.politicas:
+            continue
         if not path.exists():
             logger.warning(f"política {nombre} no existe ({path}); se omite")
             continue
+        encoder = _cargar_encoder(enc_nombre)
         planner = _load_policy(path, device)
         for cond, rand in (("cubo_rojo", False), ("randomizada", True)):
             logger.info(f"═══ {nombre} × {cond} (n={args.n}) ═══")
@@ -158,7 +175,6 @@ def main() -> int:
             logger.info(f"  → {salida['condiciones'][clave]['resumen']}")
 
     OUT.mkdir(parents=True, exist_ok=True)
-    out_path = OUT / "eval_v8_robustez.json"
     out_path.write_text(json.dumps(salida, indent=2))
     print("\n═══ RESUMEN ITER 8 ═══")
     for k, v in salida["condiciones"].items():

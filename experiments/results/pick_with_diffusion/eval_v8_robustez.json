@@ -1,0 +1,1058 @@
+{
+  "n": 25,
+  "torch_seed": 2026,
+  "condiciones": {
+    "v7a_phase2__cubo_rojo": {
+      "resumen": {
+        "n": 25,
+        "errores": 0,
+        "grasp_pct": 80.0,
+        "deposit_pct": 84.0,
+        "ik_pct": 100.0,
+        "pick_place_pct": 68.0,
+        "mean_grasp_proximity_m": 0.0364
+      },
+      "resultados": [
+        {
+          "i": 0,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.03164174043207182,
+          "deposit_error_m": 0.08866833317125856,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 1,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.02805302764729122,
+          "deposit_error_m": 0.3024895844801807,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 2,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.032948877090848136,
+          "deposit_error_m": 0.1104724792693061,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 3,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.04365915917657688,
+          "deposit_error_m": 0.13004326980838718,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 4,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.042105308186612164,
+          "deposit_error_m": 0.5306817293043274,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 5,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.03437771861255318,
+          "deposit_error_m": 0.0717783623459994,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 6,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.0341413248350549,
+          "deposit_error_m": 0.037219172688134156,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 7,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.046177142159732426,
+          "deposit_error_m": 0.2942811135463297,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 8,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.05321487864322577,
+          "deposit_error_m": 2.2283576868736414,
+          "ik_converged": true,
+          "grasp_plausible": false,
+          "deposit_plausible": false
+        },
+        {
+          "i": 9,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.022031356159648345,
+          "deposit_error_m": 0.06981094947987336,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 10,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.02954624161049378,
+          "deposit_error_m": 0.07542139124741537,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 11,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.03214811251038608,
+          "deposit_error_m": 0.03164383199964435,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 12,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.009224585366945346,
+          "deposit_error_m": 0.29078969435555424,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 13,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.02425937889500672,
+          "deposit_error_m": 0.0493735730596763,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 14,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.05336334241735303,
+          "deposit_error_m": 0.011377184265327571,
+          "ik_converged": true,
+          "grasp_plausible": false,
+          "deposit_plausible": true
+        },
+        {
+          "i": 15,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.033309766795447796,
+          "deposit_error_m": 0.13516347586076233,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 16,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.05758411182823886,
+          "deposit_error_m": 0.053350486917844886,
+          "ik_converged": true,
+          "grasp_plausible": false,
+          "deposit_plausible": true
+        },
+        {
+          "i": 17,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.05347297633106911,
+          "deposit_error_m": 0.06827022097119302,
+          "ik_converged": true,
+          "grasp_plausible": false,
+          "deposit_plausible": true
+        },
+        {
+          "i": 18,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.028195364867128207,
+          "deposit_error_m": 0.06742539858570978,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 19,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.05494755918400874,
+          "deposit_error_m": 0.17655705761251544,
+          "ik_converged": true,
+          "grasp_plausible": false,
+          "deposit_plausible": true
+        },
+        {
+          "i": 20,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.042399019165164906,
+          "deposit_error_m": 0.02493390609314752,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 21,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.030013045407185215,
+          "deposit_error_m": 0.10839971099686559,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 22,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.026844329103742598,
+          "deposit_error_m": 0.015642763829324554,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 23,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.031118859868576803,
+          "deposit_error_m": 0.34755254357093673,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 24,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.03620261157935678,
+          "deposit_error_m": 0.05144807096638649,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        }
+      ]
+    },
+    "v7a_phase2__randomizada": {
+      "resumen": {
+        "n": 25,
+        "errores": 0,
+        "grasp_pct": 76.0,
+        "deposit_pct": 44.0,
+        "ik_pct": 100.0,
+        "pick_place_pct": 32.0,
+        "mean_grasp_proximity_m": 0.0407
+      },
+      "resultados": [
+        {
+          "i": 0,
+          "forma": "cubo",
+          "color": "naranja",
+          "grasp_proximity_m": 0.023022583459079052,
+          "deposit_error_m": 1.5007766221633458,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 1,
+          "forma": "esfera",
+          "color": "amarillo",
+          "grasp_proximity_m": 0.03382497829614898,
+          "deposit_error_m": 0.8078898032378566,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 2,
+          "forma": "cilindro",
+          "color": "verde",
+          "grasp_proximity_m": 0.02516319580574432,
+          "deposit_error_m": 0.15307626729198978,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 3,
+          "forma": "cilindro",
+          "color": "azul",
+          "grasp_proximity_m": 0.052265932936073935,
+          "deposit_error_m": 0.181278663237085,
+          "ik_converged": true,
+          "grasp_plausible": false,
+          "deposit_plausible": true
+        },
+        {
+          "i": 4,
+          "forma": "cilindro",
+          "color": "verde",
+          "grasp_proximity_m": 0.090329807288016,
+          "deposit_error_m": 0.6795021311186135,
+          "ik_converged": true,
+          "grasp_plausible": false,
+          "deposit_plausible": false
+        },
+        {
+          "i": 5,
+          "forma": "esfera",
+          "color": "azul",
+          "grasp_proximity_m": 0.04799160604610056,
+          "deposit_error_m": 19.671721335194963,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 6,
+          "forma": "cubo",
+          "color": "naranja",
+          "grasp_proximity_m": 0.03314703702167006,
+          "deposit_error_m": 0.16134207847027685,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 7,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.033900622252857504,
+          "deposit_error_m": 0.014873078288669883,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 8,
+          "forma": "cilindro",
+          "color": "azul",
+          "grasp_proximity_m": 0.047926149422298094,
+          "deposit_error_m": 2.3487813927604937,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 9,
+          "forma": "cubo",
+          "color": "naranja",
+          "grasp_proximity_m": 0.027788064722848282,
+          "deposit_error_m": 0.030516754543280924,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 10,
+          "forma": "cilindro",
+          "color": "naranja",
+          "grasp_proximity_m": 0.030860482526006025,
+          "deposit_error_m": 1.2026346814063253,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 11,
+          "forma": "cilindro",
+          "color": "amarillo",
+          "grasp_proximity_m": 0.040343462978938115,
+          "deposit_error_m": 0.07080724588371164,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 12,
+          "forma": "cilindro",
+          "color": "rojo",
+          "grasp_proximity_m": 0.028775744402835462,
+          "deposit_error_m": 3.2926671857156338,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 13,
+          "forma": "cilindro",
+          "color": "azul",
+          "grasp_proximity_m": 0.037962115617195195,
+          "deposit_error_m": 1.1336734114169191,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 14,
+          "forma": "cilindro",
+          "color": "blanco",
+          "grasp_proximity_m": 0.06369979318277155,
+          "deposit_error_m": 0.305872685029865,
+          "ik_converged": true,
+          "grasp_plausible": false,
+          "deposit_plausible": false
+        },
+        {
+          "i": 15,
+          "forma": "esfera",
+          "color": "blanco",
+          "grasp_proximity_m": 0.07940128058075535,
+          "deposit_error_m": 0.5828841070082559,
+          "ik_converged": true,
+          "grasp_plausible": false,
+          "deposit_plausible": false
+        },
+        {
+          "i": 16,
+          "forma": "cubo",
+          "color": "naranja",
+          "grasp_proximity_m": 0.059280413665688494,
+          "deposit_error_m": 0.02871827742193195,
+          "ik_converged": true,
+          "grasp_plausible": false,
+          "deposit_plausible": true
+        },
+        {
+          "i": 17,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.05650380266741142,
+          "deposit_error_m": 0.039816230447326996,
+          "ik_converged": true,
+          "grasp_plausible": false,
+          "deposit_plausible": true
+        },
+        {
+          "i": 18,
+          "forma": "cubo",
+          "color": "blanco",
+          "grasp_proximity_m": 0.0378811727360083,
+          "deposit_error_m": 0.08586909003353581,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 19,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.02539099738075988,
+          "deposit_error_m": 0.08516081413490555,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 20,
+          "forma": "esfera",
+          "color": "azul",
+          "grasp_proximity_m": 0.022968721277030688,
+          "deposit_error_m": 0.9972482854634283,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 21,
+          "forma": "cubo",
+          "color": "azul",
+          "grasp_proximity_m": 0.02664698632378153,
+          "deposit_error_m": 0.4581326687817482,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 22,
+          "forma": "cubo",
+          "color": "azul",
+          "grasp_proximity_m": 0.031243470198196024,
+          "deposit_error_m": 0.03396207334393817,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 23,
+          "forma": "esfera",
+          "color": "rojo",
+          "grasp_proximity_m": 0.02485492442017026,
+          "deposit_error_m": 6.724028809195983,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 24,
+          "forma": "esfera",
+          "color": "verde",
+          "grasp_proximity_m": 0.03514202030079858,
+          "deposit_error_m": 13.079488413327262,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        }
+      ]
+    },
+    "v8_randomized__cubo_rojo": {
+      "resumen": {
+        "n": 25,
+        "errores": 0,
+        "grasp_pct": 100.0,
+        "deposit_pct": 92.0,
+        "ik_pct": 100.0,
+        "pick_place_pct": 92.0,
+        "mean_grasp_proximity_m": 0.0141
+      },
+      "resultados": [
+        {
+          "i": 0,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.0034616302590264486,
+          "deposit_error_m": 0.05552194756084624,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 1,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.009254428150586597,
+          "deposit_error_m": 0.04218923032379211,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 2,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.030395518092160453,
+          "deposit_error_m": 0.0558852470644161,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 3,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.007057395660317289,
+          "deposit_error_m": 0.055098007115990215,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 4,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.02368508568468175,
+          "deposit_error_m": 0.06732613396632087,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 5,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.020376392784247983,
+          "deposit_error_m": 0.21437694036072275,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 6,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.029016355740596394,
+          "deposit_error_m": 0.13107817002540065,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 7,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.004014325244602823,
+          "deposit_error_m": 0.14873412977250355,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 8,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.010204754492558414,
+          "deposit_error_m": 0.0499828744786961,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 9,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.004028544399644307,
+          "deposit_error_m": 0.07582581913376789,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 10,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.006054776257705344,
+          "deposit_error_m": 0.09609267811884908,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 11,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.009864914696156966,
+          "deposit_error_m": 0.042876025635100776,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 12,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.014895518594033217,
+          "deposit_error_m": 10.372617896631159,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 13,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.009553913982222273,
+          "deposit_error_m": 0.06863415032222325,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 14,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.02066812787477008,
+          "deposit_error_m": 0.02945029545198249,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 15,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.010801866601779113,
+          "deposit_error_m": 0.08617964634339392,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 16,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.013624403887919852,
+          "deposit_error_m": 0.2603851826621794,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 17,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.01748001375453008,
+          "deposit_error_m": 0.04604269145132436,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 18,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.008635084749932966,
+          "deposit_error_m": 0.07628374095866941,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 19,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.010962660019184884,
+          "deposit_error_m": 0.043728029414666365,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 20,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.012404083790290885,
+          "deposit_error_m": 0.07875276673586663,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 21,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.016612173993603128,
+          "deposit_error_m": 0.17151024285626984,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 22,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.014193819167957585,
+          "deposit_error_m": 0.057197731373998424,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 23,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.03057004959709755,
+          "deposit_error_m": 1.3335461385198095,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 24,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.014131176199196172,
+          "deposit_error_m": 0.03843496924743005,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        }
+      ]
+    },
+    "v8_randomized__randomizada": {
+      "resumen": {
+        "n": 25,
+        "errores": 0,
+        "grasp_pct": 96.0,
+        "deposit_pct": 48.0,
+        "ik_pct": 100.0,
+        "pick_place_pct": 48.0,
+        "mean_grasp_proximity_m": 0.0135
+      },
+      "resultados": [
+        {
+          "i": 0,
+          "forma": "cubo",
+          "color": "naranja",
+          "grasp_proximity_m": 0.011133394397584775,
+          "deposit_error_m": 0.038465526575286374,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 1,
+          "forma": "esfera",
+          "color": "amarillo",
+          "grasp_proximity_m": 0.010246110952068437,
+          "deposit_error_m": 1.0024083900215515,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 2,
+          "forma": "cilindro",
+          "color": "verde",
+          "grasp_proximity_m": 0.05121871350116113,
+          "deposit_error_m": 1.7449763345523222,
+          "ik_converged": true,
+          "grasp_plausible": false,
+          "deposit_plausible": false
+        },
+        {
+          "i": 3,
+          "forma": "cilindro",
+          "color": "azul",
+          "grasp_proximity_m": 0.011665257447762577,
+          "deposit_error_m": 2.149087013120881,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 4,
+          "forma": "cilindro",
+          "color": "verde",
+          "grasp_proximity_m": 0.026819390368585275,
+          "deposit_error_m": 2.047460826663913,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 5,
+          "forma": "esfera",
+          "color": "azul",
+          "grasp_proximity_m": 0.010911079132434588,
+          "deposit_error_m": 1.0455116449071469,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 6,
+          "forma": "cubo",
+          "color": "naranja",
+          "grasp_proximity_m": 0.02281294918585364,
+          "deposit_error_m": 0.023192351219641045,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 7,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.014028756225507045,
+          "deposit_error_m": 0.04355519051316814,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 8,
+          "forma": "cilindro",
+          "color": "azul",
+          "grasp_proximity_m": 0.008183288188236692,
+          "deposit_error_m": 2.292479713388075,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 9,
+          "forma": "cubo",
+          "color": "naranja",
+          "grasp_proximity_m": 0.007993883294485313,
+          "deposit_error_m": 0.037451488675712165,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 10,
+          "forma": "cilindro",
+          "color": "naranja",
+          "grasp_proximity_m": 0.005222053171628476,
+          "deposit_error_m": 1.5015855098340944,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 11,
+          "forma": "cilindro",
+          "color": "amarillo",
+          "grasp_proximity_m": 0.008061319554851341,
+          "deposit_error_m": 0.027108971190968008,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 12,
+          "forma": "cilindro",
+          "color": "rojo",
+          "grasp_proximity_m": 0.0027401310405075763,
+          "deposit_error_m": 2.3730062199993562,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 13,
+          "forma": "cilindro",
+          "color": "azul",
+          "grasp_proximity_m": 0.010226198694615093,
+          "deposit_error_m": 1.9870624277413635,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 14,
+          "forma": "cilindro",
+          "color": "blanco",
+          "grasp_proximity_m": 0.013189921459100674,
+          "deposit_error_m": 0.22223508215023677,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 15,
+          "forma": "esfera",
+          "color": "blanco",
+          "grasp_proximity_m": 0.01119091829351816,
+          "deposit_error_m": 1.8409342772378214,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 16,
+          "forma": "cubo",
+          "color": "naranja",
+          "grasp_proximity_m": 0.01925362329586814,
+          "deposit_error_m": 0.07032948574991187,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 17,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.00747583600178517,
+          "deposit_error_m": 0.9645408858383956,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 18,
+          "forma": "cubo",
+          "color": "blanco",
+          "grasp_proximity_m": 0.010753286291520635,
+          "deposit_error_m": 0.03846719324806529,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 19,
+          "forma": "cubo",
+          "color": "rojo",
+          "grasp_proximity_m": 0.030416074113686648,
+          "deposit_error_m": 0.025588343101494975,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 20,
+          "forma": "esfera",
+          "color": "azul",
+          "grasp_proximity_m": 0.004536700937182866,
+          "deposit_error_m": 1.3901882931172715,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 21,
+          "forma": "cubo",
+          "color": "azul",
+          "grasp_proximity_m": 0.009457229281316957,
+          "deposit_error_m": 0.1284297594707557,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 22,
+          "forma": "cubo",
+          "color": "azul",
+          "grasp_proximity_m": 0.009901309974120372,
+          "deposit_error_m": 0.09956181140002175,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        },
+        {
+          "i": 23,
+          "forma": "esfera",
+          "color": "rojo",
+          "grasp_proximity_m": 0.002283720948927111,
+          "deposit_error_m": 1.2334446241462078,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": false
+        },
+        {
+          "i": 24,
+          "forma": "esfera",
+          "color": "verde",
+          "grasp_proximity_m": 0.018934131980621344,
+          "deposit_error_m": 0.03538924316797485,
+          "ik_converged": true,
+          "grasp_plausible": true,
+          "deposit_plausible": true
+        }
+      ]
+    }
+  }
+}

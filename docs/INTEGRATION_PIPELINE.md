@@ -843,3 +843,45 @@ En `_move_tcp_via_ik`, cuando un substep falla (precision > 2 cm), se re-siembra
 
 ### Conclusión para la defensa
 La convergencia de IK deja de ser un factor limitante (100 % con la corrección), y el éxito end-to-end de pick-and-place sube a 84 %. El diagnóstico ilustra el método: refutar hipótesis plausibles (reach, singularidad) con evidencia antes de corregir, y atacar la causa raíz (semilla del solver) en vez del síntoma.
+
+---
+
+## Iter 8 (cerrado 2026-06-11, post-TFM): domain randomization de apariencia — robustez forma+color
+
+> ⚠ Exploración POST-TFM: la memoria está congelada en Iter 7c (84 % E2E). Esta iteración no toca los capítulos; documenta la línea de robustez surgida de la demo interactiva.
+
+### Motivación (hallazgo medido en `scripts/demo_charla.py`, 2026-06-10)
+
+La policy v7a_phase2 se entrenó solo con cubos rojos. Al añadir selección de forma/color a la demo, se midió degradación fuera de distribución (OOD): cubo rojo 3.7 cm de proximidad de grasp ✅; cubo azul 5.1 cm; esfera verde 6.0 cm; cilindro 4.8 cm. La IA es tan buena como su distribución de entrenamiento.
+
+### Idea
+
+El plan heurístico del dataset depende **solo de la pose** → randomizar la apariencia de la pieza en cada captura RGB-D (forma ∈ {cubo, esfera, cilindro} × color ∈ paleta de 6) deja las trayectorias objetivo idénticas y solo varía el conditioning visual. El modelo aprende que la apariencia no debe importar: **invariancia visual**.
+
+### Pipeline
+
+1. `collect_diffusion_dataset_v8_randomized.py --n 1000`: 1000 capturas randomizadas (solo captura+plan heurístico, sin ejecución → ~5 min, no horas).
+2. `precompute_visual_cond.py --version v8rand` → `visual_encoder_iter8rand.pth`.
+3. `train_diffusion_on_sim.py`: fine-tune 60 epochs desde v7a_phase2 (hidden 256) → `diffusion_policy_v8_randomized.pth` (val_loss 0.0178).
+4. `eval_diffusion_iter8_sim.py --n 25`: comparación PAREADA (mismas poses y misma secuencia de apariencias por seed) v7a vs v8 × {cubo_rojo, randomizada}.
+
+### ⚠ Trampa de evaluación encontrada (y documentada para el futuro)
+
+`precompute_visual_cond.py` crea el encoder con una **cabeza de proyección inicializada al azar** por versión: los espacios de embedding NO son intercambiables entre iteraciones. La primera eval usó `visual_encoder_iter5` con la policy v8 y dio grasp 0 % / 17.6 cm (falsa alarma). **Cada policy debe evaluarse con el encoder de SU entrenamiento** — el eval ahora mapea política→encoder explícitamente.
+
+### Métricas (25 picks por condición, seed 2026, eval pareada)
+
+| Condición | P&P E2E | grasp | deposit | IK | prox. grasp |
+|---|---|---|---|---|---|
+| v7a × cubo rojo | 68 % | 80 % | 84 % | 100 % | 3.6 cm |
+| v7a × randomizada | 32 % | 76 % | 44 % | 100 % | 4.1 cm |
+| **v8 × cubo rojo** | **92 %** | **100 %** | 92 % | 100 % | **1.4 cm** |
+| **v8 × randomizada** | **48 %** | **96 %** | 48 % | 100 % | **1.4 cm** |
+
+Desglose v8 randomizada por forma: proximidad uniforme (cubo 1.4, esfera 1.0, cilindro 1.5 cm — invariancia conseguida). El deposit bajo (48 %) se concentra en esferas (1/6) y cilindros (2/9) que **ruedan tras soltarse** — limitación física del depósito plano, no de la policy (cubos: 9/10).
+
+### Conclusión
+
+Domain randomization barato (5 min de datos extra + 46 s de fine-tune) **triplica la precisión de grasp** (3.6→1.4 cm) y la hace invariante a forma y color, sin sacrificar el caso in-distribution (al contrario: 68→92 % E2E). El cuello de botella restante es mecánico (piezas que ruedan), no perceptual. Argumento directo de potencialidad industrial del bin-picking: "agarrar lo que se pida".
+
+Datos: `eval_v8_robustez.json`. Checkpoints gitignored (regenerables con el pipeline de arriba).

@@ -126,6 +126,11 @@ data/models/diffusion_policy_v6d*.pth
 # Iter 7a checkpoints (regenerables — curriculum grasp→deposit)
 data/models/diffusion_policy_v7a_phase*.pth
 
+# Iter 8 checkpoints (regenerables — domain randomization de apariencia)
+data/models/diffusion_policy_v8_randomized.pth
+data/models/diffusion_policy_v8_randomized.summary.json
+data/models/visual_encoder_iter8rand.pth
+
 # Demo reel: MP4 generados (regenerables con build_demo_reel.py)
 experiments/results/demo_reel/
 !experiments/results/demo_reel/README.md
