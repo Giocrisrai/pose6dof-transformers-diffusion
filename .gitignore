@@ -131,6 +131,11 @@ data/models/diffusion_policy_v8_randomized.pth
 data/models/diffusion_policy_v8_randomized.summary.json
 data/models/visual_encoder_iter8rand.pth
 
+# Iter 9 checkpoints (regenerables — clutter randomization)
+data/models/diffusion_policy_v9_clutter.pth
+data/models/diffusion_policy_v9_clutter.summary.json
+data/models/visual_encoder_iter9clut.pth
+
 # Demo reel: MP4 generados (regenerables con build_demo_reel.py)
 experiments/results/demo_reel/
 !experiments/results/demo_reel/README.md

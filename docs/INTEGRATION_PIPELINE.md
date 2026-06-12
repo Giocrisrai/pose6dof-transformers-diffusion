@@ -885,3 +885,45 @@ Desglose v8 randomizada por forma: proximidad uniforme (cubo 1.4, esfera 1.0, ci
 Domain randomization barato (5 min de datos extra + 46 s de fine-tune) **triplica la precisión de grasp** (3.6→1.4 cm) y la hace invariante a forma y color, sin sacrificar el caso in-distribution (al contrario: 68→92 % E2E). El cuello de botella restante es mecánico (piezas que ruedan), no perceptual. Argumento directo de potencialidad industrial del bin-picking: "agarrar lo que se pida".
 
 Datos: `eval_v8_robustez.json`. Checkpoints gitignored (regenerables con el pipeline de arriba).
+
+---
+
+## Iter 9 (cerrado 2026-06-12, post-TFM): clutter randomization — selección del objetivo entre varias piezas
+
+> ⚠ Exploración POST-TFM (como Iter 8): la memoria sigue congelada en Iter 7c.
+
+### Motivación (idea del usuario tras Iter 8)
+
+Una escena de bin-picking real no tiene una sola pieza. Si la mesa tiene varias, el sistema debe ir por la pieza INDICADA (su pose viene del conditioning — en el pipeline completo, de la estimación 6-DoF) ignorando las demás. Medido con `eval_diffusion_iter9_sim.py`: la política v8 con 2 distractores en escena se degrada — grasp 100 % → 84 %, proximidad 1.3 → 2.8 cm (el encoder nunca vio más de una pieza; los peores picks se desvían 6-9 cm hacia la pieza equivocada).
+
+### Idea
+
+Misma receta que Iter 8: el plan heurístico depende solo de la pose del objetivo → añadir 0-2 piezas distractoras de forma/color aleatorios (≥9 cm de separación) a cada captura RGB-D deja las trayectorias idénticas y enseña al conditioning visual a **ignorar el clutter y usar la pose para seleccionar la pieza**.
+
+### Pipeline (total ~25 min: colecta 4 min + precompute + fine-tune 1 min + eval 20 min)
+
+1. `collect_diffusion_dataset_v9_clutter.py --n 1000`: capturas con objetivo randomizado (forma×color, como v8) + 0-2 distractores aleatorios por captura.
+2. `precompute_visual_cond.py --version v9clut` → `visual_encoder_iter9clut.pth`.
+3. `train_diffusion_on_sim.py` fine-tune 60 epochs desde v8_randomized → `diffusion_policy_v9_clutter.pth` (val_loss mín 0.0136).
+4. `eval_diffusion_iter9_sim.py --n 25`: pareada (mismas poses/apariencias/distractores por seed), objetivo siempre de apariencia randomizada.
+
+### Métricas (25 picks por condición, seed 2026)
+
+| Condición | grasp | prox. grasp | deposit | IK |
+|---|---|---|---|---|
+| v8 × sin distractores | 100 % | 1.3 cm | 40 % | 100 % |
+| v8 × con 2 distractores | 84 % | 2.8 cm | 40 % | 100 % |
+| **v9 × sin distractores** | **100 %** | 1.8 cm | 44 % | 100 % |
+| **v9 × con 2 distractores** | **100 %** | **2.1 cm** | 44 % | 100 % |
+
+v9 cierra la brecha del clutter (100 % de agarre, y la proximidad con/sin distractores queda casi pareja: 2.1 vs 1.8 cm) sin regresión apreciable en escena limpia. El deposit (~44 %) sigue dominado por la física de esferas/cilindros que ruedan (cubos: 9/10) — mismo cuello mecánico que Iter 8, independiente del clutter.
+
+### Demo
+
+`scripts/demo_charla.py`, pestaña CoppeliaSim: control "piezas distractoras 🎯 (0/1/2)" + tercera política "clutter (Iter 9)". Validado en vivo: v9 agarró la esfera verde indicada a 1.3 cm entre 3 piezas, y completó E2E un cubo rojo entre 3 piezas (1.7 cm / depósito 3.5 cm).
+
+### Conclusión
+
+Segunda demostración consecutiva de la misma palanca: cuando el plan depende solo de la pose, randomizar lo que NO debe importar en las capturas (apariencia en Iter 8, clutter en Iter 9) compra invariancia visual por ~25 min de cómputo. La línea narrativa de potencialidad industrial queda completa: agarrar lo que se pida (Iter 8), entre lo que haya (Iter 9).
+
+Datos: `eval_v9_clutter.json`. Checkpoints gitignored (regenerables).
