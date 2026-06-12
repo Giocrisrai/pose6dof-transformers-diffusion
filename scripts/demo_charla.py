@@ -634,26 +634,44 @@ def _coppelia_disponible() -> bool:
         return False
 
 
-def _load_sim_stack():
-    if "sim" in _cache:
-        return _cache["sim"]
+# Cada política con el encoder de SU entrenamiento: la cabeza de proyección se
+# inicializa al azar en precompute_visual_cond, los embeddings no son
+# intercambiables entre iteraciones.
+POLITICAS_SIM = {
+    "original (Iter 7c — solo cubos rojos)":
+        ("diffusion_policy_v7a_phase2", "visual_encoder_iter5"),
+    "robusta (Iter 8 — formas y colores variados)":
+        ("diffusion_policy_v8_randomized", "visual_encoder_iter8rand"),
+}
+POLITICA_ORIGINAL, POLITICA_ROBUSTA = tuple(POLITICAS_SIM)
+
+
+def _load_sim_stack(politica: str):
+    clave = f"sim_{politica}"
+    if clave in _cache:
+        return _cache[clave]
     import torch
     from src.planning.diffusion_policy import DiffusionGraspPlanner
     from src.planning.visual_encoder import ResNet18RGBDEncoder
 
+    nombre_pol, nombre_enc = POLITICAS_SIM[politica]
+    path_pol = REPO / f"data/models/{nombre_pol}.pth"
+    if not path_pol.exists():
+        raise FileNotFoundError(
+            f"{path_pol.name} no está (es regenerable — ver Iter 8 en "
+            "docs/INTEGRATION_PIPELINE.md); usa la política original")
     device = "mps" if torch.backends.mps.is_available() else "cpu"
-    ckpt = torch.load(REPO / "data/models/diffusion_policy_v7a_phase2.pth",
-                      map_location=device, weights_only=True)
+    ckpt = torch.load(path_pol, map_location=device, weights_only=True)
     planner = DiffusionGraspPlanner(action_dim=7, horizon=16, n_diffusion_steps=100,
                                     device=device, hidden_dim=ckpt["config"]["hidden_dim"])
     planner.model.load_state_dict(ckpt["model_state_dict"])
     planner.model.eval()
-    enc_state = torch.load(REPO / "data/models/visual_encoder_iter5.pth",
+    enc_state = torch.load(REPO / f"data/models/{nombre_enc}.pth",
                            map_location=device, weights_only=True)
     encoder = ResNet18RGBDEncoder(out_dim=enc_state["out_dim"]).to(device).eval()
     encoder.load_state_dict(enc_state["state_dict"])
-    _cache["sim"] = (planner, encoder)
-    return _cache["sim"]
+    _cache[clave] = (planner, encoder)
+    return _cache[clave]
 
 
 COLORES_SIM = {
@@ -663,8 +681,8 @@ COLORES_SIM = {
 
 
 def _preparar_pieza_sim(sim, forma: str, color: str):
-    """Deja /object_1 con la forma y color pedidos (la política se entrenó con
-    cubos rojos: otras formas/colores son un test de robustez del encoder)."""
+    """Deja /object_1 con la forma y color pedidos (con la política original,
+    otras formas/colores son un test de robustez; la robusta los maneja)."""
     h = sim.getObject("/object_1")
     if forma != "cubo":
         # estacionar el cubo original y crear una primitiva dinámica en su lugar
@@ -692,7 +710,7 @@ def chequear_conexion():
             "entrar a esta pestaña.")
 
 
-def ejecutar_en_sim(sx, sy, rot_deg, forma, color):
+def ejecutar_en_sim(sx, sy, rot_deg, forma, color, politica):
     """Generador: va informando el progreso mientras el UR ejecuta el pick."""
     if not _coppelia_disponible():
         yield ("❌ **CoppeliaSim no está corriendo.** Ábrelo primero "
@@ -702,20 +720,26 @@ def ejecutar_en_sim(sx, sy, rot_deg, forma, color):
         yield "⏳ Ya hay una ejecución en curso — espera a que termine."
         return
     try:
-        yield "🔌 Conectando con CoppeliaSim y cargando el modelo Iter 7c..."
+        robusta = politica == POLITICA_ROBUSTA
+        yield f"🔌 Conectando con CoppeliaSim y cargando la política {politica}..."
         from experiments.run_pick_with_diffusion import pick_with_dp
         from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
 
-        planner, encoder = _load_sim_stack()
+        planner, encoder = _load_sim_stack(politica)
         theta = math.radians(float(rot_deg))
         c, s = math.cos(theta), math.sin(theta)
         pose = np.eye(4)
         pose[:3, :3] = np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])
         pose[:3, 3] = [float(sx), float(sy), 0.033]
 
-        nota = ("" if (forma, color) == ("cubo", "rojo") else
-                "\n\n_Nota: la política se entrenó con cubos rojos — esta forma/color "
-                "es un test de robustez del encoder visual._")
+        if (forma, color) == ("cubo", "rojo"):
+            nota = ""
+        elif robusta:
+            nota = ("\n\n_Esta política se entrenó con formas y colores variados "
+                    "(domain randomization) — debería manejar esta pieza._")
+        else:
+            nota = ("\n\n_Nota: esta política se entrenó solo con cubos rojos — esta "
+                    "forma/color es un test de robustez del encoder visual._")
         yield (f"🤖 **Ejecutando en el simulador** — {forma} {color} en x={sx:.2f}, y={sy:.2f}, "
                f"rotación {int(float(rot_deg))}°.{nota}\n\n👀 **Miren la ventana de CoppeliaSim**: "
                "el robot ve la pieza, genera 8 trayectorias, ejecuta la mejor y la deposita (~1 min).")
@@ -744,14 +768,26 @@ def ejecutar_en_sim(sx, sy, rot_deg, forma, color):
                     f"- Depósito a **{r['deposit_error_m']*100:.1f} cm** del objetivo\n"
                     f"- Brazo (IK): {'convergió ✓' if r['ik_converged'] else 'no convergió'}\n\n")
         if ok:
+            extra = (" Esta política se entrenó con apariencias randomizadas — agarra "
+                     "lo que se le pida." if (ood and robusta) else "")
             yield (f"✅ **Pick completado** en {dt:.0f} s\n\n" + metricas +
-                   "_Mismo pipeline del estudio: percepción → difusión best-of-8 → control._")
+                   "_Mismo pipeline del estudio: percepción → difusión best-of-8 → control._" + extra)
+        elif ood and robusta:
+            rodo = r["grasp_plausible"] and forma in ("esfera", "cilindro")
+            detalle = ("**La agarró bien** pero la pieza **rodó al depositarla** — limitación "
+                       "física del depósito plano (las esferas y cilindros ruedan), no de la "
+                       "percepción. En la eval pareada, la precisión de agarre de esta política "
+                       "es ~1.4 cm con cualquier forma y color." if rodo else
+                       "Puede pasar; reintenta con otra posición. En la eval pareada esta "
+                       "política agarra el 96 % de las piezas randomizadas (~1.4 cm).")
+            yield (f"🔬 **Resultado** ({dt:.0f} s):\n\n" + metricas + detalle)
         elif ood:
             yield (f"🔬 **Resultado del experimento de robustez** ({dt:.0f} s): el sistema se degradó.\n\n"
                    + metricas +
-                   "**La lección de IA**: la política se entrenó SOLO con cubos rojos — con una pieza "
+                   "**La lección de IA**: esta política se entrenó SOLO con cubos rojos — con una pieza "
                    "fuera de esa distribución, la percepción visual pierde precisión y el agarre falla "
-                   "o la pieza sale empujada (física real). Con **cubo rojo** el pick es confiable. "
+                   "o la pieza sale empujada (física real). **El antes/después**: cambia a la política "
+                   "**robusta (Iter 8)** y repite — esa se entrenó con formas y colores variados. "
                    "_Así de importante es la distribución de entrenamiento._")
         else:
             yield (f"⚠️ **Pick terminado con observaciones** en {dt:.0f} s\n\n" + metricas +
@@ -808,13 +844,18 @@ with gr.Blocks(title="¿Dónde está la pieza?") as demo:
                                           label="forma 🔬 (≠cubo = test de robustez)")
                         ccolor = gr.Radio(["rojo", "verde", "azul", "amarillo"], value="rojo",
                                           label="color 🔬 (≠rojo = test de robustez)")
+                    _pols_disp = [p for p, (m, _) in POLITICAS_SIM.items()
+                                  if (REPO / f"data/models/{m}.pth").exists()] \
+                        or list(POLITICAS_SIM)
+                    cpol = gr.Radio(_pols_disp, value=_pols_disp[0],
+                                    label="política 🧠 (antes/después del entrenamiento robusto)")
                     btn_sim = gr.Button("🤖 Ejecutar en el simulador", variant="primary")
                     estado_sim = gr.Markdown()
 
     btn.click(generar, [sx, sy, sz, sn, sforma, scolor], [plot, visor, resumen])
     for b, (nombre, (px, py, pz)) in zip(botones, PRESETS.items()):
         b.click(lambda px=px, py=py, pz=pz: (px, py, pz), outputs=[sx, sy, sz])
-    btn_sim.click(ejecutar_en_sim, [cx, cy, crot, cforma, ccolor], [estado_sim])
+    btn_sim.click(ejecutar_en_sim, [cx, cy, crot, cforma, ccolor, cpol], [estado_sim])
     tab_sim.select(chequear_conexion, outputs=[estado_con])
     # ejemplo al abrir: el público nunca ve un panel vacío
     demo.load(generar, [sx, sy, sz, sn, sforma, scolor], [plot, visor, resumen])
