@@ -708,13 +708,29 @@ def _preparar_pieza_sim(sim, forma: str, color: str):
 FORMAS_SIM = ("cubo", "esfera", "cilindro")
 
 
+def _park_piezas_fijas(sim):
+    """Estaciona object_2..5 (piezas fijas de bin_base.ttt) fuera de escena y
+    las hace estáticas, igual que en la colecta/eval: el clutter visible es
+    exactamente el que controlamos y los distractores no chocan con ellas."""
+    for k in range(2, 6):
+        try:
+            h = sim.getObject(f"/object_{k}")
+        except Exception:
+            continue
+        sim.setObjectInt32Param(h, sim.shapeintparam_static, 1)
+        sim.setObjectInt32Param(h, sim.shapeintparam_respondable, 0)
+        sim.setObjectPosition(h, -1, [-1.5, -1.5 - 0.2 * k, -0.5])
+
+
 def _crear_distractores_sim(sim, n: int, target_xy, target_app, rng):
     """Crea n piezas extra de apariencia ≠ a la pedida, separadas ≥9 cm del
     objetivo y entre sí. El robot debe ir por la pieza indicada (su pose),
-    ignorando estas — el test de selección en clutter."""
+    ignorando estas — selección en clutter. (Las fijas ya están estacionadas.)"""
     puestos = [tuple(target_xy)]
     creados = []
-    while len(creados) < n:
+    intentos = 0
+    while len(creados) < n and intentos < 400:   # tope: a veces no caben 2
+        intentos += 1
         x = float(rng.uniform(0.38, 0.58))
         y = float(rng.uniform(-0.19, -0.01))
         if any((x - px) ** 2 + (y - py) ** 2 < 0.09**2 for px, py in puestos):
@@ -743,7 +759,7 @@ def _crear_distractores_sim(sim, n: int, target_xy, target_app, rng):
                           list(COLORES_SIM[color]))
         sim.setObjectPosition(h, -1, [x, y, 0.033])
         puestos.append((x, y))
-        creados.append(f"{forma} {color}")
+        creados.append((f"{forma} {color}", (x, y)))
     return creados
 
 
@@ -812,21 +828,38 @@ def ejecutar_en_sim(sx, sy, rot_deg, forma, color, politica, n_dist):
                     return
             bridge.load_scene(REPO / "data/scenes/bin_base.ttt")
             _preparar_pieza_sim(bridge.sim, forma, color)
-            distractores = []
+            _park_piezas_fijas(bridge.sim)
+            distractores, obstaculos = [], None
             if n_dist:
-                distractores = _crear_distractores_sim(
+                creados = _crear_distractores_sim(
                     bridge.sim, n_dist, (float(sx), float(sy)), (forma, color),
                     np.random.default_rng())
+                distractores = [nombre for nombre, _ in creados]
+                # verify-then-act: el robot descarta los caminos imaginados que
+                # pasan a <7cm de un distractor ANTES de mover el brazo
+                obstaculos = [[x, y, 0.033] for _, (x, y) in creados]
             r = pick_with_dp(planner, pose, bridge, frames_dir=None,
-                             visual_encoder=encoder, best_of_n=8)
+                             visual_encoder=encoder, best_of_n=8,
+                             obstacles=obstaculos)
         dt = time.time() - t0
         ok = r["grasp_plausible"] and r["deposit_plausible"] and r["ik_converged"]
         ood = (forma, color) != ("cubo", "rojo")
         metricas = (f"- Precisión del agarre: **{r['grasp_proximity_m']*100:.1f} cm** de la pieza\n"
                     f"- Depósito a **{r['deposit_error_m']*100:.1f} cm** del objetivo\n"
                     f"- Brazo (IK): {'convergió ✓' if r['ik_converged'] else 'no convergió'}\n")
+        n_desc = r.get("n_candidates_unsafe", 0)
         if distractores:
             metricas += f"- En mesa también había: {', '.join(distractores)}\n"
+        if not distractores:
+            pass   # sin distractores no hay nada que verificar
+        elif n_desc >= 8:
+            metricas += ("- 🛡️ Los 8 caminos imaginados pasaban cerca de alguna pieza — "
+                         "ejecutó el de **mayor holgura**\n")
+        elif n_desc:
+            metricas += (f"- 🛡️ De los 8 caminos imaginados, **descartó {n_desc} por "
+                         "pasar muy cerca de otra pieza** — verificó antes de actuar\n")
+        else:
+            metricas += "- 🛡️ Verificó los 8 caminos imaginados: todos pasaban con holgura\n"
         metricas += "\n"
         if ok:
             extra = (" Esta política se entrenó con apariencias randomizadas — agarra "

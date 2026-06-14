@@ -927,3 +927,24 @@ v9 cierra la brecha del clutter (100 % de agarre, y la proximidad con/sin distra
 Segunda demostración consecutiva de la misma palanca: cuando el plan depende solo de la pose, randomizar lo que NO debe importar en las capturas (apariencia en Iter 8, clutter en Iter 9) compra invariancia visual por ~25 min de cómputo. La línea narrativa de potencialidad industrial queda completa: agarrar lo que se pida (Iter 8), entre lo que haya (Iter 9).
 
 Datos: `eval_v9_clutter.json`. Checkpoints gitignored (regenerables).
+
+### Verify-then-act: ¿el brazo golpea las otras piezas? (2026-06-14)
+
+Pregunta del usuario: al ejecutar la trayectoria elegida, el brazo podría rozar o golpear otras piezas y cambiarlas de posición (como en una celda real). ¿Se puede *verificar antes de actuar*?
+
+**Lo que ya hace el sistema:** la difusión genera las 8 trayectorias candidatas como números dentro de la red (no mueve el brazo para "pensar"); solo se ejecuta la mejor. La verificación es una extensión natural del best-of-8.
+
+**Implementación** (`pick_with_dp`, parámetro `obstacles`): de los 8 candidatos se calcula la holgura mínima del camino del efector a cada pieza no-objetivo (distancia punto-segmento, geometría pura, microsegundos) y se **descartan los que pasan a <7 cm**, eligiendo el que mejor apunta *entre los seguros*. Si ninguno es seguro, se ejecuta el de mayor holgura. Métrica de colisión: desplazamiento de cada distractor medido antes de detener la simulación (CoppeliaSim restaura posiciones al parar).
+
+**Medición** (eval pareada n=25, mismas poses/distractores por seed; piezas fijas de la escena estacionadas para no contaminar). Como esferas y cilindros **ruedan** fuera del bin al ser golpeados (sin fricción → outliers de metros), se reporta la métrica robusta sobre distractores **cubo** (desplazamiento = golpe real):
+
+| Política × condición | grasp | prox | cubos golpeados >2cm | peor caso (p90) |
+|---|---|---|---|---|
+| v9 × con distractores | 100 % | 2.0 cm | 24 % (4/17) | 5.6 cm |
+| **v9 × con verificación** | 96 % | 1.7 cm | **18 % (3/17)** | **4.0 cm** |
+| v8 × con distractores | 88 % | 2.2 cm | 18 % (3/17) | 13.6 cm |
+| **v8 × con verificación** | 84 % | 3.3 cm | **0 % (0/17)** | **0.2 cm** |
+
+**Conclusión honesta:** con piezas rígidas, verify-then-act reduce los golpes —drásticamente en v8 (18 %→0 %, peor caso 13.6→0.2 cm) y de forma modesta en v9— a un costo pequeño de precisión de agarre (filtrar a veces descarta el candidato que mejor apunta). El filtro sobre el camino del efector NO resuelve los choques con piezas redondas (una vez tocadas ruedan) ni los golpes del cuerpo del brazo (los links, no solo el TCP): la seguridad completa requiere planificación consciente de colisiones de cuerpo entero (RRT/OMPL) o un margen mayor. Es la versión barata y honesta del "verificar antes de actuar". La métrica de todas las formas (incluyendo el rodar de esferas/cilindros) es ruidosa por esos outliers; por eso se reporta cubo-solo.
+
+> Nota de reproducibilidad: el dataset y el checkpoint v9 se regeneraron con las piezas fijas de la escena estacionadas (object_2..5), para que el clutter visible sea exactamente el controlado. Fix transversal en `coppeliasim_bridge.load_scene` (espera estado 'stopped' antes de `closeScene` — evita el error 354 cuando quedó una simulación corriendo).

@@ -43,6 +43,20 @@ DIST_X = (0.38, 0.58)
 DIST_Y = (-0.19, -0.01)
 Z_PIEZA = 0.033
 
+def park_piezas_fijas(sim) -> None:
+    """Estaciona object_2..5 (piezas fijas de bin_base.ttt) fuera de escena y
+    las hace estáticas. Así los distractores que creamos no chocan con ellas
+    (evita expulsiones violentas) y no aparecen en las capturas RGB-D: el
+    clutter de la escena es exactamente el que controlamos."""
+    for k in range(2, 6):
+        try:
+            h = sim.getObject(f"/object_{k}")
+        except Exception:
+            continue
+        sim.setObjectInt32Param(h, sim.shapeintparam_static, 1)
+        sim.setObjectInt32Param(h, sim.shapeintparam_respondable, 0)
+        sim.setObjectPosition(h, -1, [-1.5, -1.5 - 0.2 * k, -0.5])
+
 
 def _setup_distractores(sim) -> list[dict]:
     """Pool de MAX_DISTRACTORES slots × 3 formas, estacionados fuera de cámara."""
@@ -157,6 +171,7 @@ def main() -> int:
         chunk_end = min(i + CHUNK_SIZE, n_total)
         with CoppeliaSimBridge() as bridge:
             bridge.load_scene(SCENE)
+            park_piezas_fijas(bridge.sim)
             piezas = _setup_piezas(bridge.sim)
             slots = _setup_distractores(bridge.sim)
             bridge.set_stepping(True)

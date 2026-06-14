@@ -29,6 +29,7 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from experiments.eval_diffusion_iter2_sim import EVAL_SEED, sample_pose_eval
+from experiments.collect_diffusion_dataset_v9_clutter import park_piezas_fijas
 from experiments.eval_diffusion_iter8_sim import (
     COLORES, FORMAS, PALETA, _load_policy, _preparar_pieza, _resumen,
 )
@@ -50,12 +51,18 @@ DIST_X = (0.38, 0.58)
 DIST_Y = (-0.19, -0.01)
 Z_PIEZA = 0.033
 
+MAX_INTENTOS = 400
+
 
 def _posiciones_distractores(rng: np.random.Generator, target_xy) -> list[tuple]:
-    """Rejection sampling: N posiciones separadas ≥ SEP_MIN del target y entre sí."""
+    """Rejection sampling: N posiciones separadas ≥ SEP_MIN del target y entre
+    sí (con tope de intentos por seguridad). Las piezas fijas de la escena se
+    estacionan fuera (park_piezas_fijas), así que no entran en la colocación."""
     puestos = [tuple(target_xy)]
     out = []
-    while len(out) < N_DISTRACTORES:
+    for _ in range(MAX_INTENTOS):
+        if len(out) >= N_DISTRACTORES:
+            break
         x = float(rng.uniform(*DIST_X))
         y = float(rng.uniform(*DIST_Y))
         if all((x - px) ** 2 + (y - py) ** 2 >= SEP_MIN_M**2 for px, py in puestos):
@@ -64,7 +71,7 @@ def _posiciones_distractores(rng: np.random.Generator, target_xy) -> list[tuple]
     return out
 
 
-def _crear_distractor(sim, forma: str, color: str, xy: tuple) -> None:
+def _crear_distractor(sim, forma: str, color: str, xy: tuple) -> int:
     try:
         if forma == "cubo":
             h = sim.createPrimitiveShape(sim.primitiveshape_cuboid, [0.05, 0.05, 0.05], 0)
@@ -84,9 +91,11 @@ def _crear_distractor(sim, forma: str, color: str, xy: tuple) -> None:
         pass
     sim.setShapeColor(h, None, sim.colorcomponent_ambient_diffuse, list(PALETA[color]))
     sim.setObjectPosition(h, -1, [xy[0], xy[1], Z_PIEZA])
+    return h
 
 
-def _eval_condicion(planner, encoder, n: int, con_distractores: bool) -> list[dict]:
+def _eval_condicion(planner, encoder, n: int, con_distractores: bool,
+                    seguro: bool = False) -> list[dict]:
     rng = np.random.default_rng(EVAL_SEED)
     rng_app = np.random.default_rng(77)           # misma secuencia que Iter 8
     rng_dist = np.random.default_rng(EVAL_SEED + 123)
@@ -103,12 +112,20 @@ def _eval_condicion(planner, encoder, n: int, con_distractores: bool) -> list[di
         try:
             with CoppeliaSimBridge() as bridge:
                 bridge.load_scene(SCENE)
+                park_piezas_fijas(bridge.sim)
                 _preparar_pieza(bridge.sim, forma, color)
+                handles = []
                 if con_distractores:
-                    for (fd, cd), xy in zip(app_dist, pos_dist):
-                        _crear_distractor(bridge.sim, fd, cd, xy)
+                    handles = [_crear_distractor(bridge.sim, fd, cd, xy)
+                               for (fd, cd), xy in zip(app_dist, pos_dist)]
+                obstaculos = ([[x, y, Z_PIEZA] for x, y in pos_dist]
+                              if (con_distractores and seguro) else None)
                 r = pick_with_dp(planner, pose, bridge, frames_dir=None,
-                                 visual_encoder=encoder, best_of_n=8)
+                                 visual_encoder=encoder, best_of_n=8,
+                                 obstacles=obstaculos, track_handles=handles)
+            # ¿el brazo empujó alguna pieza que no era el objetivo?
+            despl = [float(np.hypot(p[0] - x, p[1] - y))
+                     for p, (x, y) in zip(r["tracked_end"], pos_dist)]
             resultados.append({
                 "i": i, "forma": forma, "color": color,
                 "distractores": [{"forma": f, "color": c, "x": round(x, 3), "y": round(y, 3)}
@@ -119,6 +136,9 @@ def _eval_condicion(planner, encoder, n: int, con_distractores: bool) -> list[di
                 "ik_converged": r["ik_converged"],
                 "grasp_plausible": r["grasp_plausible"],
                 "deposit_plausible": r["deposit_plausible"],
+                "desplazamiento_distractores_m": [round(d, 4) for d in despl],
+                "n_candidates_unsafe": r["n_candidates_unsafe"],
+                "clearance_m_selected": r["clearance_m_selected"],
             })
         except Exception as e:  # noqa: BLE001
             logger.warning(f"  pick {i} falló: {e}")
@@ -128,13 +148,40 @@ def _eval_condicion(planner, encoder, n: int, con_distractores: bool) -> list[di
     return resultados
 
 
+UMBRAL_EMPUJON_M = 0.02
+
+
+def _resumen_v9(rs: list[dict]) -> dict:
+    """Resumen base de Iter 8 + métricas de clutter (empujones y seguridad).
+
+    Los empujones cuentan cuánto se movió el distractor más desplazado en
+    cada pick (las piezas fijas se estacionan fuera, no participan)."""
+    res = _resumen(rs)
+    ok = [r for r in rs if "error" not in r and r.get("distractores")]
+    if ok:
+        maxd = [max(r["desplazamiento_distractores_m"]) for r in ok
+                if r["desplazamiento_distractores_m"]]
+        if maxd:
+            # binaria (robusta): ¿el brazo movió alguna pieza no-objetivo >2cm?
+            res["empujadas_pct"] = round(
+                100 * float(np.mean([d > UMBRAL_EMPUJON_M for d in maxd])), 1)
+            # MEDIANA, no media: esferas/cilindros ruedan fuera del bin y dan
+            # outliers de metros (sin fricción) que harían inútil la media
+            res["mediana_max_desplazamiento_cm"] = round(100 * float(np.median(maxd)), 2)
+        descartes = [r["n_candidates_unsafe"] for r in ok]
+        if any(descartes):
+            res["mean_candidatos_descartados"] = round(float(np.mean(descartes)), 2)
+    return res
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--n", type=int, default=25)
     parser.add_argument("--torch-seed", type=int, default=2026)
     parser.add_argument("--politicas", nargs="+", default=["v8_randomized"])
     parser.add_argument("--condiciones", nargs="+",
-                        default=["sin_distractores", "con_distractores"])
+                        default=["sin_distractores", "con_distractores",
+                                 "con_distractores_seguro"])
     args = parser.parse_args()
 
     torch.manual_seed(args.torch_seed)
@@ -168,14 +215,16 @@ def main() -> int:
             continue
         encoder = _cargar_encoder(enc_nombre)
         planner = _load_policy(path, device)
-        for cond, con_d in (("sin_distractores", False), ("con_distractores", True)):
+        for cond, con_d, seguro in (("sin_distractores", False, False),
+                                    ("con_distractores", True, False),
+                                    ("con_distractores_seguro", True, True)):
             if cond not in args.condiciones:
                 continue
             logger.info(f"═══ {nombre} × {cond} (n={args.n}) ═══")
             torch.manual_seed(args.torch_seed)
-            rs = _eval_condicion(planner, encoder, args.n, con_d)
+            rs = _eval_condicion(planner, encoder, args.n, con_d, seguro)
             clave = f"{nombre}__{cond}"
-            salida["condiciones"][clave] = {"resumen": _resumen(rs), "resultados": rs}
+            salida["condiciones"][clave] = {"resumen": _resumen_v9(rs), "resultados": rs}
             logger.info(f"  → {salida['condiciones'][clave]['resumen']}")
 
     OUT.mkdir(parents=True, exist_ok=True)
