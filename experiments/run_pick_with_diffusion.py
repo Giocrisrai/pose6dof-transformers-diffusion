@@ -63,6 +63,30 @@ def get_target_pose(args) -> tuple[np.ndarray, str]:
     raise ValueError(f"pose_source {args.pose_source} no soportado")
 
 
+def _min_clearance_m(cand, obstacles) -> float:
+    """Mínima distancia entre el camino del efector (segmentos entre waypoints
+    consecutivos) y los centros de las piezas que NO son el objetivo.
+
+    Verificación geométrica ANTES de actuar: el robot imagina la trayectoria
+    y comprueba si pasa demasiado cerca de otra pieza, sin mover el brazo.
+    Aproximación: se chequea el camino del efector; la pieza transportada
+    cuelga ~9.5 cm por debajo, pero el tránsito post-lift va alto (z≈0.30).
+    """
+    mind = float("inf")
+    pts = np.asarray(cand)[:, :3]
+    obs = np.asarray(obstacles, dtype=float)
+    for k in range(len(pts) - 1):
+        a, b = pts[k], pts[k + 1]
+        ab = b - a
+        denom = float(ab @ ab)
+        for o in obs:
+            t = 0.0 if denom < 1e-12 else float(np.clip((o - a) @ ab / denom, 0.0, 1.0))
+            d = float(np.linalg.norm(a + t * ab - o))
+            if d < mind:
+                mind = d
+    return mind
+
+
 def pick_with_dp(
     planner,
     pose: np.ndarray,
@@ -73,6 +97,9 @@ def pick_with_dp(
     visual_encoder=None,
     best_of_n: int = 1,
     frame_hook: Optional[Callable[[], None]] = None,
+    obstacles=None,
+    clearance_m: float = 0.07,
+    track_handles=None,
 ):
     """Ejecuta un pick usando la DP entrenada.
 
@@ -84,6 +111,13 @@ def pick_with_dp(
         n_substeps / steps_per_substep: pasados a _move_tcp_via_ik.
         visual_encoder: opcional ResNet18RGBDEncoder. Si está presente,
             captura RGB-D y construye cond v3.
+        obstacles: opcional, lista de posiciones [x,y,z] de piezas que NO son
+            el objetivo (de la percepción). Con best_of_n > 1, los candidatos
+            cuyo camino pasa a < clearance_m de un obstáculo se descartan
+            ANTES de ejecutar (verify-then-act); si ninguno es seguro, se
+            ejecuta el de mayor holgura.
+        clearance_m: holgura mínima exigida al camino del efector (default
+            7 cm: media pieza de 5 cm + margen de pinza).
 
     Returns:
         dict con métricas: {
@@ -135,22 +169,35 @@ def pick_with_dp(
     # Coste de sim idéntico — solo se EJECUTA la mejor; el sampling de difusión es barato.
     n = max(1, best_of_n)
     traj = planner.plan_grasp(pose, n_samples=n, cond=cond)
+    n_unsafe = 0
+    clearance_selected = None
     if n > 1:
         cube_xyz = [float(v) for v in pose[:3, 3]]
-        best_i, best_prox = 0, float("inf")
+        proxs = []
         for cand_i in range(n):
             cand = traj[cand_i]
             g_idx = next(
                 (k for k in range(len(cand)) if float(cand[k, 6]) < 0.5), 8,
             )
-            prox = math.sqrt(
+            proxs.append(math.sqrt(
                 sum((cube_xyz[j] - float(cand[g_idx, j])) ** 2 for j in range(3))
-            )
-            if prox < best_prox:
-                best_prox, best_i = prox, cand_i
+            ))
+        if obstacles:
+            # verify-then-act: descartar candidatos que pasan demasiado cerca
+            # de otra pieza; elegir el que mejor apunta ENTRE LOS SEGUROS
+            clears = [_min_clearance_m(traj[k], obstacles) for k in range(n)]
+            seguros = [k for k in range(n) if clears[k] >= clearance_m]
+            n_unsafe = n - len(seguros)
+            pool = seguros if seguros else [max(range(n), key=lambda k: clears[k])]
+            best_i = min(pool, key=lambda k: proxs[k])
+            clearance_selected = clears[best_i]
+        else:
+            best_i = min(range(n), key=lambda k: proxs[k])
         waypoints = traj[best_i]
     else:
         waypoints = traj[0]
+        if obstacles:
+            clearance_selected = _min_clearance_m(waypoints, obstacles)
 
     # PROXIMITY pre-snap: distance entre el waypoint del grasp (primera vez que
     # gripper cruza < 0.5 = "cerrándose") y la pose del cubo. Mide si la DP
@@ -216,6 +263,10 @@ def pick_with_dp(
 
     cube_end = sim.getObjectPosition(obj1, -1)
     tip_end = sim.getObjectPosition(tip_h, -1)
+    # posiciones de objetos rastreados (p.ej. distractores) ANTES del stop:
+    # al detener la simulación CoppeliaSim restaura las posiciones iniciales
+    tracked_end = ([sim.getObjectPosition(h, -1) for h in track_handles]
+                   if track_handles else [])
     ik_converged = len(ik_convergence) > 0 and all(ik_convergence)
 
     # Deposit error (XY only, Z lo ignoramos porque cae por gravedad)
@@ -242,6 +293,9 @@ def pick_with_dp(
         "deposit_plausible": deposit_plausible,
         "n_waypoints": len(waypoints),
         "waypoints": waypoints.tolist(),
+        "n_candidates_unsafe": n_unsafe,
+        "clearance_m_selected": clearance_selected,
+        "tracked_end": tracked_end,
     }
 
 

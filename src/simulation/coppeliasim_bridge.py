@@ -343,6 +343,16 @@ class CoppeliaSimBridge:
         # resuelve paths relativos contra su propio CWD, no el del cliente Python.
         scene_path = scene_path.resolve()
         if close_current:
+            # closeScene exige simulación detenida; stopSimulation es asíncrono,
+            # así que esperamos a que el estado llegue a 'stopped' (0) antes de
+            # cerrar — evita el error "354: simulation is not stopped" cuando
+            # quedó una simulación corriendo (run previo, play manual en la GUI).
+            if self._sim.getSimulationState() != 0:
+                self._sim.stopSimulation()
+                for _ in range(100):
+                    if self._sim.getSimulationState() == 0:
+                        break
+                    time.sleep(0.05)
             self._sim.closeScene()
         self._sim.loadScene(str(scene_path))
         # Re-inicializar handles porque la escena cambió
