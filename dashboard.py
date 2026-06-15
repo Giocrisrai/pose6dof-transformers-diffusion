@@ -17,6 +17,7 @@ import json
 import os
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import streamlit as st
 
@@ -225,7 +226,8 @@ with st.sidebar:
     section = st.radio(
         "Sección",
         ["📊 Resumen", "🔬 Exploraciones post-TFM",
-         "💡 Innovación y SOTA", "🧠 Decisiones del pipeline",
+         "🤖 Robustez y clutter", "💡 Innovación y SOTA",
+         "🧠 Decisiones del pipeline",
          "🎯 Hipótesis", "📈 Métricas FP",
          "🛡️ Robustez", "⚙️ Profiling", "🌳 Diversidad",
          "🎮 PBVS", "📦 Per-Object", "🎬 Video", "📚 Recursos"]
@@ -527,6 +529,127 @@ elif section == "🔬 Exploraciones post-TFM":
         "13 documentos de cierre · 22 simulaciones visuales 3D. "
         "Etapas físicas post-TFM detalladas en "
         "[ROADMAP_POSTTFM.md](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/blob/main/docs/ROADMAP_POSTTFM.md)."
+    )
+
+elif section == "🤖 Robustez y clutter":
+    st.title("Robustez, selección en clutter y verificación previa")
+    st.markdown(
+        "Tres iteraciones post-TFM sobre el pipeline de bin-picking, todas con la "
+        "misma palanca barata: **randomizar en las capturas lo que NO debe importar** "
+        "(apariencia, clutter) compra invariancia visual por minutos de cómputo. La "
+        "narrativa industrial: *agarrar lo que se pida (Iter 8), entre lo que haya "
+        "(Iter 9), sin golpear el resto (verificar antes de actuar)*. Todas las tablas "
+        "se calculan en vivo desde los JSON de evaluación pareada (n=25, seed 2026). "
+        "Detalle: [`docs/INTEGRATION_PIPELINE.md`](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/blob/main/docs/INTEGRATION_PIPELINE.md)."
+    )
+
+    d8 = load_json("experiments/results/pick_with_diffusion/eval_v8_robustez.json")
+    d9 = load_json("experiments/results/pick_with_diffusion/eval_v9_clutter.json")
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Precisión de agarre", "1.4 cm", "−2.2 cm vs original (Iter 8)")
+    c2.metric("Invariante a forma/color", "✓", "esfera/cilindro/cubo")
+    c3.metric("Elige la pieza indicada", "100 %", "entre 3 piezas (Iter 9)")
+    c4.metric("Golpes a otras piezas", "0 %", "con verificación (v8)")
+    st.markdown("---")
+
+    # ── Iter 8: robustez a forma y color ──────────────────────────
+    st.subheader("1️⃣  Robustez a forma y color (Iter 8)  ✅")
+    st.markdown(
+        "La política original se entrenó solo con cubos rojos y se degrada fuera de "
+        "distribución. Reentrenar con apariencias randomizadas (3 formas × 6 colores, "
+        "~5 min de datos + 46 s de fine-tune) **triplica la precisión de agarre y la "
+        "hace invariante**, sin sacrificar el caso original."
+    )
+    if d8:
+        def _r8(cond):
+            r = d8["condiciones"][cond]["resumen"]
+            return [f"{r['pick_place_pct']:.0f} %", f"{r['grasp_pct']:.0f} %",
+                    f"{r['deposit_pct']:.0f} %", f"{r['mean_grasp_proximity_m']*100:.1f} cm"]
+        st.table(pd.DataFrame({
+            "Política × condición": ["original × cubo rojo", "original × randomizada",
+                                     "robusta × cubo rojo", "robusta × randomizada"],
+            "Pick&Place E2E": [_r8("v7a_phase2__cubo_rojo")[0], _r8("v7a_phase2__randomizada")[0],
+                               _r8("v8_randomized__cubo_rojo")[0], _r8("v8_randomized__randomizada")[0]],
+            "Agarre": [_r8("v7a_phase2__cubo_rojo")[1], _r8("v7a_phase2__randomizada")[1],
+                       _r8("v8_randomized__cubo_rojo")[1], _r8("v8_randomized__randomizada")[1]],
+            "Depósito": [_r8("v7a_phase2__cubo_rojo")[2], _r8("v7a_phase2__randomizada")[2],
+                         _r8("v8_randomized__cubo_rojo")[2], _r8("v8_randomized__randomizada")[2]],
+            "Proximidad": [_r8("v7a_phase2__cubo_rojo")[3], _r8("v7a_phase2__randomizada")[3],
+                           _r8("v8_randomized__cubo_rojo")[3], _r8("v8_randomized__randomizada")[3]],
+        }))
+        st.caption("El depósito bajo en randomizada (esferas/cilindros) es física: ruedan al soltarse, no es la percepción.")
+    else:
+        st.warning("No se encontró `eval_v8_robustez.json`.")
+
+    # ── Iter 9: selección en clutter ──────────────────────────────
+    st.subheader("2️⃣  Selección de la pieza indicada entre varias (Iter 9)  ✅")
+    st.markdown(
+        "Una mesa real tiene varias piezas. Añadir 0-2 distractoras de apariencia "
+        "aleatoria a las capturas enseña al sistema a **ir por la pieza indicada (su "
+        "pose) ignorando el resto**. La política sin este entrenamiento se degrada "
+        "con distractores; la de clutter recupera el 100 % de agarre."
+    )
+    if d9:
+        def _r9(cond):
+            r = d9["condiciones"][cond]["resumen"]
+            return [f"{r['grasp_pct']:.0f} %", f"{r.get('mean_grasp_proximity_m', 0)*100:.1f} cm"]
+        st.table(pd.DataFrame({
+            "Política × condición": ["robusta (Iter 8) × con distractores",
+                                     "clutter (Iter 9) × sin distractores",
+                                     "clutter (Iter 9) × con distractores"],
+            "Agarre": [_r9("v8_randomized__con_distractores")[0],
+                       _r9("v9_clutter__sin_distractores")[0],
+                       _r9("v9_clutter__con_distractores")[0]],
+            "Proximidad": [_r9("v8_randomized__con_distractores")[1],
+                           _r9("v9_clutter__sin_distractores")[1],
+                           _r9("v9_clutter__con_distractores")[1]],
+        }))
+    else:
+        st.warning("No se encontró `eval_v9_clutter.json`.")
+
+    # ── Verify-then-act ───────────────────────────────────────────
+    st.subheader("3️⃣  Verificar antes de actuar — no golpear las otras piezas  ✅")
+    st.markdown(
+        "Al ejecutar, el brazo podría rozar otras piezas (como en una celda real). La "
+        "difusión genera las 8 trayectorias como números dentro de la red **sin mover "
+        "el brazo**; la verificación descarta las que pasarían a <7 cm de otra pieza y "
+        "ejecuta la mejor de las seguras. Métrica sobre distractores **cubo** "
+        "(desplazamiento = golpe real; las piezas redondas ruedan y dan outliers)."
+    )
+    if d9:
+        def _cubos(cond):
+            rs = d9["condiciones"].get(cond, {}).get("resultados", [])
+            desp = [dd for r in rs if "error" not in r
+                    for di, dd in zip(r.get("distractores", []),
+                                      r.get("desplazamiento_distractores_m", []))
+                    if di["forma"] == "cubo"]
+            if not desp:
+                return "—", "—"
+            a = np.array(desp)
+            return f"{100*float((a > 0.02).mean()):.0f} %", f"{100*float(np.percentile(a, 90)):.1f} cm"
+        st.table(pd.DataFrame({
+            "Política × condición": ["robusta × con distractores", "robusta × con verificación",
+                                     "clutter × con distractores", "clutter × con verificación"],
+            "Cubos golpeados >2cm": [_cubos("v8_randomized__con_distractores")[0],
+                                     _cubos("v8_randomized__con_distractores_seguro")[0],
+                                     _cubos("v9_clutter__con_distractores")[0],
+                                     _cubos("v9_clutter__con_distractores_seguro")[0]],
+            "Peor caso (p90)": [_cubos("v8_randomized__con_distractores")[1],
+                                _cubos("v8_randomized__con_distractores_seguro")[1],
+                                _cubos("v9_clutter__con_distractores")[1],
+                                _cubos("v9_clutter__con_distractores_seguro")[1]],
+        }))
+    st.info(
+        "**Honestidad**: verify-then-act reduce los golpes (v8 robusta: 18 %→0 %, peor "
+        "caso 13.6→0.2 cm) a un costo pequeño de precisión. NO cubre piezas redondas "
+        "(ruedan al tocarse) ni golpes del cuerpo del brazo (los links, no solo la "
+        "punta): la seguridad completa requiere planificación de colisiones de cuerpo "
+        "entero (RRT/OMPL). Es la versión barata y honesta del 'mirar antes de actuar'."
+    )
+    st.caption(
+        "Pruébalo en vivo: `streamlit`/Gradio demo → http://127.0.0.1:7860 → pestaña "
+        "CoppeliaSim → selector de política + distractoras + verificación 🛡️."
     )
 
 elif section == "💡 Innovación y SOTA":
