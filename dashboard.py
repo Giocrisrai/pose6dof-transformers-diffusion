@@ -264,13 +264,13 @@ if section == "📊 Resumen":
     # Figura hero: arquitectura del pipeline
     hero_pipeline = REPO / "docs/figures_hero/01_pipeline_architecture.png"
     if hero_pipeline.exists():
-        st.image(str(hero_pipeline), use_container_width=True)
+        st.image(str(hero_pipeline), width="stretch")
 
     # Diagrama Graphviz: pipeline detallado con flechas
     diag_pipeline = REPO / "docs/figures_hero/10_pipeline_full.png"
     if diag_pipeline.exists():
         with st.expander("🔍 Diagrama detallado del pipeline (Graphviz)", expanded=False):
-            st.image(str(diag_pipeline), use_container_width=True)
+            st.image(str(diag_pipeline), width="stretch")
 
     col1, col2, col3 = st.columns(3)
     col1.metric("Páginas TFM", "63")
@@ -299,13 +299,13 @@ elif section == "🔬 Exploraciones post-TFM":
     # Figura hero: dashboard de exploraciones
     hero_explor = REPO / "docs/figures_hero/02_exploraciones_dashboard.png"
     if hero_explor.exists():
-        st.image(str(hero_explor), use_container_width=True)
+        st.image(str(hero_explor), width="stretch")
 
     # Diagrama Graphviz: dependencias entre exploraciones
     diag_workflow = REPO / "docs/figures_hero/12_exploraciones_workflow.png"
     if diag_workflow.exists():
         with st.expander("🔗 Dependencias entre exploraciones (DAG)", expanded=False):
-            st.image(str(diag_workflow), use_container_width=True)
+            st.image(str(diag_workflow), width="stretch")
             st.caption("Cada flecha indica que el resultado de una exploración se reutiliza en la siguiente.")
     st.markdown("---")
 
@@ -367,7 +367,7 @@ elif section == "🔬 Exploraciones post-TFM":
     img_pareto = REPO / "experiments/results/exp15_open_license/fig_pareto.png"
     if img_pareto.exists():
         st.image(str(img_pareto), caption="Pareto licencia × performance — bootstrap CI 95 %",
-                  use_container_width=True)
+                  width="stretch")
 
     st.markdown(
         "**Conclusión**: cambiar a **FreeZeV2 (Apache-2.0)** cuesta solo **−3 pp AUC** "
@@ -431,7 +431,7 @@ elif section == "🔬 Exploraciones post-TFM":
     img_grid = REPO / "experiments/results/exp19_visual_sims/grid_overview.png"
     if img_grid.exists():
         st.image(str(img_grid), caption="12 escenas demostrativas — 12/12 correctas",
-                  use_container_width=True)
+                  width="stretch")
 
     # Exploración 8
     st.subheader("8️⃣  VLA-lite multi-objeto N=2..5  ✅")
@@ -499,7 +499,7 @@ elif section == "🔬 Exploraciones post-TFM":
     img_robust = REPO / "experiments/results/exp25_robustness/fig_robustness_curves.png"
     if img_robust.exists():
         st.image(str(img_robust), caption="Curvas de robustez con CI 95 % B=1000",
-                  use_container_width=True)
+                  width="stretch")
     col_12a, col_12b, col_12c = st.columns(3)
     col_12a.metric("Condiciones robustas", "12/12 ≥ 75 %", "")
     col_12b.metric("Accuracy media", "95.3 %", "")
@@ -650,7 +650,7 @@ elif section == "🧠 Decisiones del pipeline":
             obj_id = card.stem.split("_obj")[-1]
             dataset = "YCB-V" if "ycbv" in card.name else "T-LESS"
             st.subheader(f"{dataset} · objeto #{int(obj_id)}")
-            st.image(str(card), use_container_width=True)
+            st.image(str(card), width="stretch")
             st.markdown("---")
 
     st.info(
@@ -846,7 +846,7 @@ elif section == "🎬 Video":
         st.image(img, caption=(
             "Composite v2: las 3 fases (percepcion -> planificacion -> "
             "ejecucion) en un solo cuadro. Util para slides de defensa."
-        ), use_container_width=True)
+        ), width="stretch")
 
 elif section == "📚 Recursos":
     st.title("Recursos y entregables")
