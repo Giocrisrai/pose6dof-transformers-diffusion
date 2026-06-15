@@ -50,6 +50,13 @@ notebooks = [
     "jupyter>=1.0",
     "ipywidgets>=8.0",
 ]
+# Dashboard productivo (Streamlit) — `streamlit run dashboard.py`.
+# streamlit>=1.49: requerido por la API `width="stretch"` (la antigua
+# use_container_width fue removida tras 2025-12-31).
+dashboard = [
+    "streamlit>=1.49,<2",
+    "pandas>=2.0",
+]
 bop = [
     "pycocotools>=2.0",
     "bop_toolkit_lib",
