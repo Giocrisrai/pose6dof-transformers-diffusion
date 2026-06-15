@@ -211,10 +211,13 @@ pose6dof-transformers-diffusion/
 git clone https://github.com/Giocrisrai/pose6dof-transformers-diffusion.git
 cd pose6dof-transformers-diffusion
 
-# Instalar con uv (recomendado)
+# Instalar con uv (recomendado) — todo, incluidas apps interactivas
+uv sync --all-extras
+
+# O solo el core
 uv sync
 
-# O con pip
+# O con pip (elegir extras según lo que se vaya a usar)
 pip install -e ".[dev,colab]"
 
 # Tests
@@ -222,6 +225,24 @@ pytest tests/ packages/bop_bootstrap_ci/tests/ -v  # 255 passing (sin GPU)
 
 # Descargar datasets BOP (requiere ~30 GB)
 bash scripts/download_datasets.sh
+```
+
+### Aplicaciones interactivas
+
+Cada app declara sus dependencias en un *extra* de `pyproject.toml` (o usar
+`uv sync --all-extras` para instalarlas todas):
+
+| App | Extra | Arranque | URL |
+|-----|-------|----------|-----|
+| Dashboard de resultados (Streamlit) | `dashboard` | `streamlit run dashboard.py` | http://localhost:8501 |
+| Demo de la charla (Gradio + CoppeliaSim) | `demo` | `python scripts/demo_charla.py` | http://localhost:7860 |
+| API REST del pipeline (FastAPI) | `api` | `python scripts/api_server.py` | http://localhost:8000/docs |
+| Scripts de análisis y figuras | `analysis` | varios en `experiments/`, `scripts/make_diagrams.py` | — |
+
+```bash
+# Ejemplo: instalar solo el dashboard y lanzarlo
+pip install -e ".[dashboard]"   # o: uv sync --extra dashboard
+streamlit run dashboard.py
 ```
 
 ### Google Colab (recomendado para GPU)
