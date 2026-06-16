@@ -145,6 +145,20 @@ El panel lateral cambia de color segun la fase activa (ambar para PERCEPCION,
 turquesa para PLANIFICACION, naranja para EJECUCION) y reporta el cumplimiento
 de H3 (cycle < 10 s) en tiempo real con margen exacto en segundos.
 
+### Reels de demo (descargables desde el release)
+
+Los MP4 son regenerables (`experiments/build_demo_reel.py`, `make_showcase_reel.py`)
+y por eso no se versionan en git; se publican como assets del release
+[`v0.1.0`](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/releases/tag/v0.1.0):
+
+| Asset | Qué es | Uso |
+|---|---|---|
+| [`reel_showcase.mp4`](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/releases/download/v0.1.0/reel_showcase.mp4) | Hero pick cinematográfico de Iter 7c (cámara dedicada 1280×720) + valor/aplicaciones | Pitch / charla divulgativa |
+| [`reel_resumen.mp4`](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/releases/download/v0.1.0/reel_resumen.mp4) | Reel técnico ~2.4 min: percepción → planificación → E2E → robustez | Defensa formal (plan B en vivo) |
+| [`demo_v7c.mp4`](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/releases/download/v0.1.0/demo_v7c.mp4) | Pick individual Iter 7c (curriculum RL + best-of-N + fix IK) | Detalle de planificación |
+
+Mapa clip→slide y guión hablado en `experiments/results/demo_reel/README.md`.
+
 ## Resultados E2E (n=30 instancias por dataset, en vivo con CoppeliaSim)
 
 | Dataset | FP p95 | Diffusion p95 | Sim p95 | **Cycle p95** | H3 (<10s) |

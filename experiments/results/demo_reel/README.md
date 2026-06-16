@@ -2,6 +2,12 @@
 
 Generado por `experiments/build_demo_reel.py` (regenerable). Overlays cv2.
 
+> **Descarga:** los MP4 no se versionan en git (regenerables). Publicados como
+> assets del release [`v0.1.0`](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/releases/tag/v0.1.0):
+> [`reel_showcase.mp4`](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/releases/download/v0.1.0/reel_showcase.mp4) ·
+> [`reel_resumen.mp4`](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/releases/download/v0.1.0/reel_resumen.mp4) ·
+> [`demo_v7c.mp4`](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/releases/download/v0.1.0/demo_v7c.mp4).
+
 ## Archivos
 
 - `reel_resumen.mp4` — reel continuo (~2.4 min: 4 clips completos + tarjetas) para abrir/cerrar la charla.
