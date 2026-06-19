@@ -115,6 +115,32 @@ Plan completo: [`docs/PLAN_EXPLORACIONES_POST_TFM.md`](docs/PLAN_EXPLORACIONES_P
 
 ---
 
+## Bin picking guiado por lenguaje natural
+
+El pipeline puede seleccionar el objeto a coger a partir de una **instrucción en
+lenguaje natural** ("dame el cubo rojo de la izquierda") en lugar de un índice.
+El subsistema vive en [`src/language/`](src/language/) (parser → grounder) y
+consolida las exploraciones VLA/CLIP exp16–exp26. El parser por defecto es
+**determinista** (léxico ES/EN, sin red ni pesos); hay backends LLM enchufables
+(Ollama local con fallback, API como stub).
+
+```python
+from src.language import make_parser, Grounder
+from src.language.schema import ObjectView
+
+instr = make_parser("deterministic").parse("dame el cubo rojo de la izquierda")
+objs = [ObjectView(0, (-0.2, 0.0, 0.5), {"color": "red", "shape": "cube"}),
+        ObjectView(1, ( 0.2, 0.0, 0.5), {"color": "red", "shape": "cube"})]
+res = Grounder(method="attribute").ground(instr, objs)   # res.target_obj_id == 0 (left_of)
+```
+
+Demo sin sim: `python experiments/run_pick_language.py --instruction "dame el cubo rojo de la izquierda" --dry-run`.
+Detalle completo de la feature en [`docs/LENGUAJE_NATURAL.md`](docs/LENGUAJE_NATURAL.md)
+y comparativa con el estado del arte (CLIPort, VoxPoser, SayCan, OWL-ViT/CLIP-Fields)
+en [`docs/COMPARATIVA_SOTA_LENGUAJE.md`](docs/COMPARATIVA_SOTA_LENGUAJE.md).
+
+---
+
 ## Notebooks en Google Colab
 
 | Notebook | Descripcion |

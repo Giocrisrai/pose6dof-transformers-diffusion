@@ -1,5 +1,11 @@
 # Exploración 4 — VLA-lite con CLIP text-conditioning
 
+> **Consolidación**: esta exploración (y sus extensiones exp16–exp26) está
+> consolidada como *feature* del pipeline en el paquete `src/language/`. Ver la
+> documentación de la feature en [`../LENGUAJE_NATURAL.md`](../LENGUAJE_NATURAL.md)
+> y la comparativa con el estado del arte en
+> [`../COMPARATIVA_SOTA_LENGUAJE.md`](../COMPARATIVA_SOTA_LENGUAJE.md).
+
 **Estado**: ✅ **ÉXITO** — selection accuracy **98.6 %** (criterio ≥ 75 %). Sistema entiende lenguaje natural y selecciona el objeto correcto en escenas multi-objeto. Mergeado a `main`.
 
 **Rama**: `explore/04-vla-lite-clip`
