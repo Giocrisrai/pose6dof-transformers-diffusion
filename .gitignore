@@ -145,3 +145,6 @@ experiments/results/**/frames_*/
 # Staging reversible de la limpieza (pendiente de borrado definitivo)
 experiments/results/_frames_archive/
 experiments/results/_orphans_review/
+
+# Artefactos de flujo de trabajo (specs/planes de skills) — no publicar
+docs/superpowers/

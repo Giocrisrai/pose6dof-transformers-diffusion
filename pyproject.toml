@@ -106,6 +106,10 @@ inference-gpu = [
     "transformations>=2024.5.24",
     "gdown>=5.0",
 ]
+# Parser de lenguaje natural con LLM local/remoto (Fase 2, opcional).
+language-llm = [
+    "ollama>=0.3",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -150,6 +154,7 @@ testpaths = ["tests"]
 pythonpath = ["."]
 markers = [
     "integration: requires CoppeliaSim running on localhost:23000 (skip if unavailable)",
+    "slow: requiere pesos/red (CLIP o LLM); se omite en la suite base",
 ]
 
 [dependency-groups]

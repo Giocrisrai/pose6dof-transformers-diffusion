@@ -227,7 +227,7 @@ with st.sidebar:
         "Sección",
         ["📊 Resumen", "🔬 Exploraciones post-TFM",
          "🤖 Robustez y clutter", "💡 Innovación y SOTA",
-         "🧠 Decisiones del pipeline",
+         "🧠 Decisiones del pipeline", "🗣️ Lenguaje natural",
          "🎯 Hipótesis", "📈 Métricas FP",
          "🛡️ Robustez", "⚙️ Profiling", "🌳 Diversidad",
          "🎮 PBVS", "📦 Per-Object", "🎬 Video", "📚 Recursos"]
@@ -248,6 +248,26 @@ def load_image(path: str):
     if p.exists():
         return str(p)
     return None
+
+
+def render_language_tab(instruction: str) -> dict:
+    """Lógica del tab de lenguaje natural. Devuelve el payload de grounding.
+
+    Separada de los widgets para ser testeable sin servidor Streamlit.
+    """
+    from src.language import make_parser
+    from src.language.grounding import Grounder
+    from src.language.demo import demo_scene
+    objetos = demo_scene()
+    instr = make_parser("deterministic").parse(instruction)
+    res = Grounder(method="attribute").ground(instr, objetos)
+    return {
+        "parsed": {"color": instr.target.color, "shape": instr.target.shape,
+                   "size": instr.target.size,
+                   "spatial": instr.spatial.relation if instr.spatial else None},
+        "grounding": {"target_obj_id": res.target_obj_id, "scores": res.scores,
+                      "ambiguous": res.ambiguous, "method": res.method},
+    }
 
 
 # === SECCIONES ===
@@ -783,6 +803,27 @@ elif section == "🧠 Decisiones del pipeline":
         "el agarre. Abajo-der: línea de tiempo con la latencia real de cada fase y el margen "
         "que queda contra el límite de 10 s (H3)."
     )
+
+elif section == "🗣️ Lenguaje natural":
+    st.title("🗣️ Bin picking guiado por lenguaje natural")
+    st.markdown(
+        "Escribe una instrucción y observa el *parsing* y la selección de objetivo "
+        "(grounding). Consolida las exploraciones VLA/CLIP (exp16–26). Escena demo: "
+        "3 objetos — cubo rojo (izq.), cubo azul (centro), esfera roja (der.)."
+    )
+    instr_text = st.text_input("Instrucción", value="dame el cubo rojo de la izquierda")
+    if st.button("Interpretar y seleccionar"):
+        payload = render_language_tab(instr_text)
+        st.json(payload["parsed"])
+        tgt = payload["grounding"]["target_obj_id"]
+        if tgt is None:
+            st.warning("Ningún objeto coincide con la instrucción.")
+        elif payload["grounding"]["ambiguous"]:
+            st.info(f"Ambiguo — sugerido objeto #{tgt}. Añade una relación espacial.")
+        else:
+            st.success(f"Objeto seleccionado: #{tgt}  (método: {payload['grounding']['method']})")
+        if tgt is not None:
+            st.bar_chart(payload["grounding"]["scores"])
 
 elif section == "🎯 Hipótesis":
     st.title("Hipótesis verificables")

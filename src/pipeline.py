@@ -47,6 +47,12 @@ class PipelineConfig:
     # Device
     device: str = "cpu"  # "cpu", "cuda", "mps"
 
+    # Lenguaje natural (PLN)
+    language_enabled: bool = False
+    parser_backend: str = "deterministic"   # deterministic | llm_local | llm_api
+    grounder_method: str = "attribute"      # attribute | clip_image
+    ambiguity_tolerant: bool = True         # si ambiguo, conserva candidatos ordenados
+
 
 @dataclass
 class PoseResult:
@@ -58,6 +64,7 @@ class PoseResult:
     T: np.ndarray            # (4, 4) SE(3) matrix
     bbox: Optional[np.ndarray] = None  # (4,) [x1, y1, x2, y2]
     mask: Optional[np.ndarray] = None  # (H, W) binary mask
+    attributes: dict = field(default_factory=dict)  # color/shape/size si se conocen
 
 
 @dataclass
@@ -75,6 +82,8 @@ class PipelineResult:
     grasps: List[GraspResult]
     best_grasp: Optional[GraspResult] = None
     timing: Dict[str, float] = field(default_factory=dict)
+    instruction: Optional[object] = None   # src.language.schema.Instruction
+    grounding: Optional[object] = None     # src.language.schema.GroundingResult
 
 
 class BinPickingPipeline:
@@ -84,6 +93,8 @@ class BinPickingPipeline:
         self.config = config
         self._pose_estimator = None
         self._grasp_planner = None
+        self._lang_parser = None
+        self._lang_grounder = None
         self._initialized = False
 
     def initialize(self):
@@ -204,12 +215,58 @@ class BinPickingPipeline:
         results.sort(key=lambda x: x.score, reverse=True)
         return results
 
+    def _poses_to_views(self, poses):
+        """Convierte PoseResult -> ObjectView para el Grounder."""
+        from src.language.schema import ObjectView
+        views = []
+        for p in poses:
+            attrs = getattr(p, "attributes", {}) or {}
+            bbox = tuple(p.bbox) if getattr(p, "bbox", None) is not None else None
+            views.append(ObjectView(
+                obj_id=p.obj_id,
+                centroid=(float(p.t[0]), float(p.t[1]), float(p.t[2])),
+                attributes=attrs, bbox=bbox,
+            ))
+        return views
+
+    def select_target(self, poses, instruction):
+        """Aplica lenguaje natural para seleccionar el/los target(s).
+
+        Returns:
+            (poses_seleccionadas, GroundingResult|None, Instruction|None)
+        """
+        if not instruction:
+            return poses, None, None
+        if self._lang_parser is None:
+            from src.language import make_parser
+            self._lang_parser = make_parser(self.config.parser_backend)
+        if self._lang_grounder is None:
+            from src.language.grounding import Grounder
+            self._lang_grounder = Grounder(method=self.config.grounder_method)
+        parser = self._lang_parser
+        grounder = self._lang_grounder
+        instr = parser.parse(instruction)
+        views = self._poses_to_views(poses)
+        result = grounder.ground(instr, views)
+        by_id = {p.obj_id: p for p in poses}
+        if result.target_obj_id is None:
+            return [], result, instr
+        if result.ambiguous and self.config.ambiguity_tolerant:
+            ordered = sorted(poses, key=lambda p: result.scores.get(p.obj_id, 0.0),
+                             reverse=True)
+            return ordered, result, instr
+        target_pose = by_id.get(result.target_obj_id)
+        if target_pose is None:
+            return [], result, instr
+        return [target_pose], result, instr
+
     def run(
         self,
         rgb: np.ndarray,
         depth: np.ndarray,
         K: np.ndarray,
         masks: Optional[List[np.ndarray]] = None,
+        instruction: Optional[str] = None,
     ) -> PipelineResult:
         """Execute the full pipeline.
 
@@ -218,9 +275,11 @@ class BinPickingPipeline:
             depth: (H, W) depth map
             K: (3, 3) camera intrinsics
             masks: optional segmentation masks
+            instruction: instrucción en lenguaje natural (opcional); solo se aplica
+                si language_enabled=True en la config
 
         Returns:
-            PipelineResult with poses, grasps, and timing
+            PipelineResult with poses, grasps, timing, instruction y grounding
         """
         if not self._initialized:
             raise RuntimeError("Call initialize() first")
@@ -233,7 +292,15 @@ class BinPickingPipeline:
         timing["pose_estimation"] = time.time() - t0
         logger.info(f"Estimated {len(poses)} poses in {timing['pose_estimation']:.3f}s")
 
-        # Step 2: Grasp planning
+        # Step 2 (opcional): Selección por lenguaje natural
+        instr_obj = grounding = None
+        if instruction and self.config.language_enabled:
+            t0 = time.time()
+            poses, grounding, instr_obj = self.select_target(poses, instruction)
+            timing["language_grounding"] = time.time() - t0
+            logger.info(f"Language grounding selected {len(poses)} target(s)")
+
+        # Step 3: Grasp planning
         t0 = time.time()
         grasps = self.plan_grasps(poses)
         timing["grasp_planning"] = time.time() - t0
@@ -249,6 +316,8 @@ class BinPickingPipeline:
             grasps=grasps,
             best_grasp=best,
             timing=timing,
+            instruction=instr_obj,
+            grounding=grounding,
         )
 
     def run_on_dataset(
