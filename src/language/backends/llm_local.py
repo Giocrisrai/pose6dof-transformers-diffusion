@@ -34,14 +34,14 @@ def _ollama_available(host: str) -> bool:
         return False
 
 
-def _ollama_generate(host: str, model: str, prompt: str) -> str:
+def _ollama_generate(host: str, model: str, prompt: str, timeout: float = 15.0) -> str:
     """Llama a /api/generate y devuelve la respuesta cruda."""
     import urllib.request
     body = json.dumps({"model": model, "prompt": prompt, "system": _SYSTEM,
                        "stream": False, "format": "json"}).encode()
     req = urllib.request.Request(f"{host}/api/generate", data=body,
                                  headers={"Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=30) as r:
+    with urllib.request.urlopen(req, timeout=timeout) as r:
         return json.loads(r.read().decode()).get("response", "")
 
 
@@ -53,10 +53,12 @@ def _json_to_instruction(raw_text: str, data: dict, model: str) -> Optional[Inst
             shape=vocab.normalize_shape(str(data.get("shape") or "")),
             size=vocab.normalize_size(str(data.get("size") or "")),
         )
-        rel = data.get("relation")
-        spatial = SpatialRelation(relation=vocab.normalize_relation(str(rel))) \
-            if rel and vocab.normalize_relation(str(rel)) else None
+        rel_raw = data.get("relation")
+        rel = vocab.normalize_relation(str(rel_raw)) if rel_raw else None
+        spatial = SpatialRelation(relation=rel) if rel else None
         intent = data.get("intent") or "pick"
+        if intent not in ("pick", "pick_then_place", "sequence"):
+            intent = "pick"
         if target.is_empty() and not spatial:
             return None  # nada útil -> fallback
         return Instruction(raw_text=raw_text, target=target, intent=intent,
@@ -69,9 +71,11 @@ def _json_to_instruction(raw_text: str, data: dict, model: str) -> Optional[Inst
 class LLMLocalParser:
     """InstructionParser con LLM local y fallback determinista."""
 
-    def __init__(self, model: str = _DEFAULT_MODEL, host: str = _DEFAULT_HOST):
+    def __init__(self, model: str = _DEFAULT_MODEL, host: str = _DEFAULT_HOST,
+                 gen_timeout: float = 15.0):
         self.model = model
         self.host = host
+        self.gen_timeout = gen_timeout
         self._fallback = DeterministicParser()
 
     def parse(self, text: str) -> Instruction:
@@ -79,7 +83,7 @@ class LLMLocalParser:
             return self._fallback.parse(text)
         prompt = f"Instrucción: {text}\nEjemplo de salida: {_FEWSHOT}\nJSON:"
         try:
-            raw = _ollama_generate(self.host, self.model, prompt)
+            raw = _ollama_generate(self.host, self.model, prompt, self.gen_timeout)
             data = json.loads(raw)
         except Exception:
             return self._fallback.parse(text)

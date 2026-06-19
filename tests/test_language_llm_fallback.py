@@ -34,3 +34,26 @@ def test_llm_local_json_invalido_cae_a_determinista(monkeypatch):
     instr = parser.parse("pick the green object")
     assert instr.target.color == "green"
     assert "deterministic" in instr.backend
+
+
+def test_llm_local_json_vacio_cae_a_determinista(monkeypatch):
+    import src.language.backends.llm_local as m
+    monkeypatch.setattr(m, "_ollama_available", lambda host: True)
+    fake = '{"intent": "pick", "color": null, "shape": null, "size": null, "relation": null}'
+    monkeypatch.setattr(m, "_ollama_generate", lambda *a, **k: fake)
+    parser = make_parser("llm_local")
+    instr = parser.parse("agarra la pieza azul")   # determinista sí ve "azul"
+    assert instr.target.color == "blue"
+    assert "deterministic" in instr.backend
+
+
+def test_llm_local_intent_invalido_se_normaliza(monkeypatch):
+    import src.language.backends.llm_local as m
+    monkeypatch.setattr(m, "_ollama_available", lambda host: True)
+    fake = '{"intent": "grasp", "color": "red", "shape": null, "size": null, "relation": null}'
+    monkeypatch.setattr(m, "_ollama_generate", lambda *a, **k: fake)
+    parser = make_parser("llm_local")
+    instr = parser.parse("pick the red one")
+    assert instr.target.color == "red"
+    assert instr.intent == "pick"          # "grasp" no es válido -> normalizado a "pick"
+    assert instr.backend.startswith("llm_local")
