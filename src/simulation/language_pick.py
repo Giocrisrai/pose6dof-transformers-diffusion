@@ -306,6 +306,7 @@ def run_language_pick(instruction: str, scene: str = "multi",
         if chosen is None:
             payload["selection_correct"] = False
             payload["pick"] = None
+            payload["mp4_path"] = None
             return payload
         result = run_pick_sequence(
             bridge, frames_dir,
