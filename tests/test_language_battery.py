@@ -44,3 +44,9 @@ def test_spatial_case_target_es_leftmost():
     specs = sp["specs"]
     target = next(s for s in specs if s.obj_id == sp["expected_id"])
     assert target.position[0] == min(s.position[0] for s in specs)
+
+
+def test_crescendo_instructions_no_vacio():
+    from experiments.make_language_reel import CRESCENDO
+    assert len(CRESCENDO) >= 3
+    assert all(isinstance(s, str) and s for s in CRESCENDO)
