@@ -5,9 +5,11 @@ Ejecuta el pipeline end-to-end seleccionando el objeto descrito por una
 instrucción en lenguaje natural. Con --dry-run no requiere CoppeliaSim:
 muestra el parsing + grounding sobre una escena sintética fija.
 
-Ejemplos:
+Hoy solo la ruta --dry-run está implementada; la ruta E2E con CoppeliaSim
+(--scene, --render) no está disponible aún y lanzará NotImplementedError.
+
+Ejemplo funcional:
     python experiments/run_pick_language.py --instruction "dame el cubo rojo" --dry-run
-    python experiments/run_pick_language.py --instruction "pick the blue sphere" --scene clutter --render
 """
 from __future__ import annotations
 
@@ -20,19 +22,10 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from src.language import make_parser            # noqa: E402
+from src.language.demo import demo_scene        # noqa: E402
 from src.language.grounding import Grounder     # noqa: E402
-from src.language.schema import ObjectView      # noqa: E402
 
 RESULTS = REPO / "experiments/results/language_pick"
-
-
-def _escena_demo() -> list[ObjectView]:
-    """Escena sintética fija de 3 objetos (coherente con exp16/24)."""
-    return [
-        ObjectView(0, (-0.20, 0.0, 0.5), {"color": "red", "shape": "cube", "size": "large"}),
-        ObjectView(1, (0.00, 0.0, 0.5), {"color": "blue", "shape": "cube", "size": "small"}),
-        ObjectView(2, (0.20, 0.0, 0.5), {"color": "red", "shape": "sphere", "size": "small"}),
-    ]
 
 
 def run_dry(instruction: str, backend: str = "deterministic") -> int:
@@ -40,7 +33,7 @@ def run_dry(instruction: str, backend: str = "deterministic") -> int:
     parser = make_parser(backend)
     grounder = Grounder(method="attribute")
     instr = parser.parse(instruction)
-    objs = _escena_demo()
+    objs = demo_scene()
     res = grounder.ground(instr, objs)
     payload = {
         "instruction": instruction,
@@ -67,7 +60,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--instruction", required=True, help='p.ej. "dame el cubo rojo"')
     p.add_argument("--parser-backend", default="deterministic",
                    choices=["deterministic", "llm_local", "llm_api"])
-    p.add_argument("--scene", default="multi", choices=["multi", "clutter"])
+    p.add_argument("--scene", default="multi", choices=["multi", "clutter"],
+                   help="escena de sim (solo afecta la ruta E2E, no --dry-run)")
     p.add_argument("--render", action="store_true", help="render del grounding (requiere sim)")
     p.add_argument("--dry-run", action="store_true",
                    help="solo parsing + grounding, sin CoppeliaSim")

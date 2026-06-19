@@ -257,14 +257,10 @@ def render_language_tab(instruction: str) -> dict:
     """
     from src.language import make_parser
     from src.language.grounding import Grounder
-    from src.language.schema import ObjectView
-    objs = [
-        ObjectView(0, (-0.20, 0.0, 0.5), {"color": "red", "shape": "cube", "size": "large"}),
-        ObjectView(1, (0.00, 0.0, 0.5), {"color": "blue", "shape": "cube", "size": "small"}),
-        ObjectView(2, (0.20, 0.0, 0.5), {"color": "red", "shape": "sphere", "size": "small"}),
-    ]
+    from src.language.demo import demo_scene
+    objetos = demo_scene()
     instr = make_parser("deterministic").parse(instruction)
-    res = Grounder(method="attribute").ground(instr, objs)
+    res = Grounder(method="attribute").ground(instr, objetos)
     return {
         "parsed": {"color": instr.target.color, "shape": instr.target.shape,
                    "size": instr.target.size,
