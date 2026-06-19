@@ -55,6 +55,10 @@ class Grounder:
 
         En method=attribute se asume que los ObjectView ya traen atributos
         (de metadatos de simulación o de una pasada previa).
+
+        Nota: en modo clip_image este método MUTA cada ObjectView.attributes
+        en el lugar (in-place), guardando en caché el resultado de CLIP para
+        no volver a inferirlo en llamadas sucesivas al mismo objeto.
         """
         if self.method != "clip_image" or rgb is None:
             return objects
@@ -96,7 +100,7 @@ class Grounder:
             )
 
         winners = [o for o in objects if abs(scores[o.obj_id] - max_score) <= _TIE_EPS]
-        rejected = [o.obj_id for o in objects if o not in winners]
+        rejected = [o.obj_id for o in objects if abs(scores[o.obj_id] - max_score) > _TIE_EPS]
 
         if len(winners) == 1:
             return GroundingResult(

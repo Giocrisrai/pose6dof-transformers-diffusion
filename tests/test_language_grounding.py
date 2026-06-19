@@ -27,6 +27,7 @@ def test_relacion_espacial_desempata():
     instr = make_parser().parse("dame el rojo de la izquierda")
     res = g.ground(instr, _escena())
     assert res.target_obj_id == 0
+    assert res.method == "spatial"
 
 
 def test_nearest_por_profundidad():
