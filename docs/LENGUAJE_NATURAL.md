@@ -252,6 +252,11 @@ La feature consolida 9 exploraciones post-TFM. Cada cifra proviene del documento
 de exploración indicado (verificar siempre la fuente; no hay cifras inventadas).
 La métrica común es **selection accuracy** (objeto correcto seleccionado).
 
+> **Nota de numeración**: las etiquetas `expNN` corresponden a los scripts de
+> `experiments/` (p. ej. `exp16_vla_lite_clip.py`), mientras que los ficheros de
+> `docs/exploraciones/` se numeran 04–13 (Exploración 4 = exp16, …, Exploración 13
+> = exp26). La columna *Fuente* enlaza el documento correcto en cada fila.
+
 | Exp | Capacidad | Resultado clave | n / setup | Fuente |
 |----:|-----------|-----------------|-----------|--------|
 | exp16 | CLIP text-conditioning (color) | **98.6 %** selection accuracy | n_val=800 | [04_vla_lite_clip.md](exploraciones/04_vla_lite_clip.md) |
