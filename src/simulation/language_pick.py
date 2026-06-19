@@ -22,6 +22,7 @@ _RGB_TO_NAME = {
     (0.15, 0.30, 0.85): "blue",
     (0.20, 0.75, 0.20): "green",
 }
+# Inverso nombre→RGB: lo usa el cascarón sim (apply_scene) para pintar primitivas.
 _NAME_TO_RGB = {v: k for k, v in _RGB_TO_NAME.items()}
 _DISTRACTOR_COLORS = ["blue", "green"]
 _SHAPE_POOL = ["cube", "sphere", "cylinder"]
@@ -93,7 +94,7 @@ def plan_language_scene(rng: np.random.Generator, n_objects: int = 3,
     rng : np.random.Generator
         Generador de números aleatorios (determinista si se fija la semilla).
     n_objects : int
-        Número total de objetos (target + distractores).
+        Número total de objetos (target + distractores). Rango soportado: 1..6.
     with_shapes : bool
         Si True, los distractores pueden tener formas distintas al target.
     target_color : str
@@ -106,6 +107,8 @@ def plan_language_scene(rng: np.random.Generator, n_objects: int = 3,
     list[SimObjectSpec]
         Lista de specs con el target en posición 0.
     """
+    if not (1 <= n_objects <= 6):
+        raise ValueError(f"n_objects fuera de rango soportado (1..6): {n_objects}")
     positions = _sample_positions(n_objects, rng)
     specs = [SimObjectSpec(0, positions[0], target_color, target_shape, "large")]
     for i in range(1, n_objects):
@@ -113,9 +116,9 @@ def plan_language_scene(rng: np.random.Generator, n_objects: int = 3,
         shape = (_SHAPE_POOL[int(rng.integers(0, len(_SHAPE_POOL)))]
                  if with_shapes else "cube")
         specs.append(SimObjectSpec(i, positions[i], color, shape, "large"))
-    # garantizar al menos 2 formas distintas cuando with_shapes=True
-    if with_shapes and n_objects >= 2 and {s.shape for s in specs} == {"cube"}:
-        specs[-1].shape = "sphere"
+    # Garantiza variedad de formas: si todas coincidieron, cambia el último distractor.
+    if with_shapes and n_objects >= 2 and len({s.shape for s in specs}) < 2:
+        specs[-1].shape = "sphere" if specs[-1].shape != "sphere" else "cylinder"
     return specs
 
 

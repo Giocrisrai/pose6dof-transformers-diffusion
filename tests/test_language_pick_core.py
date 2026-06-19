@@ -63,3 +63,18 @@ def test_evaluate_selection_correcto_e_incorrecto():
     assert ok["correct"] is True and ok["selected_id"] == 0
     bad = evaluate_selection(specs, "pick the blue cube", expected_id=0)
     assert bad["correct"] is False and bad["selected_id"] == 1
+
+
+def test_plan_scene_target_shape_no_cubo_mantiene_variedad():
+    rng = np.random.default_rng(7)
+    specs = plan_language_scene(rng, n_objects=3, with_shapes=True,
+                                target_color="red", target_shape="sphere")
+    assert specs[0].shape == "sphere"
+    assert len({s.shape for s in specs}) >= 2
+
+
+def test_plan_scene_rechaza_n_objects_fuera_de_rango():
+    import pytest
+    rng = np.random.default_rng(0)
+    with pytest.raises(ValueError):
+        plan_language_scene(rng, n_objects=9)
