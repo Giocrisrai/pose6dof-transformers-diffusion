@@ -5,6 +5,7 @@ Mapea sinónimos en español e inglés a un valor canónico en inglés
 """
 from __future__ import annotations
 
+import re
 from typing import Optional
 
 COLORS = {
@@ -33,14 +34,15 @@ RELATIONS = {
 NOUNS = ["object", "objeto", "piece", "pieza", "block", "bloque", "item"]
 
 
-def _match(text: str, table: dict) -> Optional[str]:
+def _match(text: str, table: dict[str, list[str]]) -> Optional[str]:
+    """Devuelve el valor canónico cuyo sinónimo más largo aparezca como
+    palabra/frase completa en el texto (límites de palabra, sin acentos-falsos)."""
     t = text.lower()
-    # buscar la coincidencia más larga primero (frases > palabras)
     best = None
     best_len = 0
     for canonical, synonyms in table.items():
         for syn in synonyms:
-            if syn in t and len(syn) > best_len:
+            if re.search(rf"\b{re.escape(syn)}\b", t) and len(syn) > best_len:
                 best, best_len = canonical, len(syn)
     return best
 
