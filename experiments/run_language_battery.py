@@ -245,11 +245,16 @@ def main() -> int:
         sim_correct = 0
         for i, c in enumerate(cases):
             try:
+                # Usar los atributos del target del caso para que la escena sim
+                # contenga el objeto descrito en la instrucción (métrica honesta).
+                t0 = c["specs"][0]
                 out = run_language_pick(
                     c["instruction"],
                     n_objects=args.n_objects,
                     with_shapes=args.with_shapes,
                     seed=args.seed + i,
+                    target_color=t0.color,
+                    target_shape=t0.shape,
                 )
                 sim_correct += int(out.get("selection_correct", False))
             except Exception as exc:  # noqa: BLE001

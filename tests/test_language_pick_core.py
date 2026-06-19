@@ -89,3 +89,16 @@ def test_run_language_pick_smoke():
     from src.simulation.language_pick import run_language_pick
     out = run_language_pick("dame el cubo rojo", n_objects=3, seed=0, render=False)
     assert "grounding" in out and "selection_correct" in out
+
+
+def test_spec_matches_instruction_honesto():
+    from src.simulation.language_pick import spec_matches_instruction
+    from src.language import make_parser
+    p = make_parser("deterministic")
+    red_cube = SimObjectSpec(0, (0, 0, 0.5), "red", "cube", "large")
+    assert spec_matches_instruction(red_cube, p.parse("pick the red cube")) is True
+    assert spec_matches_instruction(red_cube, p.parse("pick the blue cube")) is False
+    assert spec_matches_instruction(red_cube, p.parse("the red sphere")) is False
+    assert spec_matches_instruction(None, p.parse("pick the red cube")) is False
+    # instrucción sin atributos -> no es match significativo
+    assert spec_matches_instruction(red_cube, p.parse("")) is False

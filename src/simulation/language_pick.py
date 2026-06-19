@@ -225,15 +225,35 @@ def apply_scene(bridge, specs: list[SimObjectSpec]) -> list[SimObjectSpec]:
     return specs
 
 
+def spec_matches_instruction(spec: "SimObjectSpec", instr) -> bool:
+    """True si el objeto elegido coincide con TODOS los atributos especificados
+    en la instrucción (color/forma/tamaño). Atributos no especificados se ignoran.
+    Métrica honesta: 'se cogió un objeto que realmente encaja con lo pedido'."""
+    if spec is None:
+        return False
+    t = instr.target
+    for attr in ("color", "shape", "size"):
+        want = getattr(t, attr)
+        if want is not None and getattr(spec, attr) != want:
+            return False
+    # si la instrucción no especificó nada, no es un match significativo
+    return not t.is_empty()
+
+
 def run_language_pick(instruction: str, scene: str = "multi",
                       parser_backend: str = "deterministic", render: bool = False,
                       n_objects: int = 3, with_shapes: Optional[bool] = None,
-                      seed: int = 42) -> dict:
+                      seed: int = 42, target_color: str = "red",
+                      target_shape: str = "cube") -> dict:
     """Orquesta el pick guiado por lenguaje en CoppeliaSim (ruta integration).
 
     Requiere CoppeliaSim en :23000. Construye la escena, groundea la
     instrucción, ejecuta el pick sobre el objeto elegido y devuelve un payload
     con parsing, grounding, escena, selection_correct y métricas del pick.
+
+    La métrica selection_correct es HONESTA: usa spec_matches_instruction para
+    verificar que el objeto cogido realmente encaja con los atributos pedidos
+    en la instrucción, en lugar de asumir que el target siempre es obj 0.
 
     Parámetros
     ----------
@@ -251,6 +271,13 @@ def run_language_pick(instruction: str, scene: str = "multi",
         Si None, se infiere: True cuando scene=="clutter", False en otro caso.
     seed : int
         Semilla para el generador aleatorio (determinismo de la escena).
+    target_color : str
+        Color del objeto target en la escena generada. Por defecto "red".
+        Pasar el color descrito en la instrucción garantiza que la escena
+        contenga el objeto pedido (demo honesto).
+    target_shape : str
+        Forma del objeto target en la escena generada. Por defecto "cube".
+        Ídem target_color: alinear con la instrucción para un demo honesto.
 
     Retorna
     -------
@@ -275,7 +302,7 @@ def run_language_pick(instruction: str, scene: str = "multi",
     if with_shapes is None:
         with_shapes = (scene == "clutter")
     rng = np.random.default_rng(seed)
-    specs = plan_language_scene(rng, n_objects, with_shapes)
+    specs = plan_language_scene(rng, n_objects, with_shapes, target_color, target_shape)
 
     with CoppeliaSimBridge() as bridge:
         bridge.set_stepping(True)
@@ -316,7 +343,7 @@ def run_language_pick(instruction: str, scene: str = "multi",
 
     mp4 = (compile_mp4(frames_dir, out_dir / "language_pick.mp4", fps=25)
            if render else None)
-    payload["selection_correct"] = (grounding.target_obj_id == 0)
+    payload["selection_correct"] = spec_matches_instruction(chosen, instr)
     payload["pick"] = {
         "tip_grasp_proximity_m": round(result.tip_grasp_proximity_m, 3),
         "object_moved_m": round(result.obj_moved_m, 3),

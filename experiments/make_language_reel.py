@@ -52,6 +52,7 @@ def main() -> int:
     Finalmente compila todos los frames en un único language_reel.mp4.
     """
     import cv2
+    from src.language import make_parser
     from src.simulation.language_pick import run_language_pick
     from src.simulation.pick_sequence import compile_mp4
     from src.simulation import reel_overlay
@@ -63,6 +64,11 @@ def main() -> int:
 
     idx = 0
     for n, instruction in enumerate(CRESCENDO, 1):
+        # Parsear la instrucción para derivar color/forma del target y construir
+        # una escena que CONTENGA el objeto descrito (demo honesto).
+        instr_parsed = make_parser("deterministic").parse(instruction)
+        tcolor = instr_parsed.target.color or "red"
+        tshape = instr_parsed.target.shape or "cube"
         out = run_language_pick(
             instruction,
             scene="clutter",
@@ -71,9 +77,16 @@ def main() -> int:
             n_objects=3,
             with_shapes=True,
             seed=n,
+            target_color=tcolor,
+            target_shape=tshape,
         )
         tgt = out["grounding"]["target_obj_id"]
         ok = tgt is not None and bool(out.get("selection_correct"))
+
+        # Si no hubo match en el grounding, no reutilizar frames del pick anterior.
+        if tgt is None:
+            # Sin match: omitir frames para este paso del crescendo.
+            continue
 
         # Etiqueta del target para el panel de métricas
         tgt_label = f"target #{tgt}" if tgt is not None else "sin match"
