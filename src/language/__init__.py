@@ -6,3 +6,4 @@ API pública estable:
 from src.language.schema import (  # noqa: F401
     TargetSpec, SpatialRelation, Instruction, GroundingResult, ObjectView,
 )
+from src.language.parser import InstructionParser, make_parser  # noqa: F401
