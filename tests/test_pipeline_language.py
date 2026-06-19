@@ -1,5 +1,10 @@
 """Integración del lenguaje en BinPickingPipeline (con poses mock)."""
+import importlib
+import sys
+from pathlib import Path
+
 import numpy as np
+
 from src.pipeline import BinPickingPipeline, PipelineConfig, PoseResult
 
 
@@ -55,3 +60,22 @@ def test_run_ignora_instruccion_si_language_disabled():
     selected, grounding, instruction = pipe.select_target(poses, "pick the red cube")
     # select_target no depende del flag; el guard de language_enabled vive en run().
     assert grounding is not None
+
+
+def test_cli_language_parsea_args():
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    mod = importlib.import_module("experiments.run_pick_language")
+    args = mod.build_parser().parse_args(
+        ["--instruction", "pick the red cube", "--scene", "multi", "--dry-run"]
+    )
+    assert args.instruction == "pick the red cube"
+    assert args.scene == "multi"
+    assert args.dry_run is True
+
+
+def test_cli_dry_run_ejecuta_grounding(capsys):
+    from experiments.run_pick_language import run_dry
+    code = run_dry("dame el cubo rojo de la izquierda")
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "target" in out.lower()
