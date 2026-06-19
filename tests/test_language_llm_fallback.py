@@ -57,3 +57,17 @@ def test_llm_local_intent_invalido_se_normaliza(monkeypatch):
     assert instr.target.color == "red"
     assert instr.intent == "pick"          # "grasp" no es válido -> normalizado a "pick"
     assert instr.backend.startswith("llm_local")
+
+
+def test_llm_api_sin_clave_cae_a_determinista(monkeypatch):
+    monkeypatch.delenv("LANGUAGE_API_KEY", raising=False)
+    parser = make_parser("llm_api")
+    instr = parser.parse("pick the yellow box")
+    assert instr.target.color == "yellow"
+    assert "deterministic" in instr.backend
+
+
+def test_llm_api_no_disponible_flag(monkeypatch):
+    import src.language.backends.llm_api as m
+    monkeypatch.delenv("LANGUAGE_API_KEY", raising=False)
+    assert m.LLMApiParser().available() is False
