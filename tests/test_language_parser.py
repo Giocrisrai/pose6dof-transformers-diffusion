@@ -1,5 +1,8 @@
 """Tests del parser determinista y del léxico."""
-from src.language import vocab
+import pytest
+
+from src.language import make_parser, vocab
+from src.language.schema import Instruction
 
 
 def test_normaliza_color_es_en():
@@ -42,10 +45,6 @@ def test_normaliza_resto_valores_canonicos():
     assert vocab.normalize_relation("encima") == "on_top"
 
 
-from src.language import make_parser
-from src.language.schema import Instruction
-
-
 def test_parser_extrae_color_y_forma():
     p = make_parser("deterministic")
     instr = p.parse("pick the red cube")
@@ -69,7 +68,7 @@ def test_parser_tamano_y_sustantivo():
     instr = make_parser("deterministic").parse("agarra la pieza pequeña azul")
     assert instr.target.size == "small"
     assert instr.target.color == "blue"
-    assert instr.target.raw_noun in ("pieza", "piece")
+    assert instr.target.raw_noun == "pieza"
 
 
 def test_parser_secuencia_dos_pasos():
@@ -89,6 +88,5 @@ def test_parser_frase_vacia_no_rompe():
 
 
 def test_make_parser_desconocido_lanza():
-    import pytest
     with pytest.raises(ValueError):
         make_parser("inexistente")

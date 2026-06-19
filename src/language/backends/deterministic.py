@@ -11,6 +11,7 @@ from src.language import vocab
 from src.language.schema import Instruction, SpatialRelation, TargetSpec
 
 # separadores de pasos secuenciales (exp23)
+# Nota: "then"/"luego" solos pueden sobre-dividir, pero es aceptable para el vocabulario controlado.
 _SEQ_SPLIT = re.compile(r"\b(?:and then|then|y luego|y despu[eé]s|luego)\b", re.I)
 
 
@@ -45,6 +46,7 @@ class DeterministicParser:
 
     def parse(self, text: str) -> Instruction:
         parts = [p.strip() for p in _SEQ_SPLIT.split(text) if p.strip()]
+        # Entrada vacía o de una sola parte: ambas caen directamente a _parse_single.
         if len(parts) > 1:
             steps = [_parse_single(p) for p in parts]
             return Instruction(
