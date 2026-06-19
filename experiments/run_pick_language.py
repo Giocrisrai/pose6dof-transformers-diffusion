@@ -80,7 +80,13 @@ def main() -> int:
         return run_dry(args.instruction, args.parser_backend)
     # Ruta E2E con CoppeliaSim: el grounding decide el target y se delega en la
     # batería de pick existente. Requiere CoppeliaSim en localhost:23000.
-    from experiments.run_pick_battery import run_language_pick
+    try:
+        from experiments.run_pick_battery import run_language_pick
+    except ImportError as exc:
+        raise NotImplementedError(
+            "La ruta E2E con CoppeliaSim (run_pick_battery.run_language_pick) aún "
+            "no está disponible. Usa --dry-run para el parsing + grounding sin sim."
+        ) from exc
     return run_language_pick(instruction=args.instruction, scene=args.scene,
                              parser_backend=args.parser_backend, render=args.render)
 

@@ -74,8 +74,12 @@ def test_cli_language_parsea_args():
 
 
 def test_cli_dry_run_ejecuta_grounding(capsys):
+    import json
     from experiments.run_pick_language import run_dry
     code = run_dry("dame el cubo rojo de la izquierda")
     out = capsys.readouterr().out
     assert code == 0
-    assert "target" in out.lower()
+    assert '"target_obj_id"' in out
+    payload = json.loads(out)
+    assert payload["grounding"]["target_obj_id"] == 0
+    assert payload["parsed"]["color"] == "red"
