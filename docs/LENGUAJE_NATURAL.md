@@ -227,10 +227,11 @@ python experiments/run_pick_language.py \
 ```
 
 Opciones: `--parser-backend {deterministic,llm_local,llm_api}`,
-`--scene {multi,clutter}`, `--render`. Sin `--dry-run`, intenta la ruta E2E con
-CoppeliaSim (`run_pick_battery.run_language_pick`); si esa ruta aún no está
-disponible en el entorno, lanza un `NotImplementedError` que sugiere usar
-`--dry-run`.
+`--scene {multi,clutter}`, `--render`. **Sin `--dry-run` el CLI ejecuta la ruta
+E2E real** sobre CoppeliaSim (`src.simulation.language_pick.run_language_pick`):
+construye la escena, groundea la instrucción y realiza el pick sobre el objeto
+elegido. Esa ruta requiere CoppeliaSim en `localhost:23000`. La descripción
+completa de la ruta E2E está en la [sección 7](#7-ejecución-e2e-en-coppeliasim).
 
 ### Dashboard (Streamlit)
 
@@ -274,12 +275,137 @@ La métrica común es **selection accuracy** (objeto correcto seleccionado).
 > subsistema `src/language/` consolida ese conocimiento en una API
 > parser+grounder reutilizable; el grounder por atributos/espacial reproduce de
 > forma determinista la lógica de selección validada en esas exploraciones. La
-> evaluación de la ruta E2E con CoppeliaSim guiada por lenguaje no está aún
-> cerrada (ver limitaciones).
+> ruta E2E con CoppeliaSim guiada por lenguaje (escena multi-objeto → grounding →
+> pick real) está implementada y documentada en la [sección 7](#7-ejecución-e2e-en-coppeliasim).
 
 ---
 
-## 7. Limitaciones
+## 7. Ejecución E2E en CoppeliaSim
+
+Las secciones anteriores describen el núcleo puro (parser + grounder) y la batería
+de *selection accuracy*, que corren **sin simulador**. Esta sección documenta la
+**ruta extremo a extremo en CoppeliaSim**: de una instrucción en lenguaje natural a
+un *pick* físico sobre el objeto elegido dentro del simulador. El código vive en
+[`src/simulation/language_pick.py`](../src/simulation/language_pick.py); toda esta
+ruta requiere **CoppeliaSim escuchando en `localhost:23000`**.
+
+### 7.1 `run_language_pick` — el pick guiado por lenguaje
+
+`run_language_pick(instruction, scene="multi", parser_backend="deterministic",
+render=False, n_objects=3, with_shapes=None, seed=42)` es la función orquestadora:
+
+1. Planifica una escena multi-objeto (`plan_language_scene`): obj 0 es el *target*
+   (cubo rojo por defecto) y el resto son distractores. Con `scene="clutter"` se
+   activa `with_shapes=True` (formas variadas en los distractores).
+2. Crea las primitivas en el simulador (`apply_scene`) vía `createPrimitiveShape`
+   (cube/sphere/cylinder), las pinta según su color y aparca cualquier objeto
+   preexistente para que no interfiera.
+3. Groundea la instrucción contra los objetos de la escena (`select_sim_target`)
+   y elige el *target*.
+4. Ejecuta el **pick real** sobre el objeto elegido (`run_pick_sequence`).
+5. Devuelve un *payload* JSON con:
+   - `parsed` (color/forma/tamaño/relación espacial/backend del parser),
+   - `grounding` (`target_obj_id`, `method`, `ambiguous`, `scores`),
+   - `scene` (lista de objetos con color/forma/posición),
+   - `selection_correct` (métrica honesta: el objeto elegido coincide con
+     **todos** los atributos pedidos en la instrucción —color/forma/tamaño—;
+     `False` si no hubo match o si difiere en algún atributo),
+   - `pick` (métricas: `tip_grasp_proximity_m`, `object_moved_m`,
+     `grasp_plausible`, `ik_converged`) o `None` si no hubo match,
+   - `mp4_path` (vídeo del pick, solo si `render=True`).
+
+Si CoppeliaSim no es accesible en `localhost:23000`, la llamada falla con un error
+de conexión.
+
+### 7.2 CLI E2E
+
+```bash
+# E2E real (requiere CoppeliaSim en :23000): escena clutter + render del MP4
+.venv/bin/python experiments/run_pick_language.py \
+    --instruction "dame el cubo rojo" --scene clutter --render
+
+# Solo grounding, sin simulador (parsing + selección sobre escena fija):
+.venv/bin/python experiments/run_pick_language.py \
+    --instruction "dame el cubo rojo" --dry-run
+```
+
+Con `--dry-run` el CLI hace únicamente *parsing* + *grounding* (no toca el
+simulador); sin `--dry-run` ejecuta la ruta E2E completa de `run_language_pick`.
+Flags relevantes: `--scene {multi,clutter}`, `--parser-backend {deterministic,
+llm_local,llm_api}`, `--render`.
+
+### 7.3 Variedad de formas
+
+La escena soporta tres primitivas mediante `createPrimitiveShape`:
+**cube / sphere / cylinder**. Esto habilita instrucciones que discriminan por
+forma además de por color, p. ej. `"the red sphere"` o `"pick the red cube"`. Con
+`with_shapes=True` (automático en `scene="clutter"`) los distractores adoptan
+formas variadas, de modo que el grounder debe atender a la forma para acertar.
+
+### 7.4 Batería de *selection accuracy*
+
+```bash
+# Métrica pura (sin simulador): accuracy por dificultad
+.venv/bin/python experiments/run_language_battery.py --n-scenes 30
+
+# Además ejecuta picks reales en sim y añade sim_selection_accuracy
+.venv/bin/python experiments/run_language_battery.py --n-scenes 10 --sim
+```
+
+La batería genera escenas alternando **tres dificultades** y mide si el grounding
+selecciona el objeto correcto:
+
+- **`color`**: el *target* se distingue solo por color (baseline trivial).
+- **`shape`**: el *target* comparte color con ≥1 distractor pero tiene forma
+  única → exige desambiguar por forma.
+- **`spatial`**: todos los objetos comparten color y forma; solo la posición x
+  (más a la izquierda) distingue al *target* → exige razonamiento espacial.
+
+La parte de evaluación es **pura** (no necesita simulador). El grounder
+determinista obtiene **1.0 en las tres dificultades puras** (verificado:
+`--n-scenes 30` → color 10/10, shape 10/10, spatial 10/10). Esta cifra funciona
+como **guard de regresión**: un grounder más débil bajaría en `shape` o `spatial`
+(donde el color por sí solo no basta), por lo que un 1.0 sostenido en esas dos
+dificultades confirma que la desambiguación por forma y por posición sigue activa.
+
+Con `--sim` la batería ejecuta además un *pick* real por escena (requiere
+CoppeliaSim) y añade `sim_selection_accuracy` al reporte. **Esta cifra depende de
+la ejecución en vivo** (estado del simulador, físicas del pick) y se computa en
+*runtime*; no es un valor fijo. El reporte completo (agregado + filas por escena)
+se escribe en
+[`experiments/results/language_battery/report.json`](../experiments/results/language_battery/report.json).
+
+### 7.5 Reel de demo
+
+```bash
+.venv/bin/python experiments/make_language_reel.py   # requiere CoppeliaSim
+```
+
+Genera un *reel* en *crescendo*: por cada instrucción de la lista `CRESCENDO`
+(de simple a difícil: color → forma → relación espacial) ejecuta un pick real,
+superpone la instrucción y el *target* elegido con `reel_overlay`, y compila un
+único MP4 en `experiments/results/language_reel/language_reel.mp4`. Sin
+CoppeliaSim solo se puede inspeccionar la lista `CRESCENDO` (testeable).
+
+### 7.6 Reproducibilidad: qué corre sin simulador y qué lo requiere
+
+| Componente | Comando | ¿Requiere CoppeliaSim? |
+|---|---|---|
+| Núcleo puro (parser + grounder) | API `src.language` / `src.simulation.language_pick` (funciones puras) | **No** |
+| Grounding-only del CLI | `run_pick_language.py … --dry-run` | **No** |
+| Batería de *selection accuracy* | `run_language_battery.py --n-scenes 30` | **No** |
+| Tests base | `pytest -m "not slow and not integration"` | **No** |
+| Pick E2E | `run_pick_language.py …` (sin `--dry-run`) | **Sí** (:23000) |
+| Batería con picks reales | `run_language_battery.py --sim` | **Sí** (:23000) |
+| Reel de demo | `make_language_reel.py` | **Sí** (:23000) |
+
+La parte pura (núcleo, batería sin `--sim`, `--dry-run`, tests) es determinista y
+reproducible en CI o en la defensa sin levantar el simulador. La parte E2E
+(pick real, `--sim`, reel) necesita CoppeliaSim activo en `localhost:23000`.
+
+---
+
+## 8. Limitaciones
 
 1. **Vocabulario controlado en el determinista**: el parser por defecto reconoce
    solo el léxico de `src/language/vocab.py` (4 colores, 4 formas, 2 tamaños, 5
@@ -296,9 +422,13 @@ La métrica común es **selection accuracy** (objeto correcto seleccionado).
    (extremos x/y/z, más cercano/lejano). No hay relaciones relativas a otro
    objeto ("a la derecha del cubo rojo") en el grounder determinista.
 5. **Resultados sobre datos sintéticos/controlados**: las cifras de la sección 6
-   provienen de escenas sintéticas (exp16–exp26). La integración E2E guiada por
-   lenguaje en sim (`run_pick_battery.run_language_pick`) puede no estar
-   disponible en todos los entornos; usar `--dry-run` para el parsing+grounding.
+   provienen de escenas sintéticas (exp16–exp26). La ruta E2E guiada por lenguaje
+   en sim (`src.simulation.language_pick.run_language_pick`, ver
+   [sección 7](#7-ejecución-e2e-en-coppeliasim)) está implementada pero requiere
+   CoppeliaSim en `localhost:23000`; sin simulador, usar `--dry-run` para el
+   *parsing*+*grounding* o la batería pura (`run_language_battery.py` sin `--sim`).
+   La `sim_selection_accuracy` de la batería se computa en vivo y depende de la
+   ejecución concreta del pick.
 
 ---
 
