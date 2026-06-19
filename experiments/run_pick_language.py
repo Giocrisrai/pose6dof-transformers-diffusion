@@ -5,11 +5,14 @@ Ejecuta el pipeline end-to-end seleccionando el objeto descrito por una
 instrucción en lenguaje natural. Con --dry-run no requiere CoppeliaSim:
 muestra el parsing + grounding sobre una escena sintética fija.
 
-Hoy solo la ruta --dry-run está implementada; la ruta E2E con CoppeliaSim
-(--scene, --render) no está disponible aún y lanzará NotImplementedError.
+La ruta E2E (sin --dry-run) requiere CoppeliaSim en localhost:23000 y
+ejecuta el pick completo usando run_language_pick de src.simulation.language_pick.
 
-Ejemplo funcional:
+Ejemplo funcional (sin sim):
     python experiments/run_pick_language.py --instruction "dame el cubo rojo" --dry-run
+
+Ejemplo E2E (requiere CoppeliaSim en :23000):
+    python experiments/run_pick_language.py --instruction "dame el cubo rojo"
 """
 from __future__ import annotations
 
@@ -72,17 +75,12 @@ def main() -> int:
     args = build_parser().parse_args()
     if args.dry_run:
         return run_dry(args.instruction, args.parser_backend)
-    # Ruta E2E con CoppeliaSim: el grounding decide el target y se delega en la
-    # batería de pick existente. Requiere CoppeliaSim en localhost:23000.
-    try:
-        from experiments.run_pick_battery import run_language_pick
-    except ImportError as exc:
-        raise NotImplementedError(
-            "La ruta E2E con CoppeliaSim (run_pick_battery.run_language_pick) aún "
-            "no está disponible. Usa --dry-run para el parsing + grounding sin sim."
-        ) from exc
-    return run_language_pick(instruction=args.instruction, scene=args.scene,
-                             parser_backend=args.parser_backend, render=args.render)
+    # Ruta E2E con CoppeliaSim. Requiere CoppeliaSim en localhost:23000.
+    from src.simulation.language_pick import run_language_pick
+    payload = run_language_pick(instruction=args.instruction, scene=args.scene,
+                                parser_backend=args.parser_backend, render=args.render)
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    return 0
 
 
 if __name__ == "__main__":

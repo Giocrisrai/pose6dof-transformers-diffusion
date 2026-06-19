@@ -172,6 +172,160 @@ def select_sim_target(instruction: str, specs: list[SimObjectSpec],
     return chosen, res, instr
 
 
+# ── Cascarón SIM ────────────────────────────────────────────────────────────
+# Imports del bridge y pick son PEREZOSOS (dentro de las funciones) para que
+# el módulo sea importable sin CoppeliaSim instalado.
+
+# Tamaño de primitiva por 'size' (lado en metros)
+_SIZE_M = {"small": 0.04, "large": 0.06}
+_SHAPE_PARAM = {"cube": "primitiveshape_cuboid",
+                "sphere": "primitiveshape_spheroid",
+                "cylinder": "primitiveshape_cylinder"}
+
+
+def apply_scene(bridge, specs: list[SimObjectSpec]) -> list[SimObjectSpec]:
+    """Crea/pinta primitivas en CoppeliaSim según specs. Rellena handle/alias.
+
+    Patrón coherente con collect_diffusion_dataset_v9_clutter.py. Aparca los
+    /object_* preexistentes para que no interfieran con el pick.
+
+    Parámetros
+    ----------
+    bridge : CoppeliaSimBridge
+        Conexión activa al simulador.
+    specs : list[SimObjectSpec]
+        Especificaciones de objetos a crear en la escena.
+
+    Retorna
+    -------
+    list[SimObjectSpec]
+        Los mismos specs con handle y alias rellenos tras la creación.
+    """
+    sim = bridge.sim
+    try:
+        from src.simulation.multi_object_scene import _list_existing_cubes, PARK_POSITION
+        for h in _list_existing_cubes(sim):
+            sim.setObjectPosition(h, -1, list(PARK_POSITION))
+    except Exception:
+        pass
+    for s in specs:
+        side = _SIZE_M.get(s.size, 0.06)
+        ptype = getattr(sim, _SHAPE_PARAM[s.shape])
+        h = sim.createPrimitiveShape(ptype, [side, side, side], 0)
+        alias = f"object_lang_{s.obj_id}"
+        sim.setObjectAlias(h, alias)
+        sim.setObjectPosition(h, -1, [float(s.position[0]), float(s.position[1]),
+                                      float(s.position[2])])
+        rgb = _NAME_TO_RGB.get(s.color, (0.5, 0.5, 0.5))
+        sim.setShapeColor(h, None, sim.colorcomponent_ambient_diffuse, list(rgb))
+        sim.setObjectInt32Param(h, sim.shapeintparam_static, 0)
+        sim.setObjectInt32Param(h, sim.shapeintparam_respondable, 1)
+        s.handle = h
+        s.alias = f"/{alias}"
+    return specs
+
+
+def run_language_pick(instruction: str, scene: str = "multi",
+                      parser_backend: str = "deterministic", render: bool = False,
+                      n_objects: int = 3, with_shapes: Optional[bool] = None,
+                      seed: int = 42) -> dict:
+    """Orquesta el pick guiado por lenguaje en CoppeliaSim (ruta integration).
+
+    Requiere CoppeliaSim en :23000. Construye la escena, groundea la
+    instrucción, ejecuta el pick sobre el objeto elegido y devuelve un payload
+    con parsing, grounding, escena, selection_correct y métricas del pick.
+
+    Parámetros
+    ----------
+    instruction : str
+        Instrucción en lenguaje natural (p.ej. "dame el cubo rojo").
+    scene : str
+        Tipo de escena ("multi" | "clutter"). Si "clutter", with_shapes=True.
+    parser_backend : str
+        Backend del parser ("deterministic" | "llm_local" | "llm_api").
+    render : bool
+        Si True, compila frames en MP4 tras el pick.
+    n_objects : int
+        Número total de objetos (target + distractores). Rango 1..6.
+    with_shapes : bool | None
+        Si None, se infiere: True cuando scene=="clutter", False en otro caso.
+    seed : int
+        Semilla para el generador aleatorio (determinismo de la escena).
+
+    Retorna
+    -------
+    dict
+        Payload con claves: instruction, parsed, grounding, scene,
+        selection_correct, pick (o None), mp4_path.
+
+    Raises
+    ------
+    ConnectionError
+        Si CoppeliaSim no está accesible en localhost:23000.
+    """
+    from pathlib import Path as _Path
+    from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
+    from src.simulation.pick_sequence import run_pick_sequence, compile_mp4
+
+    REPO = _Path(__file__).resolve().parents[2]
+    scenes_dir = REPO / "data" / "scenes"
+    out_dir = REPO / "experiments" / "results" / "language_pick"
+    frames_dir = out_dir / "frames"
+
+    if with_shapes is None:
+        with_shapes = (scene == "clutter")
+    rng = np.random.default_rng(seed)
+    specs = plan_language_scene(rng, n_objects, with_shapes)
+
+    with CoppeliaSimBridge() as bridge:
+        bridge.set_stepping(True)
+        bridge.load_scene(scenes_dir / "bin_base.ttt")
+        apply_scene(bridge, specs)
+        chosen, grounding, instr = select_sim_target(instruction, specs, parser_backend)
+        payload = {
+            "instruction": instruction,
+            "parsed": {
+                "color": instr.target.color,
+                "shape": instr.target.shape,
+                "size": instr.target.size,
+                "spatial": instr.spatial.relation if instr.spatial else None,
+                "backend": instr.backend,
+            },
+            "grounding": {
+                "target_obj_id": grounding.target_obj_id,
+                "method": grounding.method,
+                "ambiguous": grounding.ambiguous,
+                "scores": grounding.scores,
+            },
+            "scene": [
+                {"obj_id": s.obj_id, "color": s.color, "shape": s.shape,
+                 "pos": list(s.position)}
+                for s in specs
+            ],
+        }
+        if chosen is None:
+            payload["selection_correct"] = False
+            payload["pick"] = None
+            return payload
+        result = run_pick_sequence(
+            bridge, frames_dir,
+            target_object=chosen.alias,
+            pose_override_xyz=list(chosen.position),
+        )
+
+    mp4 = (compile_mp4(frames_dir, out_dir / "language_pick.mp4", fps=25)
+           if render else None)
+    payload["selection_correct"] = (grounding.target_obj_id == 0)
+    payload["pick"] = {
+        "tip_grasp_proximity_m": round(result.tip_grasp_proximity_m, 3),
+        "object_moved_m": round(result.obj_moved_m, 3),
+        "grasp_plausible": result.grasp_plausible,
+        "ik_converged": result.ik_converged,
+    }
+    payload["mp4_path"] = str(mp4.relative_to(REPO)) if mp4 else None
+    return payload
+
+
 def evaluate_selection(specs: list[SimObjectSpec], instruction: str,
                        expected_id: int, parser_backend: str = "deterministic") -> dict:
     """Evalúa si el grounding seleccionó el objeto esperado (métrica pura, sin sim).

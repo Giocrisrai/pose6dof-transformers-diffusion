@@ -78,3 +78,14 @@ def test_plan_scene_rechaza_n_objects_fuera_de_rango():
     rng = np.random.default_rng(0)
     with pytest.raises(ValueError):
         plan_language_scene(rng, n_objects=9)
+
+
+import pytest
+
+
+@pytest.mark.integration
+def test_run_language_pick_smoke():
+    # Requiere CoppeliaSim en :23000. Valida el contrato del payload.
+    from src.simulation.language_pick import run_language_pick
+    out = run_language_pick("dame el cubo rojo", n_objects=3, seed=0, render=False)
+    assert "grounding" in out and "selection_correct" in out
