@@ -93,6 +93,8 @@ class BinPickingPipeline:
         self.config = config
         self._pose_estimator = None
         self._grasp_planner = None
+        self._lang_parser = None
+        self._lang_grounder = None
         self._initialized = False
 
     def initialize(self):
@@ -235,10 +237,14 @@ class BinPickingPipeline:
         """
         if not instruction:
             return poses, None, None
-        from src.language import make_parser
-        from src.language.grounding import Grounder
-        parser = make_parser(self.config.parser_backend)
-        grounder = Grounder(method=self.config.grounder_method)
+        if self._lang_parser is None:
+            from src.language import make_parser
+            self._lang_parser = make_parser(self.config.parser_backend)
+        if self._lang_grounder is None:
+            from src.language.grounding import Grounder
+            self._lang_grounder = Grounder(method=self.config.grounder_method)
+        parser = self._lang_parser
+        grounder = self._lang_grounder
         instr = parser.parse(instruction)
         views = self._poses_to_views(poses)
         result = grounder.ground(instr, views)
@@ -249,7 +255,10 @@ class BinPickingPipeline:
             ordered = sorted(poses, key=lambda p: result.scores.get(p.obj_id, 0.0),
                              reverse=True)
             return ordered, result, instr
-        return [by_id[result.target_obj_id]], result, instr
+        target_pose = by_id.get(result.target_obj_id)
+        if target_pose is None:
+            return [], result, instr
+        return [target_pose], result, instr
 
     def run(
         self,
