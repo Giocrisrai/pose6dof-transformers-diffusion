@@ -307,7 +307,9 @@ render=False, n_objects=3, with_shapes=None, seed=42)` es la función orquestado
    - `parsed` (color/forma/tamaño/relación espacial/backend del parser),
    - `grounding` (`target_obj_id`, `method`, `ambiguous`, `scores`),
    - `scene` (lista de objetos con color/forma/posición),
-   - `selection_correct` (si se eligió el objetivo correcto, obj 0),
+   - `selection_correct` (métrica honesta: el objeto elegido coincide con
+     **todos** los atributos pedidos en la instrucción —color/forma/tamaño—;
+     `False` si no hubo match o si difiere en algún atributo),
    - `pick` (métricas: `tip_grasp_proximity_m`, `object_moved_m`,
      `grasp_plausible`, `ik_converged`) o `None` si no hubo match,
    - `mp4_path` (vídeo del pick, solo si `render=True`).
