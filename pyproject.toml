@@ -150,6 +150,7 @@ testpaths = ["tests"]
 pythonpath = ["."]
 markers = [
     "integration: requires CoppeliaSim running on localhost:23000 (skip if unavailable)",
+    "slow: requiere pesos/red (CLIP o LLM); se omite en la suite base",
 ]
 
 [dependency-groups]

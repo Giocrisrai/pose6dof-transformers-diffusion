@@ -1,4 +1,5 @@
 """Tests del Grounder (selección de target). Base 100% determinista."""
+import pytest
 from src.language import make_parser
 from src.language.grounding import Grounder
 from src.language.schema import ObjectView
@@ -57,3 +58,15 @@ def test_sin_match_devuelve_none():
     instr = make_parser().parse("pick the green cylinder")
     res = g.ground(instr, _escena())
     assert res.target_obj_id is None
+
+
+@pytest.mark.slow
+def test_clip_attributes_clasifica_color():
+    pytest.importorskip("transformers")
+    pytest.importorskip("torch")
+    import numpy as np
+    from src.language._clip import clip_attributes
+    rgb = np.zeros((64, 64, 3), dtype=np.uint8)
+    rgb[..., 0] = 220   # parche rojo
+    attrs = clip_attributes(rgb, bbox=(0, 0, 64, 64))
+    assert attrs.get("color") == "red"
