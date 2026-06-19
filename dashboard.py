@@ -250,7 +250,7 @@ def load_image(path: str):
     return None
 
 
-def render_language_tab(instruction: str, run: bool = False) -> dict:
+def render_language_tab(instruction: str) -> dict:
     """Lógica del tab de lenguaje natural. Devuelve el payload de grounding.
 
     Separada de los widgets para ser testeable sin servidor Streamlit.
@@ -817,7 +817,7 @@ elif section == "🗣️ Lenguaje natural":
     )
     instr_text = st.text_input("Instrucción", value="dame el cubo rojo de la izquierda")
     if st.button("Interpretar y seleccionar"):
-        payload = render_language_tab(instr_text, run=True)
+        payload = render_language_tab(instr_text)
         st.json(payload["parsed"])
         tgt = payload["grounding"]["target_obj_id"]
         if tgt is None:
@@ -826,7 +826,8 @@ elif section == "🗣️ Lenguaje natural":
             st.info(f"Ambiguo — sugerido objeto #{tgt}. Añade una relación espacial.")
         else:
             st.success(f"Objeto seleccionado: #{tgt}  (método: {payload['grounding']['method']})")
-        st.bar_chart(payload["grounding"]["scores"])
+        if tgt is not None:
+            st.bar_chart(payload["grounding"]["scores"])
 
 elif section == "🎯 Hipótesis":
     st.title("Hipótesis verificables")
