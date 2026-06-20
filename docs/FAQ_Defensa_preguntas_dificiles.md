@@ -93,6 +93,14 @@ Respuestas modelo (~30–40 s). Principio: **reconocer → fundamentar → reenc
 **26. "¿Cuál es el impacto real de su trabajo más allá de lo académico?"**
 > Bajar la barrera de entrada. Demuestro que reproducir y experimentar con el estado del arte en manipulación ya no exige infraestructura de seis cifras, sino menos de dos mil dólares. Eso habilita a universidades y pymes de la región a investigar robótica avanzada, que antes era exclusiva de grandes laboratorios.
 
+## Bloque H — Lenguaje natural (Entrega 4)
+
+**27. "¿El agarre es real o está 'truqueado'?"**
+> No está truqueado, pero tampoco es física de contacto: es *snap+attach*, un agarre cinemático estándar en simuladores comerciales, y lo declaro como límite. La métrica honesta no es "agarró/no agarró" sino la proximidad pinza-objeto en el instante del cierre: 4 mm, por debajo del umbral de 5 cm, junto con la convergencia de la cinemática inversa. Eso valida la cadena percepción → planificación → IK → ejecución, que es lo que el trabajo demuestra; la mecánica de fricción es trabajo futuro. Está todo documentado en PICK_LIMITATIONS.md.
+
+**28. "¿La comprensión de lenguaje usa un LLM enorme?"**
+> No. Por defecto es un parser determinista en español e inglés: reproducible, sin red y sin coste de inferencia. El anclaje a objetos es interpretable —por atributos (color, forma, tamaño) y relación espacial—, no una caja negra. Opcionalmente se puede enchufar un modelo de lenguaje local (Ollama) para instrucciones más libres, pero es opt-in y con fallback al parser determinista si no está disponible. La capacidad no depende de un modelo grande ni de una API externa.
+
 ---
 ### Si te bloqueas en cualquiera
 Frase puente honesta: *"Es una observación pertinente; lo abordo como limitación declarada en el capítulo de alcance, y mi decisión de diseño fue…"* → y reencuadras. Reconocer un límite con seguridad puntúa más que defender lo indefendible.
