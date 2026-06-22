@@ -22,8 +22,9 @@ from pptx.enum.text import PP_ALIGN
 from pptx.util import Inches, Pt
 
 REPO = Path(__file__).resolve().parents[1]
-SRC = REPO / "docs/entrega3/Presentacion_Defensa_TFM.pptx"
-DST = REPO / "docs/entrega3/Presentacion_Defensa_TFM_v2.pptx"
+# SRC = original pre-estilo (fuente); DST = archivo principal (con el refresco).
+SRC = REPO / "docs/entrega3/Presentacion_Defensa_TFM_base.pptx"
+DST = REPO / "docs/entrega3/Presentacion_Defensa_TFM.pptx"
 
 NAVY = RGBColor(0x1F, 0x4E, 0x79)        # acento institucional (ya usado en el deck)
 GREY = RGBColor(0x8A, 0x8A, 0x8A)        # pie de página discreto
