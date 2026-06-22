@@ -12,6 +12,12 @@ def test_color_name_from_rgb():
     assert color_name_from_rgb((0.20, 0.75, 0.20)) == "green"
 
 
+def test_color_name_from_rgb_miss():
+    from src.simulation.language_pick import color_name_from_rgb
+    assert color_name_from_rgb((0.5, 0.5, 0.5)) is None     # gris, fuera de paleta
+    assert color_name_from_rgb((0.84, 0.16, 0.15)) == "red" # dentro de tolerancia
+
+
 def test_plan_scene_target_es_primero_y_rojo():
     rng = np.random.default_rng(0)
     specs = plan_language_scene(rng, n_objects=3, with_shapes=False)

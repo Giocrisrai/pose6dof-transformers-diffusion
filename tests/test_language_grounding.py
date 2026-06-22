@@ -60,6 +60,28 @@ def test_sin_match_devuelve_none():
     assert res.target_obj_id is None
 
 
+def test_ground_lista_vacia():
+    g = Grounder(method="attribute")
+    instr = make_parser().parse("pick the red cube")
+    res = g.ground(instr, [])
+    assert res.target_obj_id is None
+    assert res.scores == {}
+    assert not res.ambiguous
+
+
+def test_relaciones_espaciales_restantes():
+    g = Grounder(method="attribute")
+    objs = [
+        ObjectView(0, centroid=(-0.2, 0.0, 0.5), attributes={"color": "red", "shape": "cube"}),
+        ObjectView(1, centroid=( 0.2, 0.3, 0.5), attributes={"color": "red", "shape": "cube"}),
+        ObjectView(2, centroid=( 0.0, 0.0, 0.9), attributes={"color": "red", "shape": "cube"}),
+    ]
+    # right_of -> mayor x (obj 1); farthest -> mayor z (obj 2); on_top -> mayor y (obj 1)
+    assert g.ground(make_parser().parse("the red cube on the right"), objs).target_obj_id == 1
+    assert g.ground(make_parser().parse("the farthest red cube"), objs).target_obj_id == 2
+    assert g.ground(make_parser().parse("the red cube on top"), objs).target_obj_id == 1
+
+
 @pytest.mark.slow
 def test_clip_attributes_clasifica_color():
     pytest.importorskip("transformers")
