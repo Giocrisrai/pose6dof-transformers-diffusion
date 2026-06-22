@@ -24,8 +24,9 @@ from pptx.oxml.ns import qn
 from pptx.util import Emu, Inches, Pt
 
 REPO = Path(__file__).resolve().parents[1]
-SRC = REPO / "docs/entrega3/Presentacion_Robotica_IA.pptx"
-DST = REPO / "docs/entrega3/Presentacion_Robotica_IA_v2.pptx"
+# SRC = original pre-estilo (fuente); DST = archivo principal (con el restyle).
+SRC = REPO / "docs/entrega3/Presentacion_Robotica_IA_base.pptx"
+DST = REPO / "docs/entrega3/Presentacion_Robotica_IA.pptx"
 
 # ---- Paleta Vibrante tech ----
 BG_DARK = RGBColor(0x0B, 0x12, 0x26)     # navy casi negro
