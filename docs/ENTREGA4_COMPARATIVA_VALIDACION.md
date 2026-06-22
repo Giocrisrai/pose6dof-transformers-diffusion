@@ -14,10 +14,11 @@
 
 ## 1. Resumen ejecutivo
 
-La Entrega 3 entregó un pipeline de bin picking (pose 6-DoF + Diffusion Policy +
-visual servoing) validado sobre YCB-V y T-LESS. La **Entrega 4 añade una capa de
-lenguaje natural open-source**: el sistema acepta una instrucción ("dame el cubo
-rojo de la izquierda") y selecciona y manipula el objeto descrito.
+La Entrega 3 cerró un pipeline de bin picking —pose 6-DoF, Diffusion Policy y
+visual servoing— validado sobre YCB-V y T-LESS. Sobre esa base, la **Entrega 4
+suma una capa de lenguaje natural open-source**: basta una instrucción cotidiana
+("dame el cubo rojo de la izquierda") para que el sistema identifique y manipule
+la pieza descrita.
 
 - **Comprensión + grounding**: parser determinista ES/EN + `Grounder` por atributos
   (color/forma/tamaño) con desempate espacial; backends LLM local (Ollama) y API
