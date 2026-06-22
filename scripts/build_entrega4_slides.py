@@ -31,6 +31,28 @@ MARKER_DIVULGA = "Le hablas"
 
 TARGET_INDEX = 12  # 0-based; queda como slide 13 (después de la slide 12 1-based)
 
+# --- Notas del ponente (verbatim) -------------------------------------------
+NOTE_DEFENSA = (
+    "Como capa de Entrega 4, el pipeline ahora entiende lenguaje natural. "
+    "Ejemplo: «dame el cubo rojo de la izquierda» → el sistema ancla la "
+    "instrucción a un objeto por sus atributos (color, forma, tamaño) y su "
+    "relación espacial, y lo agarra con la misma cadena de percepción y "
+    "planificación. Por defecto usa un parser determinista en español e "
+    "inglés, reproducible y sin red; opcionalmente se enchufa un modelo de "
+    "lenguaje local. Validación honesta: la selección del objeto correcto "
+    "acierta el 100 % en banco controlado (90 instrucciones puras + 9 en "
+    "simulación) y la robustez ante distractores está en los experimentos 16 "
+    "a 26; el agarre es cinemático, validado por proximidad pinza-objeto de 4 "
+    "mm y convergencia de la cinemática inversa. Es opt-in: extiende el "
+    "pipeline base, no lo altera."
+)
+NOTE_DIVULGA = (
+    "Momento «háblale al robot»: le pido en lenguaje natural el objeto y lo "
+    "coge. Recalcar que es el mismo sistema de antes —ojos, cerebro y brazo— "
+    "ahora con comprensión de lenguaje. Tono cercano; no entrar en métricas "
+    "aquí, eso es para la defensa técnica."
+)
+
 
 # ---------------------------------------------------------------------------
 def _slide_titles(prs):
@@ -53,6 +75,55 @@ def _has_marker(prs, marker):
             if sh.has_text_frame and marker in sh.text_frame.text:
                 return True
     return False
+
+
+_NOTES_BODY_SP_XML = (
+    '<p:sp xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"'
+    ' xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">'
+    '<p:nvSpPr>'
+    '<p:cNvPr id="2" name="Notes Placeholder 1"/>'
+    '<p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr>'
+    '<p:nvPr><p:ph type="body" idx="1"/></p:nvPr>'
+    '</p:nvSpPr>'
+    '<p:spPr/>'
+    '<p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody>'
+    '</p:sp>'
+)
+
+
+def _ensure_notes_text_frame(notes_slide):
+    """Devuelve el notes_text_frame, inyectando un placeholder BODY en el XML
+    de la notes slide si el deck carece de él en su notes master (en cuyo caso
+    python-pptx devuelve None).
+    """
+    tf = notes_slide.notes_text_frame
+    if tf is not None:
+        return tf
+    from pptx.oxml import parse_xml
+    sp = parse_xml(_NOTES_BODY_SP_XML)
+    spTree = notes_slide.shapes._spTree
+    spTree.append(sp)
+    tf = notes_slide.notes_text_frame
+    if tf is None:
+        raise RuntimeError("No se pudo crear el text frame de notas")
+    return tf
+
+
+def set_notes(prs, marker_substring, note_text):
+    """Localiza la primera slide cuyo texto contiene marker_substring y le
+    asigna note_text como notas del ponente (idempotente: sobrescribe).
+
+    Lanza ValueError si no encuentra ninguna slide con el marcador.
+    """
+    for s in prs.slides:
+        for sh in s.shapes:
+            if sh.has_text_frame and marker_substring in sh.text_frame.text:
+                notes = s.notes_slide  # crea la notes slide si no existe
+                _ensure_notes_text_frame(notes).text = note_text
+                return s
+    raise ValueError(
+        f"No se encontró ninguna slide con el marcador {marker_substring!r}"
+    )
 
 
 def _move_last_slide_to(prs, target_index):
@@ -162,29 +233,38 @@ def build_divulga_slide(prs):
 
 
 # ---------------------------------------------------------------------------
-def process_deck(path, marker, builder, target_index):
-    """Procesa un deck: idempotente. Devuelve dict con info de verificación."""
+def process_deck(path, marker, builder, target_index, note_text):
+    """Procesa un deck: idempotente. Inserta la slide si no existe, refresca
+    siempre las notas del ponente del slide-marcador y guarda una sola vez.
+
+    Devuelve dict con info de verificación.
+    """
     prs = Presentation(path)
     before_titles = _slide_titles(prs)
     n_before = len(before_titles)
 
-    if _has_marker(prs, marker):
+    skipped = _has_marker(prs, marker)
+    if skipped:
         print(f"  -> '{marker}' ya existe en {path}, no duplico "
               f"(slides={n_before})")
-        return {
-            "path": path, "skipped": True,
-            "n_before": n_before, "n_after": n_before,
-            "before_titles": before_titles,
-        }
+        n_after = n_before
+    else:
+        builder(prs)
+        _move_last_slide_to(prs, target_index)
+        n_after = n_before + 1
+        print(f"  -> insertada slide en {path} (posición {target_index}, "
+              f"slides {n_before}->{n_after})")
 
-    builder(prs)
-    _move_last_slide_to(prs, target_index)
+    # Notas del ponente: siempre (sobrescribe, idempotente)
+    set_notes(prs, marker, note_text)
+    print(f"  -> notas del ponente fijadas en slide-marcador de {path}")
+
+    # Guardado único por deck, ocurra o no la inserción
     prs.save(path)
-    print(f"  -> insertada slide en {path} (posición {target_index}, "
-          f"slides {n_before}->{n_before + 1})")
+
     return {
-        "path": path, "skipped": False,
-        "n_before": n_before, "n_after": n_before + 1,
+        "path": path, "skipped": skipped,
+        "n_before": n_before, "n_after": n_after,
         "before_titles": before_titles,
     }
 
@@ -220,29 +300,46 @@ def verify_deck(path, expected_after, target_index, marker_in_title,
 
 
 # ---------------------------------------------------------------------------
+def _find_marker_slide(prs, marker):
+    """Devuelve la primera slide cuyo texto contiene el marcador (o None)."""
+    for s in prs.slides:
+        for sh in s.shapes:
+            if sh.has_text_frame and marker in sh.text_frame.text:
+                return s
+    return None
+
+
+def verify_notes(path, marker, expected_count, note_substring):
+    """Reabre el deck y verifica recuento de slides + notas del slide-marcador."""
+    prs = Presentation(path)
+    n = len(list(prs.slides))
+    assert n == expected_count, \
+        f"{path}: esperaba {expected_count} slides, hay {n}"
+
+    s = _find_marker_slide(prs, marker)
+    assert s is not None, f"{path}: no se encontró slide con marcador {marker!r}"
+    assert s.has_notes_slide, f"{path}: el slide-marcador no tiene notas"
+    notes_text = s.notes_slide.notes_text_frame.text
+    assert note_substring in notes_text, \
+        f"{path}: notas no contienen {note_substring!r}; notas={notes_text!r}"
+
+    print(f"  OK {path}: {n} slides; notas del slide-marcador contienen "
+          f"{note_substring!r}")
+    return n, notes_text
+
+
 def main():
     print("== SP-3: slides de lenguaje natural ==")
     print("[1] Procesando decks")
-    r_def = process_deck(DECK_DEFENSA, MARKER_DEFENSA, build_defensa_slide, TARGET_INDEX)
-    r_div = process_deck(DECK_DIVULGA, MARKER_DIVULGA, build_divulga_slide, TARGET_INDEX)
+    process_deck(DECK_DEFENSA, MARKER_DEFENSA, build_defensa_slide,
+                 TARGET_INDEX, NOTE_DEFENSA)
+    process_deck(DECK_DIVULGA, MARKER_DIVULGA, build_divulga_slide,
+                 TARGET_INDEX, NOTE_DIVULGA)
 
     print("[2] Verificación (reabriendo)")
-    if not r_def["skipped"]:
-        verify_deck(DECK_DEFENSA, 19, TARGET_INDEX, MARKER_DEFENSA,
-                    r_def["before_titles"])
-    else:
-        # Reabrir igualmente para confirmar que abre sin excepción
-        p = Presentation(DECK_DEFENSA)
-        print(f"  OK {DECK_DEFENSA}: reabre sin excepción "
-              f"({len(list(p.slides._sldIdLst))} slides)")
-
-    if not r_div["skipped"]:
-        verify_deck(DECK_DIVULGA, 22, TARGET_INDEX, MARKER_DIVULGA,
-                    r_div["before_titles"])
-    else:
-        p = Presentation(DECK_DIVULGA)
-        print(f"  OK {DECK_DIVULGA}: reabre sin excepción "
-              f"({len(list(p.slides._sldIdLst))} slides)")
+    verify_notes(DECK_DEFENSA, MARKER_DEFENSA, 19,
+                 "selección del objeto correcto acierta el 100 %")
+    verify_notes(DECK_DIVULGA, MARKER_DIVULGA, 22, "háblale al robot")
 
     print("== Hecho ==")
 
