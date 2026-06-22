@@ -26,7 +26,7 @@ def test_normaliza_size_y_relacion():
 
 
 def test_no_falsos_positivos_por_substring():
-    assert vocab.normalize_relation("laptop on the desk") != "on_top" or vocab.normalize_relation("laptop") is None
+    assert vocab.normalize_relation("laptop on the desk") != "on_top"
     assert vocab.normalize_relation("laptop") is None
     assert vocab.normalize_shape("xbox") is None
     assert vocab.normalize_shape("balloon") is None

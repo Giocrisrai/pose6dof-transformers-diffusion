@@ -19,6 +19,24 @@ def test_aggregate_calcula_accuracy():
     assert abs(agg["selection_accuracy"] - 2/3) < 1e-9
 
 
+def test_aggregate_vacio_no_revienta():
+    from experiments.run_language_battery import aggregate
+    agg = aggregate([])
+    assert agg["n"] == 0 and agg["selection_accuracy"] == 0.0
+
+
+def test_aggregate_por_dificultad():
+    from experiments.run_language_battery import aggregate
+    rows = [{"correct": True, "difficulty": "color"},
+            {"correct": False, "difficulty": "color"},
+            {"correct": True, "difficulty": "shape"}]
+    agg = aggregate(rows)
+    assert "by_difficulty" in agg
+    assert agg["by_difficulty"]["color"]["n"] == 2
+    assert agg["by_difficulty"]["color"]["n_correct"] == 1
+    assert agg["by_difficulty"]["shape"]["selection_accuracy"] == 1.0
+
+
 def test_build_cases_incluye_dificultades():
     rng = np.random.default_rng(3)
     cases = build_cases(rng, n_scenes=6, n_objects=3, with_shapes=False)

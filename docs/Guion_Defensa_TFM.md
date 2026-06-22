@@ -1,6 +1,6 @@
 # Guión de defensa — TFM bin-picking 6-DoF (FoundationPose + Diffusion Policy)
 
-**Duración objetivo:** ~20 min · 18 slides · cierre balanceado (aportes + valor) · con demo
+**Duración objetivo:** ~20 min · 19 slides · cierre balanceado (aportes + valor) · con demo
 **Autor:** Giocrisrai Godoy · Máster en Ingeniería Matemática y Computación
 
 > **Cómo usar este guión:** cada slide trae *Título · Contenido visual · Bullets · Guión hablado · Tiempo*. El "guión hablado" es lo que decís en voz alta (no se pone en la slide). Las cifras son las verificadas en la memoria — no las cambies sin cruzar con el documento.
@@ -167,7 +167,7 @@
 
 ---
 
-## Slide 14 — Aportes 1 y 2 (1:00)
+## Slide 15 — Aportes 1 y 2 (1:00)
 **Visual:** Dos aportes en cajas.
 **Bullets:**
 - **Aporte 1:** integración matemática unificada de dos paradigmas (Transformers + difusión) sobre SE(3)/SDEs
@@ -177,7 +177,7 @@
 
 ---
 
-## Slide 15 — Aportes 3 y 4 (1:00)
+## Slide 16 — Aportes 3 y 4 (1:00)
 **Visual:** Dos aportes en cajas.
 **Bullets:**
 - **Aporte 3:** rigor metodológico superior al estándar (IC, bootstrap, 5 semillas, ablations, amenazas a la validez)
@@ -187,7 +187,7 @@
 
 ---
 
-## Slide 16 — Valor y potencialidad (1:30)
+## Slide 17 — Valor y potencialidad (1:30)
 **Visual:** Comparativa de coste (~1 920 USD vs 15-150k) + contexto de mercado.
 **Bullets:**
 - Democratización: ~1 920 USD vs 15 000–150 000 USD de un setup industrial (1-2 órdenes de magnitud)
@@ -200,7 +200,7 @@
 
 ---
 
-## Slide 17 — Trabajo futuro (1:00)
+## Slide 18 — Trabajo futuro (1:00)
 **Visual:** Líneas de trabajo futuro en lista.
 **Bullets:**
 - Validación del agarre físico real (fricción, ventosa de vacío — Soraruf 2025, Kim 2022)
@@ -213,7 +213,7 @@
 
 ---
 
-## Slide 18 — Cierre (0:30)
+## Slide 19 — Cierre (0:30)
 **Visual:** Mensaje de cierre + datos de contacto / repositorio.
 **Bullets:**
 - Pipeline E2E integrado, validado (H1 y H3 aceptadas, H2 parcial), reproducible en hardware accesible
