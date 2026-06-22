@@ -174,7 +174,7 @@ VAL_ROWS = [
     ["Test de integración E2E", "Completado en 98 s", "test de integración"],
     ["Ejecución E2E representativa", "Selección correcta; agarre a 4 mm; IK convergente", "run en vivo"],
     ["Batería de selección en simulador (9 escenas)", "100 %", "report_sim_n9.json"],
-    ["Reel de demostración", "174 s, 5 instrucciones", "language_reel.mp4"],
+    ["Reel de demostración", "174 s, 4350 fotogramas (H.264 1280×720), 5 instrucciones", "language_reel.mp4"],
 ]
 VAL_CAPTION = "Tabla. Evidencia de validación de la capa de lenguaje (junio de 2026)."
 
@@ -198,7 +198,7 @@ A4_LIM_BODY = (
 
 A2_BODY = (
     "Frente a propuestas de manipulación guiada por lenguaje como CLIPort, "
-    "VoxPoser, SayCan u OWL-ViT y CLIP-Fields, el enfoque aquí planteado se "
+    "VoxPoser, SayCan, OWL-ViT y CLIP-Fields, el enfoque aquí planteado se "
     "distingue por ser íntegramente open-license y por ejecutarse en un portátil "
     "sin GPU dedicada, además de ofrecer un anclaje interpretable y una "
     "comprensión apoyada en modelos de lenguaje intercambiables que no obliga a "
@@ -255,7 +255,14 @@ def build():
 
     # ---- Antes de A2 (Capitulo 2, estado del arte) ----
     a2 = find_anchor(doc, "Heading 2", "Conclusiones del estado del arte y brecha de investigación")
-    insert_para(a2, A2_BODY, style="Normal")
+    # El parrafo SOTA se construye por corridas para poner "open-license" en cursiva.
+    p_sota = a2.insert_paragraph_before("", style="Normal")
+    before, term, after = A2_BODY.partition("open-license")
+    assert term == "open-license", "No se encontro 'open-license' en el parrafo SOTA"
+    p_sota.add_run(before)
+    r_term = p_sota.add_run(term)
+    r_term.italic = True
+    p_sota.add_run(after)
 
     # ---- Antes de A5 (Capitulo 5, conclusiones) ----
     a5 = find_anchor(doc, "Heading 2", "Discusión y cierre de hipótesis")
