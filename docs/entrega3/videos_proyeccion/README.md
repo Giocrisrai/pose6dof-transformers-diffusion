@@ -8,7 +8,8 @@ en las presentaciones; esta carpeta es el plan B.
 | # | Archivo | Qué muestra | Dur. | Defensa | Divulgativa |
 |---|---------|-------------|------|---------|-------------|
 | 01 | `01_pipeline_en_accion.mp4` | Reel del pipeline E2E (percepción → planificación → ejecución) | 1:30 | slide 12 «Demo: el pipeline en acción» | slide 2 «50 segundos…» |
-| 02 | `02_lenguaje_natural.mp4` | **Bin-picking guiado por lenguaje natural**: «dame el cubo rojo…» → selección + agarre | 2:54 | slide 13 «Bin picking guiado por lenguaje natural» | slide 13 «Le hablas… y obedece» |
+| 02 | `02_lenguaje_natural.mp4` | **Lenguaje natural**, reel completo a velocidad real (5 instrucciones) | 2:54 | (versión larga) | (versión larga) |
+| 02b | `02b_lenguaje_natural_corto.mp4` | **Lenguaje natural**, corte a 4.5x — las 5 instrucciones en 39s. **Es el embebido** en el slide 13 de ambas | 0:39 | **slide 13** (embebido) | **slide 13** (embebido) |
 | 03 | `03_e2e_con_telemetria.mp4` | Ciclo E2E grabado con panel de telemetría real (latencias, fase, H3) | 0:30 | (apoyo H3) | slide 14 «El mismo sistema, grabado» |
 | 04 | `04_agarre_diffusion.mp4` | Agarre generado por Diffusion Policy (Iter 7c) | 0:29 | slide 11 «Progresión Iter 5 → 7c» (apoyo) | slide 12 «DEMO 2» (respaldo si la demo en vivo falla) |
 | 05 | `05_resumen_cierre.mp4` | Reel de resumen para el cierre | 1:30 | (cierre) | slide 22 «¿Preguntas?» |

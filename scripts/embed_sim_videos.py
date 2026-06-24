@@ -30,10 +30,12 @@ MARK = "sim_video"  # marca de idempotencia (prefijo del nombre del shape)
 
 # (deck_base, slide_idx 1-based, video, imagen_a_reemplazar, poster_t_segundos)
 JOBS = [
+    # Se usa el corte de ~39s (5 instrucciones a 4.5x) para no comerse el
+    # tiempo de la defensa; el reel completo queda en videos_proyeccion/.
     ("docs/entrega3/Presentacion_Defensa_TFM_base.pptx", 13,
-     "language_reel/language_reel.mp4", "Picture 4", 12.0),
+     "language_reel/language_reel_corto.mp4", "Picture 4", 3.0),
     ("docs/entrega3/Presentacion_Robotica_IA_base.pptx", 13,
-     "language_reel/language_reel.mp4", "Picture 3", 12.0),
+     "language_reel/language_reel_corto.mp4", "Picture 3", 3.0),
 ]
 
 
