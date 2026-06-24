@@ -36,20 +36,15 @@ MARK_CONTACTO = "Conéctate y úsalo"
 
 CONCEPTOS = [
     ("Pose 6-DoF",
-     "dónde está y cómo está girada una pieza (3 de posición + 3 de giro). "
-     "No basta saber en qué casilla está: también hacia dónde mira."),
+     "dónde está algo y cómo está girado: 3 de posición + 3 de giro."),
     ("Transformer",
-     "la familia de ChatGPT. Aprende a “prestar atención” a lo importante de "
-     "lo que ve; aquí, para reconocer la pieza en 3D."),
+     "la familia de ChatGPT; aprende a prestar atención a lo importante."),
     ("Modelo de difusión",
-     "la familia de los generadores de imágenes. Parte de puro ruido y lo "
-     "pule hasta una respuesta; aquí, el movimiento de agarre."),
+     "la familia de los generadores de imágenes: del ruido a la respuesta."),
     ("Visual servoing",
-     "el robot se corrige mirando, como tu mano al enhebrar una aguja: "
-     "acerca, observa, ajusta."),
+     "el robot se corrige mirando, como tu mano al enhebrar una aguja."),
     ("Bin-picking",
-     "sacar piezas amontonadas de una caja. Trivial para un niño, durísimo "
-     "para un robot."),
+     "sacar piezas amontonadas de una caja."),
 ]
 
 
@@ -171,27 +166,26 @@ def build_contacto(prs):
 
 
 def main() -> int:
+    """Inserta los dos slides si no existen. Para editar su contenido, parte de
+    un _base SIN extras (p.ej. restaurándolo de git) y vuelve a ejecutar; así se
+    evitan partes huérfanas dentro del .pptx."""
     prs = Presentation(DECK)
     n0 = len(prs.slides._sldIdLst)
-    changed = False
 
     if not _has(prs, MARK_GLOSARIO):
         build_glosario(prs)
         _move_last_to(prs, 9)   # tras el slide 9 -> nuevo slide 10
-        changed = True
         print("  [ok] insertado 'Para entendernos' como slide 10")
     else:
-        print("  [skip] 'Para entendernos' ya existe")
+        print("  [skip] 'Para entendernos' ya existe (restaura el _base para editar)")
 
     if not _has(prs, MARK_CONTACTO):
         build_contacto(prs)     # queda al final
-        changed = True
         print("  [ok] añadido 'Conéctate y úsalo' al final")
     else:
-        print("  [skip] 'Conéctate y úsalo' ya existe")
+        print("  [skip] 'Conéctate y úsalo' ya existe (restaura el _base para editar)")
 
-    if changed:
-        prs.save(DECK)
+    prs.save(DECK)
     n1 = len(prs.slides._sldIdLst)
     print(f"  slides: {n0} -> {n1}")
     print("Ahora regenera la canónica: scripts/restyle_robotica_ia.py")
