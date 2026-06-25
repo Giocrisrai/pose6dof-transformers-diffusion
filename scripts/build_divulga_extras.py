@@ -122,23 +122,27 @@ def build_contacto(prs):
     r.font.size = Pt(22)
     r.font.color.rgb = BODY
 
-    # 3 QR en fila
+    # 3 QR en fila (clicables: la imagen y el caption enlazan a su URL)
     items = [
-        (QR / "qr_linkedin.png", "LinkedIn", "Hablemos"),
-        (QR / "qr_pypi.png", "pip install bop-bootstrap-ci", "úsalo en tus proyectos"),
-        (QR / "qr_github.png", "GitHub", "código completo del pipeline"),
+        (QR / "qr_linkedin.png", "LinkedIn", "Hablemos",
+         "https://www.linkedin.com/in/giocrisrai/"),
+        (QR / "qr_pypi.png", "pip install bop-bootstrap-ci", "úsalo en tus proyectos",
+         "https://pypi.org/project/bop-bootstrap-ci/"),
+        (QR / "qr_github.png", "GitHub", "código completo del pipeline",
+         "https://github.com/Giocrisrai/pose6dof-transformers-diffusion"),
     ]
     qr_w = Inches(2.4)
     xs = [Inches(1.35), Inches(5.45), Inches(9.55)]
     top = Inches(2.55)
-    for (img, cap1, cap2), x in zip(items, xs):
-        slide.shapes.add_picture(str(img), x, top, width=qr_w, height=qr_w)
+    from pptx.enum.text import PP_ALIGN
+    for (img, cap1, cap2, url), x in zip(items, xs):
+        pic = slide.shapes.add_picture(str(img), x, top, width=qr_w, height=qr_w)
+        pic.click_action.hyperlink.address = url      # QR clicable
         # caption (centrada bajo el QR)
         cb = slide.shapes.add_textbox(x - Inches(0.5), top + qr_w + Inches(0.08),
                                       qr_w + Inches(1.0), Inches(1.1))
         ctf = cb.text_frame
         ctf.word_wrap = True
-        from pptx.enum.text import PP_ALIGN
         p1 = ctf.paragraphs[0]
         p1.alignment = PP_ALIGN.CENTER
         r1 = p1.add_run()
@@ -146,6 +150,7 @@ def build_contacto(prs):
         r1.font.size = Pt(15)
         r1.font.bold = True
         r1.font.color.rgb = TERM_BLUE
+        r1.hyperlink.address = url                     # caption clicable
         p2 = ctf.add_paragraph()
         p2.alignment = PP_ALIGN.CENTER
         r2 = p2.add_run()
