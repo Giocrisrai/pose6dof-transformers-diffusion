@@ -81,6 +81,11 @@ Sí, y por dos caminos complementarios:
    2024** y es **Apache-2.0**. Sustituir FoundationPose por FreeZeV2.1 mantiene —
    o mejora— la precisión **y** habilita uso comercial. Es el camino más directo
    a "igual o mejor".
+   **Evidencia empírica propia:** la exploración post-TFM #3 ya integró
+   **FreeZeV2 (Apache-2.0)** en el pipeline y midió solo **−3 pp AUC ADD-S** frente
+   a FoundationPose — viable hoy, y con FreeZeV2.1 (ganador BOP 2024) la brecha se
+   cierra o se invierte. Ver
+   [`docs/exploraciones/03_open_license_pipeline.md`](exploraciones/03_open_license_pipeline.md).
 2. **Especializar un model-based open-license.** FoundationPose gana por ser
    *generalista* (cualquier objeto). Pero en una planta real el catálogo de
    piezas es **acotado y conocido**. Un model-based Apache-2.0 como GDR-Net++,

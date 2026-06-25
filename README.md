@@ -111,7 +111,7 @@ Sobre el TFM entregado se planificaron y ejecutaron 13 exploraciones adicionales
 | 12 | **Robustez con domain randomization** | **12/12 condiciones** ≥ 75 % (oclusión 60 %, ruido σ=50, illum 2x) | [12](docs/exploraciones/12_robustness_domain_random.md) |
 | 13 | **Razonamiento espacial** | **98.4 %** sobre 13 templates ("leftmost", "closest", "topmost") | [13](docs/exploraciones/13_spatial_reasoning.md) |
 
-Plan completo: [`docs/PLAN_EXPLORACIONES_POST_TFM.md`](docs/PLAN_EXPLORACIONES_POST_TFM.md). Extrapolación industrial: [`docs/EXTRAPOLACION_INDUSTRIAL.md`](docs/EXTRAPOLACION_INDUSTRIAL.md). Etapas físicas post-TFM: [`docs/ROADMAP_POSTTFM.md`](docs/ROADMAP_POSTTFM.md). Estado del arte mayo 2026: [`docs/INNOVACION_Y_ESTADO_DEL_ARTE.md`](docs/INNOVACION_Y_ESTADO_DEL_ARTE.md).
+Plan completo: [`docs/PLAN_EXPLORACIONES_POST_TFM.md`](docs/PLAN_EXPLORACIONES_POST_TFM.md). Extrapolación industrial: [`docs/EXTRAPOLACION_INDUSTRIAL.md`](docs/EXTRAPOLACION_INDUSTRIAL.md). Etapas físicas post-TFM: [`docs/ROADMAP_POSTTFM.md`](docs/ROADMAP_POSTTFM.md). Estado del arte mayo 2026: [`docs/INNOVACION_Y_ESTADO_DEL_ARTE.md`](docs/INNOVACION_Y_ESTADO_DEL_ARTE.md). Percepción intercambiable y comercializable (swap de FoundationPose por un estimador open-license): [`docs/PERCEPCION_INTERCAMBIABLE.md`](docs/PERCEPCION_INTERCAMBIABLE.md).
 
 ---
 

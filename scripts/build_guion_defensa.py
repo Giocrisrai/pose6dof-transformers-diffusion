@@ -210,6 +210,21 @@ SLIDES = [
                 "industrial directo, aunque es sustituible por un estimador de "
                 "licencia permisiva sin tocar el resto del pipeline.»"),
     ]),
+    ("Slide 15 — Percepción intercambiable → comercializable", [
+        ("cue", "[PERCEPCIÓN INTERCAMBIABLE · ~45 s — la limitación, convertida en oportunidad]"),
+        ("say", "«Y esa última limitación la convierto en oportunidad. La percepción "
+                "está desacoplada del resto: defino un protocolo, PoseEstimator, de "
+                "modo que FoundationPose es un bloque que se cambia por uno de "
+                "licencia abierta sin tocar el pipeline. Y no es teórico: FreeZeV2.1, "
+                "que ganó el BOP Challenge 2024, es Apache-2.0 —estado del arte y "
+                "comercializable—; en mis propias exploraciones, FreeZeV2 quedó a solo "
+                "tres puntos. Para un catálogo de planta acotado, un GDR-Net++ "
+                "open-license afinado cierra esa brecha. Lo importante: mi aporte —el "
+                "puente matemático y la reproducibilidad— es independiente del "
+                "estimador.»"),
+        ("note", "[Si el tribunal pregunta por la licencia NC, este slide es la "
+                 "respuesta. Detalle en docs/PERCEPCION_INTERCAMBIABLE.md.]"),
+    ]),
     ("Slide 15 — Aportes 1 y 2", [
         ("cue", "[APORTES 1-2 · ~45 s]"),
         ("say", "«Sintetizo el aporte en cuatro contribuciones; las dos primeras, "
@@ -307,14 +322,16 @@ def main() -> int:
         anchor._p.addprevious(p._p)               # …y se mueve antes del ancla
         return p
 
+    import re
     add_before(H1, "Heading 1")
-    for title, blocks in SLIDES:
+    for i, (title, blocks) in enumerate(SLIDES, 1):
+        title = re.sub(r"^Slide \d+ — ", f"Slide {i} — ", title)  # auto-renumera
         add_before(title, "Heading 2")
         for _kind, text in blocks:
             add_before(text, "Normal")
 
     doc.save(DOC)
-    print(f"  defensa reescrita: {len(SLIDES)} slides alineados al deck (19)")
+    print(f"  defensa reescrita: {len(SLIDES)} slides alineados al deck")
     print(f"  -> {DOC.relative_to(REPO)}")
     return 0
 
