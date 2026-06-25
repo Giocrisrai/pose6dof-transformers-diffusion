@@ -252,7 +252,7 @@ Posibilidad de publicar en Hugging Face Spaces para que la comunidad pueda proba
 | Recurso | Path | Uso |
 |---------|------|-----|
 | API REST | `scripts/api_server.py` | Servidor inferencia |
-| Demo Gradio | `scripts/gradio_demo.py` | UI web interactiva |
+| Demo Gradio | `scripts/demo_charla.py` | UI web interactiva |
 | Dashboard | `dashboard.py` | Métricas + resultados |
 | CLI experiments | `scripts/run_experiment.py` | Reproducir todos los experimentos |
 | Docker GPU | `docker/inference-gpu.Dockerfile` | Deployment industrial |

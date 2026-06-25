@@ -8,7 +8,7 @@
 
 Los botones se crean en el _base con colores que sobreviven al restyle (fill
 de la paleta Vibrante tech, texto blanco). Idempotente por nombre de shape.
-Correr ANTES de restyle_robotica_ia.py.
+Correr ANTES de restyle_divulga_pastel.py.
 
 Uso:  ../.venv_thesis/bin/python scripts/add_demo_buttons.py
 """
@@ -80,7 +80,7 @@ def main() -> int:
         done += 1
     if done:
         prs.save(DECK)
-    print("Ahora regenera la canónica: scripts/restyle_robotica_ia.py")
+    print("Ahora regenera la canónica: scripts/restyle_divulga_pastel.py")
     return 0
 
 

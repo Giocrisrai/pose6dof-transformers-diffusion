@@ -10,7 +10,7 @@ uvicorn scripts.api_server:app --host 0.0.0.0 --port 8000 &
 API_PID=$!
 
 # Gradio en foreground (mantiene el contenedor vivo)
-python scripts/gradio_demo.py &
+python scripts/demo_charla.py &
 GRADIO_PID=$!
 
 # Reenvía señales para cierre limpio

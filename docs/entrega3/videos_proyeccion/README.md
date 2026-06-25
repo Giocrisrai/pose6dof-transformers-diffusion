@@ -29,4 +29,4 @@ en las presentaciones; esta carpeta es el plan B.
 - Si proyectas desde VLC: `Reproducción → Repetir` para dejarlos en bucle.
 - Origen reproducible: `experiments/results/{demo_reel,language_reel,pipeline_e2e,pick_with_diffusion}/`.
 - Embebido en los `.pptx` vía `scripts/embed_sim_videos.py` (sobre los `_base`),
-  regenerando las canónicas con `restyle_robotica_ia.py` / `refresh_defensa.py`.
+  regenerando las canónicas con `restyle_divulga_pastel.py` / `refresh_defensa.py`.

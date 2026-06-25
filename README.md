@@ -29,7 +29,7 @@
 
 **Robustez verificada**: T-LESS aguanta 70 % oclusión con solo −1 pp AUC ADD-S. **PBVS** converge 100 % en 50 muestras. **Cuello de botella identificado**: FoundationPose 80 % del ciclo.
 
-**Material disponible** en [`docs/entrega2/`](docs/entrega2/): TFM en docx + PDF (62 págs) + markdown + slide deck PPTX (20 slides) + FAQ defensa.
+**Material disponible** en [`docs/entrega3/`](docs/entrega3/) y [`docs/entrega4/`](docs/entrega4/): memoria del TFM (docx), presentaciones (defensa + divulgativa) con vídeos y QR, guion completo y dossier de comparativa/validación.
 
 ---
 
@@ -318,7 +318,6 @@ el Cap. 6 del TFM están versionados en este repositorio para auditoría:
 | Política de carpeta | `experiments/results/foundationpose_eval/README.md` | Schema de los JSON, qué se versiona y qué no |
 | Resultados crudos | `experiments/results/foundationpose_eval/comparison_*.json` | Métricas agregadas (ADD/ADD-S/AUC/recalls) |
 | Predicciones por frame | `experiments/results/foundationpose_eval/predictions_*.json` | Pose estimada por imagen para reproducibilidad |
-| Patch Cap. 6 | `docs/cap6_seccion_foundationpose.md` | Sección redactada lista para integrar al `.docx` |
 | Figuras Cap. 6 | `experiments/results/chapter6_figures/` | PNG y `fp_results_table.tex` generados por `experiments/generate_chapter6_figures.py` |
 | Lockfile Colab | `requirements.colab.lock.txt` | `pip freeze` del entorno Colab que produjo los resultados |
 | Contenedor GPU equivalente | `docker/inference-gpu.Dockerfile` | torch 2.1.2+cu121, pytorch3d v0.7.8, FP commit fijo |

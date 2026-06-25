@@ -4,9 +4,9 @@
 
 Diseño:
 - Opera sobre Presentacion_Robotica_IA_base.pptx; la canónica se regenera con
-  restyle_robotica_ia.py (que tematiza los colores a 'Vibrante tech').
-- Colores elegidos para que el restyle los mapee bien:
-    título 00E08F -> LIME, término 0098CD -> CYAN, cuerpo 222222 -> claro.
+  restyle_divulga_pastel.py (tema claro 'Menta & Coral').
+- Colores elegidos para que el restyle claro los mapee bien:
+    título 00E08F -> coral, término 0098CD -> menta, cuerpo 222222 -> carbón.
 - Los QR (PNG blanco) reciben automáticamente la tarjeta blanca del restyle.
 - Idempotente: si ya existe un slide con el marcador (en el título), no recrea.
 - DEBE correr DESPUÉS de embed_sim_videos.py (ese usa índices fijos sobre el
@@ -193,7 +193,7 @@ def main() -> int:
     prs.save(DECK)
     n1 = len(prs.slides._sldIdLst)
     print(f"  slides: {n0} -> {n1}")
-    print("Ahora regenera la canónica: scripts/restyle_robotica_ia.py")
+    print("Ahora regenera la canónica: scripts/restyle_divulga_pastel.py")
     return 0
 
 

@@ -111,7 +111,7 @@ def main() -> int:
                 continue
             print(embed_one(deck, idx, video, repl, t, tmp))
     print("\nListo. Ahora regenera las canónicas con los scripts de estilo:")
-    print("  ../.venv_thesis/bin/python scripts/restyle_robotica_ia.py")
+    print("  ../.venv_thesis/bin/python scripts/restyle_divulga_pastel.py")
     print("  ../.venv_thesis/bin/python scripts/refresh_defensa.py")
     return 0
 
