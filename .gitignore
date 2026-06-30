@@ -156,6 +156,6 @@ experiments/results/language_battery/
 experiments/results/exp_clutter_v9/
 
 # Backups locales de presentaciones/tesis y locks de Office (no publicar)
-docs/entrega3/*.BACKUP_*
+docs/*/*.BACKUP_*
 docs/entrega3/*_PLANTILLA.pptx
 ~$*
