@@ -133,16 +133,28 @@ implementa, con PyTorch y autograd sobre Metal, un refinamiento SE(3)
 el **análogo local del refiner neuronal de FoundationPose**: parte de una
 hipótesis global burda y la afina por descenso de gradiente.
 
-| | valor |
-|--|--|
-| Dispositivo | **Apple MPS (GPU del M1)** · ~230 it/s |
-| Hipótesis inicial (perturbada) | 46 mm / 25° |
-| **Tras refinar (MPS)** | **5.7 mm / ~10°** en 2.1 s |
-
 ![mps](figs/mps_refine.png)
 
-FoundationPose real (CUDA) → Colab (opcional); pero la **cadena percepción → pose
-6-DoF → agarre funciona entera en el Mac**, con aceleración GPU vía MPS.
+**Benchmark de optimización (`pose_refine_bench.py`, N=20 hipótesis perturbadas):**
+
+| Métrica | Valor |
+|---------|-------|
+| Error inicial (perturbado) medio | 27.9 mm |
+| **Error refinado (mediana)** | **6.3 mm** |
+| **Tasa de éxito (<10 mm)** | **95 %** (19/20) |
+| Velocidad | MPS 580 it/s · **CPU 806 it/s** |
+
+![bench](figs/mps_bench.png)
+
+**Nota honesta sobre la GPU.** El refiner corre en Apple MPS, pero para este tamaño
+de problema (≈2500 puntos) la **CPU es incluso más rápida** (806 vs 580 it/s): el
+coste de lanzar kernels en la GPU no se amortiza con nubes tan pequeñas; la ventaja
+de MPS aparecería con nubes densas o inferencia por lotes. El valor aquí no es la
+velocidad sino la **robustez**: recupera el 95 % de las hipótesis burdas a < 10 mm
+por descenso de gradiente, como el refiner de FoundationPose pero **100 % local**.
+
+FoundationPose real (CUDA) → Colab (opcional); la **cadena percepción → pose 6-DoF
+→ agarre funciona entera en el Mac** (CPU/MPS), sin GPU dedicada.
 
 ## Paso 4 — Catálogo multi-objeto ✅
 
