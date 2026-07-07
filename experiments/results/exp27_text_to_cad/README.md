@@ -124,6 +124,26 @@ simulador — no sintético. Para cerrar también ese eslabón se incluye el cua
 **red neuronal real** sobre la misma RGBD real capturada y compara con la GT (se
 corre en Colab con GPU; el M1 no tiene CUDA).
 
+### Paso 5 — Refiner de pose por gradiente en Apple MPS (100 % local, sin CUDA) ✅
+
+Como **el flujo completo corre en el Mac sin depender de Colab**, se añade un
+refiner de pose que sí usa la **GPU del M1 vía Apple MPS**. `pose_refine_mps.py`
+implementa, con PyTorch y autograd sobre Metal, un refinamiento SE(3)
+*render-and-compare* (pérdida *point-to-plane* sobre la nube de profundidad real),
+el **análogo local del refiner neuronal de FoundationPose**: parte de una
+hipótesis global burda y la afina por descenso de gradiente.
+
+| | valor |
+|--|--|
+| Dispositivo | **Apple MPS (GPU del M1)** · ~230 it/s |
+| Hipótesis inicial (perturbada) | 46 mm / 25° |
+| **Tras refinar (MPS)** | **5.7 mm / ~10°** en 2.1 s |
+
+![mps](figs/mps_refine.png)
+
+FoundationPose real (CUDA) → Colab (opcional); pero la **cadena percepción → pose
+6-DoF → agarre funciona entera en el Mac**, con aceleración GPU vía MPS.
+
 ## Paso 4 — Catálogo multi-objeto ✅
 
 Se generan 2 piezas más desde texto y se corre el E2E real (depth real → pose →
@@ -174,7 +194,8 @@ python make_batch_fig.py      # catálogo + métricas multi-objeto
 - `e2e_real_pick.py` — E2E real: depth real → pose → pick IK+attach (Paso 3)
 - `gen_shapes.py` — catálogo de piezas (bracket + tuerca + bloque)
 - `e2e_batch.py` — E2E real multi-objeto · `make_batch_fig.py` — sus figuras
-- `FoundationPose_real_colab.ipynb` — corre la red FoundationPose **real** en Colab
+- `pose_refine_mps.py` — refiner de pose por gradiente en **Apple MPS** (local) · `make_mps_fig.py`
+- `FoundationPose_real_colab.ipynb` — corre la red FoundationPose **real** en Colab (opcional)
 - `make_figures.py` / `make_e2e_fig.py` — regeneran las figuras
 - `e2e_report.json` / `batch_report.json` — métricas del E2E real
 - `assets/` — CAD exportado (STEP/STL/GLB/OBJ)
