@@ -230,7 +230,7 @@ with st.sidebar:
          "🧠 Decisiones del pipeline", "🗣️ Lenguaje natural",
          "🎯 Hipótesis", "📈 Métricas FP",
          "🛡️ Robustez", "⚙️ Profiling", "🌳 Diversidad",
-         "🎮 PBVS", "📦 Per-Object", "🎬 Video", "📚 Recursos"]
+         "🎮 PBVS", "📦 Per-Object", "🛠️ text-to-CAD", "🎬 Video", "📚 Recursos"]
     )
 
 
@@ -945,6 +945,76 @@ elif section == "📦 Per-Object":
             cols[1].markdown("**Mejores 3 objetos**")
             for o in r["best_3"]:
                 cols[1].markdown(f"- obj_id={o['obj_id']}: AUC {o['auc_adds_50mm']:.3f}, R@10mm {o['recall_10mm']:.1%}")
+
+elif section == "🛠️ text-to-CAD":
+    st.title("🛠️ Simulación text-to-CAD → pose 6-DoF → agarre")
+    st.markdown(
+        "Extensión que **genera piezas de prueba desde una descripción en lenguaje** "
+        "(build123d, sobre OpenCascade), las simula en CoppeliaSim y estima su pose 6-DoF "
+        "con **profundidad real** de la cámara. Objetos con geometría de *ground-truth* "
+        "exacta; todo el flujo corre **local en el Mac** (percepción → pose → agarre)."
+    )
+    EXP = "experiments/results/exp27_text_to_cad"
+
+    gif = load_image(f"{EXP}/figs/cine_pick_hud.gif")
+    if gif:
+        st.image(gif, caption="Pick de la pieza generada en CoppeliaSim (render 3ª persona + HUD)",
+                 width="stretch")
+
+    st.subheader("Panel · elige una pieza generada")
+    piezas = {
+        "Escuadra en L (asimétrica)":
+            {"size": "60×40×45 mm", "t": 4.1, "r": 1.3, "prox": 4.9, "ok": True,
+             "img": f"{EXP}/figs/preview_bracket.png", "nota": "pose 6-DoF inequívoca"},
+        "Bloque escalonado (asimétrico)":
+            {"size": "70×45×32 mm", "t": 1.0, "r": 1.6, "prox": 4.7, "ok": True,
+             "img": None, "nota": "mejor pose del lote (~1 mm / 1.6°)"},
+        "Tuerca hexagonal (simetría 6)":
+            {"size": "44×38×18 mm", "t": 37.0, "r": 179.0, "prox": 3.9, "ok": True,
+             "img": None, "nota": "flip de 180° por simetría de orden 6 (ambigüedad esperada)"},
+    }
+    elegida = st.selectbox("Pieza", list(piezas.keys()))
+    p = piezas[elegida]
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Tamaño", p["size"])
+    c2.metric("Error traslación", f"{p['t']} mm")
+    c3.metric("Error rotación", f"{p['r']}°")
+    c4.metric("Agarre", "plausible ✅" if p["ok"] else "no", f"{p['prox']} cm")
+    st.caption(f"Nota: {p['nota']}")
+    if p["img"]:
+        pi = load_image(p["img"])
+        if pi:
+            st.image(pi, width="stretch")
+
+    st.subheader("Catálogo generado desde texto")
+    cat = load_image(f"{EXP}/figs/catalog_shapes.png")
+    if cat:
+        st.image(cat, width="stretch")
+
+    st.subheader("E2E real por pieza · pose desde profundidad de CoppeliaSim")
+    bm = load_image(f"{EXP}/figs/batch_metrics.png")
+    if bm:
+        st.image(bm, width="stretch")
+    per = load_image(f"{EXP}/figs/e2e_perception.png")
+    if per:
+        with st.expander("Percepción: nube de profundidad real + CAD registrado", expanded=False):
+            st.image(per, width="stretch")
+
+    st.subheader("Refiner de pose local en Apple MPS (sin CUDA)")
+    mb = load_json(f"{EXP}/mps_bench.json")
+    if mb:
+        d1, d2, d3 = st.columns(3)
+        d1.metric("Éxito (<10 mm)", f"{mb['success_rate_pct']:.0f}%")
+        d2.metric("Error refinado (mediana)", f"{mb['ref_median']:.1f} mm")
+        d3.metric("Velocidad MPS", f"{mb['it_s_mps']:.0f} it/s" if mb.get("it_s_mps") else "—")
+    mbi = load_image(f"{EXP}/figs/mps_bench.png")
+    if mbi:
+        st.image(mbi, width="stretch")
+    st.info(
+        "FoundationPose (red neuronal) requiere CUDA → se ejecuta opcionalmente en Colab "
+        "(`FoundationPose_real_colab.ipynb`). Aquí el registro clásico + refiner MPS cubren su "
+        "rol con datos reales, 100 % local. Genera piezas nuevas con `gen_shapes.py`."
+    )
 
 elif section == "🎬 Video":
     st.title("Demo del pipeline E2E")
