@@ -76,6 +76,43 @@ observación parcial**. Es exactamente el fallo que motiva el *scorer* aprendido
 FoundationPose —y que el registro geométrico clásico no resuelve—, en línea con el
 análisis de oclusión/simetría del TFM.
 
+## Paso 3 — End-to-end REAL en simulación ✅
+
+Cierra las dos brechas del proxy del Paso 2, usando la maquinaria real del repo
+(`CoppeliaSimBridge` + `run_pick_sequence` sobre `bin_base.ttt`):
+
+1. **Percepción con datos de sensor reales.** Se importa el bracket en la escena
+   completa (robot UR5e + IK + gripper + cámara), se suelta, y se captura el
+   **depth REAL renderizado por la cámara** (con re-escala a los `near/far`
+   reales del sensor: 0.05/2.0 m). El objeto se segmenta por color (el *mask*
+   que recibiría FoundationPose) y se retroproyecta a una nube en mundo.
+2. **Agarre real.** La pose estimada se inyecta como objetivo del pick
+   (`pose_override_xyz`) y se ejecuta el ciclo **IK + snap+attach + lift +
+   deposit** real del TFM.
+
+Verificación de convención: el centroide de la nube de depth real cae a **0.7 cm**
+de la ground-truth antes de registrar (descarta un resultado plausible-pero-falso).
+
+| Etapa | Resultado |
+|-------|-----------|
+| Percepción (depth real) | centroide a **0.7 cm** de GT |
+| **Pose 6-DoF (depth real)** | **t_err 3.6 mm · R_err 0.6° · fitness 0.70** |
+| Pick IK + snap+attach | ciclo completo; objeto transportado 44 cm; `ik_converged` |
+| Proximidad tip↔objeto | 16 cm → grasp **no** físicamente plausible (kinemático) |
+
+![e2e](figs/e2e_perception.png)
+
+**Nota honesta sobre el grasp.** El agarre del TFM es kinemático (snap+attach, ver
+`PICK_LIMITATIONS.md`); la métrica honesta es la proximidad tip↔objeto al *snap*.
+Los 16 cm indican que un gripper físico no habría alcanzado. **No es culpa del
+objeto generado**: el cubo `/object_1` por defecto da **68.5 cm** en la misma
+escena, luego la limitación es la alcanzabilidad del robot en el *workspace*, y el
+bracket es de hecho más alcanzable. Vídeo del ciclo: `figs/e2e_pick.mp4`.
+
+**Único componente no ejecutado localmente:** la red FoundationPose (GPU/Colab).
+Aquí su rol lo cubre el registro clásico, pero **alimentado con depth real** del
+simulador — no sintético.
+
 ## Reproducción
 
 Entorno: `.venv` del repo (uv) + CoppeliaSim Edu V4.10 en `localhost:23000`.
@@ -83,17 +120,21 @@ Dependencias extra: `build123d` (`uv pip install build123d --python .venv/bin/py
 
 ```bash
 python gen_part.py            # genera assets/test_bracket.{step,stl,glb,obj}
-# (abrir CoppeliaSim_Edu antes del siguiente)
+# (abrir CoppeliaSim_Edu antes de los siguientes)
 python sim_drop_test.py       # física en el bin -> figs/sim_z_traj.npy + captura
-python pose_recovery_proxy.py # pose 6-DoF vs ground-truth -> figs/pose_recovery_results.npy
-python make_figures.py        # regenera las figuras desde los .npy
+python pose_recovery_proxy.py # pose 6-DoF (proxy) vs ground-truth
+python e2e_real_pick.py       # E2E real: depth real -> pose -> pick IK+attach
+python make_figures.py        # figuras de los Pasos 1-2
+python make_e2e_fig.py        # figura de percepción del E2E
 ```
 
 ## Archivos
 
 - `gen_part.py` — generador text-to-CAD (build123d)
-- `sim_drop_test.py` — import + física en CoppeliaSim
-- `pose_recovery_proxy.py` — recuperación de pose model-based (Open3D)
-- `make_figures.py` — figuras a partir de los `.npy`
+- `sim_drop_test.py` — import + física en CoppeliaSim (Paso 1)
+- `pose_recovery_proxy.py` — pose model-based, proxy sintético (Paso 2)
+- `e2e_real_pick.py` — E2E real: depth real → pose → pick IK+attach (Paso 3)
+- `make_figures.py` / `make_e2e_fig.py` — regeneran las figuras
+- `e2e_report.json` — métricas del E2E real
 - `assets/` — CAD exportado (STEP/STL/GLB/OBJ)
-- `figs/` — figuras y datos crudos (`.npy`)
+- `figs/` — figuras, vídeo del pick (`e2e_pick.mp4`) y datos crudos (`.npy`)

@@ -1,0 +1,37 @@
+{
+  "objeto": "bracket_text2cad (escuadra en L 60x40x45mm)",
+  "percepcion": {
+    "fuente_depth": "camara CoppeliaSim (real, render + reescala near/far real)",
+    "mask": "segmentacion por color (mask del detector)",
+    "depth_shape": [
+      480,
+      640
+    ],
+    "err_centroide_cm": 0.7
+  },
+  "pose": {
+    "gt_xyz_m": [
+      0.0011,
+      0.0164,
+      0.135
+    ],
+    "est_xyz_m": [
+      -0.0011,
+      0.018,
+      0.1373
+    ],
+    "t_err_mm": 3.6,
+    "R_err_deg": 0.6,
+    "fitness": 0.702
+  },
+  "pick": {
+    "mecanismo": "IK + snap+attach (run_pick_sequence, real del TFM)",
+    "pose_source": "cad_pose_from_real_coppelia_depth",
+    "tip_grasp_proximity_cm": 16.0,
+    "grasp_plausible": false,
+    "object_moved_cm": 44.2,
+    "ik_converged": true,
+    "nota_proximidad": "proximity 16cm -> grasp no fisicamente plausible (grasp es kinematico snap+attach, ver PICK_LIMITATIONS.md). Baseline: el cubo /object_1 por defecto da 68.5cm en la misma escena, luego la proximidad la limita la alcanzabilidad del robot en el workspace, NO el objeto generado (el bracket es de hecho mas alcanzable). El ciclo IK+attach+lift+deposit se ejecuta completo (objeto transportado 44cm)."
+  },
+  "conclusion": "E2E real en simulacion cerrado: depth REAL de CoppeliaSim -> pose 6-DoF model-based (t_err 3.6mm, R_err 0.6deg) -> pick real IK+snap+attach. Unico componente no ejecutado localmente: la red FoundationPose (requiere GPU/Colab); su rol lo cubre el registro clasico alimentado con datos de sensor reales."
+}
