@@ -119,7 +119,10 @@ objeto en el *workspace* diestro, el grasp es plausible. Vídeos:
 
 **Único componente no ejecutado localmente:** la red FoundationPose (GPU/Colab).
 Aquí su rol lo cubre el registro clásico, pero **alimentado con depth real** del
-simulador — no sintético.
+simulador — no sintético. Para cerrar también ese eslabón se incluye el cuaderno
+[`FoundationPose_real_colab.ipynb`](FoundationPose_real_colab.ipynb): ejecuta la
+**red neuronal real** sobre la misma RGBD real capturada y compara con la GT (se
+corre en Colab con GPU; el M1 no tiene CUDA).
 
 ## Paso 4 — Catálogo multi-objeto ✅
 
@@ -169,7 +172,10 @@ python make_batch_fig.py      # catálogo + métricas multi-objeto
 - `sim_drop_test.py` — import + física en CoppeliaSim (Paso 1)
 - `pose_recovery_proxy.py` — pose model-based, proxy sintético (Paso 2)
 - `e2e_real_pick.py` — E2E real: depth real → pose → pick IK+attach (Paso 3)
+- `gen_shapes.py` — catálogo de piezas (bracket + tuerca + bloque)
+- `e2e_batch.py` — E2E real multi-objeto · `make_batch_fig.py` — sus figuras
+- `FoundationPose_real_colab.ipynb` — corre la red FoundationPose **real** en Colab
 - `make_figures.py` / `make_e2e_fig.py` — regeneran las figuras
-- `e2e_report.json` — métricas del E2E real
+- `e2e_report.json` / `batch_report.json` — métricas del E2E real
 - `assets/` — CAD exportado (STEP/STL/GLB/OBJ)
 - `figs/` — figuras, vídeo del pick (`e2e_pick.mp4`) y datos crudos (`.npy`)
