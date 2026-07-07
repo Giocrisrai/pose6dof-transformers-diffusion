@@ -115,7 +115,7 @@ gobierna la **alcanzabilidad del UR5e** (base en el origen), no el objeto genera
 
 Es decir: el centro del bin cae en una zona casi singular del brazo; colocando el
 objeto en el *workspace* diestro, el grasp es plausible. Vídeos:
-`figs/e2e_pick.mp4` (placement inicial) y `figs/e2e_A_pick.mp4` (grasp plausible).
+`figs/cine_pick_hud.mp4` (showcase con HUD) y `figs/e2e_A_pick.mp4` (grasp plausible).
 
 **Único componente no ejecutado localmente:** la red FoundationPose (GPU/Colab).
 Aquí su rol lo cubre el registro clásico, pero **alimentado con depth real** del
@@ -224,4 +224,4 @@ python make_batch_fig.py      # catálogo + métricas multi-objeto
 - `make_figures.py` / `make_e2e_fig.py` — regeneran las figuras
 - `e2e_report.json` / `batch_report.json` — métricas del E2E real
 - `assets/` — CAD exportado (STEP/STL/GLB/OBJ)
-- `figs/` — figuras, vídeo del pick (`e2e_pick.mp4`) y datos crudos (`.npy`)
+- `figs/` — figuras, vídeos del pick (`cine_pick_hud.mp4`, `e2e_A_pick.mp4`) y datos crudos (`.npy`)
