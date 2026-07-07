@@ -180,6 +180,19 @@ tres logran **grasp plausible** (<5 cm) en la zona diestra. También se vio que 
 1.3 m de cámara las piezas pequeñas quedan escasas de puntos: subir la resolución
 del sensor (a 1024×768) fue necesario para densificar la nube.
 
+## Paso 6 — Interfaz visual de la simulación (render 3ª persona + HUD) ✅
+
+Vista cinematográfica del pick renderizada **desde dentro de CoppeliaSim** (cámara
+3ª persona dedicada, `cine_pick.py`, reutiliza `CineCamera` del repo) con un **HUD**
+superpuesto que muestra en vivo la pieza, la pose 6-DoF y la fase del ciclo
+(aproximación → descenso → agarre snap+attach → elevación → depósito).
+
+![hud](figs/cine_pick_hud.gif)
+
+Vídeo completo: `figs/cine_pick_hud.mp4`. Es la interfaz visual de *nuestra*
+simulación (no la GUI del escritorio): muestra el robot UR5e manipulando la pieza
+generada por texto, con el estado del pipeline sobrepuesto.
+
 ## Reproducción
 
 Entorno: `.venv` del repo (uv) + CoppeliaSim Edu V4.10 en `localhost:23000`.
