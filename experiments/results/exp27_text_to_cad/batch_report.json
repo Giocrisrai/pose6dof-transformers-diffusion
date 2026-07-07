@@ -1,0 +1,26 @@
+[
+  {
+    "shape": "hex_nut",
+    "ok": true,
+    "pts": 84,
+    "err_centroide_cm": 1.1,
+    "t_err_mm": 37.3,
+    "R_err_deg": 179.2,
+    "fitness": 0.22,
+    "proximity_cm": 3.9,
+    "grasp_plausible": true,
+    "ik_converged": true
+  },
+  {
+    "shape": "stepped_block",
+    "ok": true,
+    "pts": 404,
+    "err_centroide_cm": 1.1,
+    "t_err_mm": 1.0,
+    "R_err_deg": 1.6,
+    "fitness": 0.33,
+    "proximity_cm": 4.7,
+    "grasp_plausible": true,
+    "ik_converged": true
+  }
+]

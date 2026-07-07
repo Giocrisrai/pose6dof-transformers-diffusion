@@ -90,28 +90,60 @@ Cierra las dos brechas del proxy del Paso 2, usando la maquinaria real del repo
    (`pose_override_xyz`) y se ejecuta el ciclo **IK + snap+attach + lift +
    deposit** real del TFM.
 
-Verificación de convención: el centroide de la nube de depth real cae a **0.7 cm**
+Verificación de convención: el centroide de la nube de depth real cae a **0.5 cm**
 de la ground-truth antes de registrar (descarta un resultado plausible-pero-falso).
 
 | Etapa | Resultado |
 |-------|-----------|
-| Percepción (depth real) | centroide a **0.7 cm** de GT |
-| **Pose 6-DoF (depth real)** | **t_err 3.6 mm · R_err 0.6° · fitness 0.70** |
-| Pick IK + snap+attach | ciclo completo; objeto transportado 44 cm; `ik_converged` |
-| Proximidad tip↔objeto | 16 cm → grasp **no** físicamente plausible (kinemático) |
+| Percepción (depth real) | centroide a **0.5 cm** de GT |
+| **Pose 6-DoF (depth real)** | **t_err 4.1 mm · R_err 1.3°** |
+| Pick IK + snap+attach | ciclo completo; objeto transportado 27 cm; `ik_converged` |
+| **Proximidad tip↔objeto** | **4.9 cm → grasp físicamente PLAUSIBLE ✅** |
 
 ![e2e](figs/e2e_perception.png)
 
-**Nota honesta sobre el grasp.** El agarre del TFM es kinemático (snap+attach, ver
-`PICK_LIMITATIONS.md`); la métrica honesta es la proximidad tip↔objeto al *snap*.
-Los 16 cm indican que un gripper físico no habría alcanzado. **No es culpa del
-objeto generado**: el cubo `/object_1` por defecto da **68.5 cm** en la misma
-escena, luego la limitación es la alcanzabilidad del robot en el *workspace*, y el
-bracket es de hecho más alcanzable. Vídeo del ciclo: `figs/e2e_pick.mp4`.
+**Grasp plausible y el papel del *placement*.** El agarre del TFM es kinemático
+(snap+attach, ver `PICK_LIMITATIONS.md`); la métrica honesta es la proximidad
+tip↔objeto al *snap* (<5 cm = un gripper físico habría alcanzado). La proximidad la
+gobierna la **alcanzabilidad del UR5e** (base en el origen), no el objeto generado:
+
+| Ubicación del objeto | Proximidad | ¿Plausible? |
+|----------------------|-----------|-------------|
+| Bin por defecto (0.46, −0.1) — cubo baseline | 68.5 cm | no |
+| Sobre la base del robot (0, 0) | 16 cm | no |
+| **Zona diestra del UR5e (−0.05, −0.22)** | **4.9 cm** | **sí ✅** |
+
+Es decir: el centro del bin cae en una zona casi singular del brazo; colocando el
+objeto en el *workspace* diestro, el grasp es plausible. Vídeos:
+`figs/e2e_pick.mp4` (placement inicial) y `figs/e2e_A_pick.mp4` (grasp plausible).
 
 **Único componente no ejecutado localmente:** la red FoundationPose (GPU/Colab).
 Aquí su rol lo cubre el registro clásico, pero **alimentado con depth real** del
 simulador — no sintético.
+
+## Paso 4 — Catálogo multi-objeto ✅
+
+Se generan 2 piezas más desde texto y se corre el E2E real (depth real → pose →
+pick) en cada una, todas en la zona diestra del UR5e.
+
+![catalog](figs/catalog_shapes.png)
+
+| Pieza | Tamaño (mm) | t_err | R_err | Grasp |
+|-------|-------------|-------|-------|-------|
+| Escuadra en L (asimétrica) | 60×40×45 | 4.1 mm | 1.3° | ✅ 4.9 cm |
+| Bloque escalonado (asimétrico) | 70×45×32 | **1.0 mm** | **1.6°** | ✅ 4.7 cm |
+| Tuerca hexagonal (**simétrica 6**) | 44×38×18 | 37 mm | **179° (flip)** | ✅ 3.9 cm |
+
+![batch](figs/batch_metrics.png)
+
+**Hallazgo.** Los objetos **asimétricos** (escuadra, bloque) recuperan pose con
+precisión de **1–4 mm y 1–2°**. La **tuerca hexagonal** cae en un *flip* de 180°:
+su simetría de orden 6 y su forma plana hacen la pose **genuinamente ambigua** bajo
+vista parcial — el reto de simetría central del TFM, que el registro geométrico no
+resuelve (lo haría un *scorer* aprendido o una métrica consciente de simetría). Los
+tres logran **grasp plausible** (<5 cm) en la zona diestra. También se vio que a
+1.3 m de cámara las piezas pequeñas quedan escasas de puntos: subir la resolución
+del sensor (a 1024×768) fue necesario para densificar la nube.
 
 ## Reproducción
 
@@ -120,12 +152,15 @@ Dependencias extra: `build123d` (`uv pip install build123d --python .venv/bin/py
 
 ```bash
 python gen_part.py            # genera assets/test_bracket.{step,stl,glb,obj}
+python gen_shapes.py          # genera el catálogo (bracket + hex_nut + stepped_block)
 # (abrir CoppeliaSim_Edu antes de los siguientes)
 python sim_drop_test.py       # física en el bin -> figs/sim_z_traj.npy + captura
 python pose_recovery_proxy.py # pose 6-DoF (proxy) vs ground-truth
 python e2e_real_pick.py       # E2E real: depth real -> pose -> pick IK+attach
+python e2e_batch.py           # E2E real para el catálogo multi-objeto
 python make_figures.py        # figuras de los Pasos 1-2
 python make_e2e_fig.py        # figura de percepción del E2E
+python make_batch_fig.py      # catálogo + métricas multi-objeto
 ```
 
 ## Archivos

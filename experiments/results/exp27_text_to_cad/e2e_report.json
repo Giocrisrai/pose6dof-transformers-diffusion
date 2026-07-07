@@ -7,31 +7,37 @@
       480,
       640
     ],
-    "err_centroide_cm": 0.7
+    "err_centroide_cm": 0.5
   },
   "pose": {
     "gt_xyz_m": [
-      0.0011,
-      0.0164,
-      0.135
+      -0.0693,
+      -0.2556,
+      0.001
     ],
     "est_xyz_m": [
-      -0.0011,
-      0.018,
-      0.1373
+      -0.0722,
+      -0.2542,
+      0.0035
     ],
-    "t_err_mm": 3.6,
-    "R_err_deg": 0.6,
-    "fitness": 0.702
+    "t_err_mm": 4.1,
+    "R_err_deg": 1.3,
+    "fitness": 0.495
   },
   "pick": {
     "mecanismo": "IK + snap+attach (run_pick_sequence, real del TFM)",
     "pose_source": "cad_pose_from_real_coppelia_depth",
-    "tip_grasp_proximity_cm": 16.0,
-    "grasp_plausible": false,
-    "object_moved_cm": 44.2,
+    "tip_grasp_proximity_cm": 4.9,
+    "grasp_plausible": true,
+    "object_moved_cm": 27.3,
     "ik_converged": true,
-    "nota_proximidad": "proximity 16cm -> grasp no fisicamente plausible (grasp es kinematico snap+attach, ver PICK_LIMITATIONS.md). Baseline: el cubo /object_1 por defecto da 68.5cm en la misma escena, luego la proximidad la limita la alcanzabilidad del robot en el workspace, NO el objeto generado (el bracket es de hecho mas alcanzable). El ciclo IK+attach+lift+deposit se ejecuta completo (objeto transportado 44cm)."
+    "nota_proximidad": "proximity 4.9cm < umbral 5cm -> grasp fisicamente plausible. La proximidad la gobierna la alcanzabilidad del robot: mejora 68->16->4.9cm segun placement."
   },
-  "conclusion": "E2E real en simulacion cerrado: depth REAL de CoppeliaSim -> pose 6-DoF model-based (t_err 3.6mm, R_err 0.6deg) -> pick real IK+snap+attach. Unico componente no ejecutado localmente: la red FoundationPose (requiere GPU/Colab); su rol lo cubre el registro clasico alimentado con datos de sensor reales."
+  "placement": "objeto en la zona diestra del UR5e (-0.05,-0.22); el bin por defecto (0.46,-0.1) queda al borde del alcance de bajo-z",
+  "comparativa_proximity_cm": {
+    "bin_lejano_cubo_baseline": 68.5,
+    "sobre_base_robot": 16.0,
+    "zona_diestra": 4.9
+  },
+  "conclusion": "E2E real: depth REAL de CoppeliaSim -> pose 6-DoF model-based (4.1mm/1.3deg) -> pick real IK+snap+attach con grasp PLAUSIBLE (4.9cm). Unico componente no local: red FoundationPose (GPU/Colab)."
 }
