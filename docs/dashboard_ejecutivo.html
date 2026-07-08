@@ -1,0 +1,338 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TFM · Pose 6-DoF · Dashboard</title></head><body>
+<style>
+  :root {
+    --ink: #0d1620; --ink-soft: #33465a; --muted: #64788d;
+    --bg: #f4f6f9; --surface: #ffffff; --line: #e0e6ec; --line-strong: #c8d2dc;
+    --accent: #0098cd; --accent-deep: #006f9c; --accent-wash: #e2f2fa;
+    --good: #128a5b; --good-wash: #dcf3e8; --warn: #b5760c; --warn-wash: #fbf0d9; --crit: #c0392b;
+    --grid: #eef2f6;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, monospace;
+    --sans: "Inter var", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+    --sh: 0 1px 2px rgba(13,22,32,.05), 0 2px 8px rgba(13,22,32,.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #e9eff5; --ink-soft: #b3c1cf; --muted: #7d90a2;
+      --bg: #0a1119; --surface: #111b25; --line: #22303c; --line-strong: #33465a;
+      --accent: #35b6e6; --accent-deep: #63c8f0; --accent-wash: #123040;
+      --good: #3fce93; --good-wash: #10281f; --warn: #e0a53c; --warn-wash: #2c2411; --crit: #ef6a5c;
+      --grid: #1a2833; --sh: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+    }
+  }
+  :root[data-theme="light"] {
+    --ink: #0d1620; --ink-soft: #33465a; --muted: #64788d; --bg: #f4f6f9; --surface: #fff;
+    --line: #e0e6ec; --line-strong: #c8d2dc; --accent: #0098cd; --accent-deep: #006f9c;
+    --accent-wash: #e2f2fa; --good: #128a5b; --good-wash: #dcf3e8; --warn: #b5760c;
+    --warn-wash: #fbf0d9; --crit: #c0392b; --grid: #eef2f6; --sh: 0 1px 2px rgba(13,22,32,.05), 0 2px 8px rgba(13,22,32,.04);
+  }
+  :root[data-theme="dark"] {
+    --ink: #e9eff5; --ink-soft: #b3c1cf; --muted: #7d90a2; --bg: #0a1119; --surface: #111b25;
+    --line: #22303c; --line-strong: #33465a; --accent: #35b6e6; --accent-deep: #63c8f0;
+    --accent-wash: #123040; --good: #3fce93; --good-wash: #10281f; --warn: #e0a53c;
+    --warn-wash: #2c2411; --crit: #ef6a5c; --grid: #1a2833; --sh: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans);
+    -webkit-font-smoothing: antialiased; line-height: 1.5; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  a { color: var(--accent-deep); }
+
+  /* ---- header ---- */
+  header { border-bottom: 1px solid var(--line); background: var(--surface); }
+  .head-grid { display: flex; flex-wrap: wrap; gap: 20px 32px; align-items: flex-end;
+    justify-content: space-between; padding: 30px 0 26px; }
+  .eyebrow { font-family: var(--mono); font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--accent-deep); margin: 0 0 10px; }
+  h1 { font-size: clamp(25px, 3.6vw, 38px); line-height: 1.08; letter-spacing: -.02em; margin: 0;
+    text-wrap: balance; font-weight: 720; max-width: 16ch; }
+  .sub { color: var(--muted); margin: 10px 0 0; font-size: 15px; max-width: 46ch; }
+  .verdicts { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { font-family: var(--mono); font-size: 12px; font-weight: 600; padding: 7px 12px; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 7px; border: 1px solid transparent; }
+  .chip.ok { background: var(--good-wash); color: var(--good); border-color: color-mix(in srgb, var(--good) 30%, transparent); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+  /* ---- kpi ---- */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 26px 0 8px; }
+  .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; box-shadow: var(--sh); }
+  .kpi .k-label { font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: .02em; }
+  .kpi .k-val { font-family: var(--mono); font-size: 27px; font-weight: 640; margin: 8px 0 2px; letter-spacing: -.01em;
+    font-variant-numeric: tabular-nums; }
+  .kpi .k-val small { font-size: 15px; color: var(--muted); font-weight: 500; }
+  .kpi .k-meta { font-size: 12px; color: var(--accent-deep); font-family: var(--mono); }
+
+  /* ---- sections ---- */
+  section { padding: 34px 0; border-top: 1px solid var(--line); }
+  .s-head { display: flex; align-items: baseline; gap: 12px; margin: 0 0 20px; }
+  .s-num { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  h2 { font-size: 20px; letter-spacing: -.01em; margin: 0; font-weight: 680; }
+  .s-head .tag { margin-left: auto; font-family: var(--mono); font-size: 11.5px; padding: 4px 9px; border-radius: 6px;
+    background: var(--good-wash); color: var(--good); font-weight: 600; }
+
+  .cols { display: grid; grid-template-columns: 1.15fr 1fr; gap: 22px; align-items: start; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; box-shadow: var(--sh); }
+  .card h3 { margin: 0 0 4px; font-size: 15px; font-weight: 650; }
+  .card p { margin: 6px 0 0; color: var(--ink-soft); font-size: 14px; }
+  .lead { color: var(--ink-soft); font-size: 15px; max-width: 62ch; margin: 0 0 20px; }
+
+  /* chart */
+  .chart { width: 100%; height: auto; display: block; }
+  .cap { font-family: var(--mono); font-size: 11.5px; color: var(--muted); margin: 10px 2px 0; }
+  text { font-family: var(--mono); fill: var(--muted); }
+  .bar-lab { fill: var(--ink-soft); font-weight: 600; }
+  .val-lab { fill: var(--ink); font-weight: 700; }
+
+  /* metric rows */
+  .mrow { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0;
+    border-bottom: 1px dashed var(--line); font-size: 14px; }
+  .mrow:last-child { border-bottom: 0; }
+  .mrow .m-k { color: var(--ink-soft); }
+  .mrow .m-v { font-family: var(--mono); font-weight: 650; font-variant-numeric: tabular-nums; }
+  .pos { color: var(--good); }
+
+  /* pieces table */
+  .ptable { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .ptable th, .ptable td { text-align: right; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  .ptable th:first-child, .ptable td:first-child { text-align: left; }
+  .ptable th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; }
+  .ptable td { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .ptable td:first-child { font-family: var(--sans); font-weight: 600; }
+  .pill { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 5px; }
+  .pill.g { background: var(--good-wash); color: var(--good); }
+  .pill.a { background: var(--warn-wash); color: var(--warn); }
+
+  /* guarantees */
+  .guard { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+  .g { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--good); border-radius: 10px; padding: 14px 16px; }
+  .g .g-t { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .g .g-v { font-size: 17px; font-weight: 680; margin-top: 3px; }
+  .g .g-v .mono { font-family: var(--mono); color: var(--good); }
+
+  footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; padding: 26px 0 40px; }
+  footer .fr { display: flex; flex-wrap: wrap; gap: 6px 20px; justify-content: space-between; }
+  .note { font-family: var(--mono); font-size: 12px; }
+
+  @media (max-width: 760px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .cols { grid-template-columns: 1fr; }
+  }
+</style>
+
+<header>
+  <div class="wrap">
+    <div class="head-grid">
+      <div>
+        <p class="eyebrow">TFM · Máster en Ingeniería Matemática y Computación · UNIR</p>
+        <h1>Estimación de pose 6-DoF para bin picking robótico</h1>
+        <p class="sub">Pipeline que une <strong>FoundationPose</strong> (Transformer) y <strong>Diffusion Policy</strong>
+          sobre un formalismo de grupos de Lie SE(3)/SO(3), validado en YCB-Video y T-LESS, y ejecutado extremo a
+          extremo en CoppeliaSim — sin GPU dedicada.</p>
+      </div>
+      <div class="verdicts">
+        <span class="chip ok"><span class="dot"></span>H1 aceptada</span>
+        <span class="chip ok"><span class="dot"></span>H2 aceptada</span>
+        <span class="chip ok"><span class="dot"></span>H3 aceptada</span>
+      </div>
+    </div>
+    <div class="kpis">
+      <div class="kpi">
+        <div class="k-label">AUC ADD-S (YCB-V / T-LESS)</div>
+        <div class="k-val">0.908 <small>/ 0.957</small></div>
+        <div class="k-meta">IC 95 % · bootstrap B=1000</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Ventaja sobre GDR-Net++</div>
+        <div class="k-val">+3.0 <small>/ +3.6 pp</small></div>
+        <div class="k-meta">Mean AR · leaderboard BOP</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Ciclo E2E p95 (YCB-V / T-LESS)</div>
+        <div class="k-val">6.29<small>s</small> <small>/ 6.68s</small></div>
+        <div class="k-meta">umbral industrial &lt; 10 s ✓</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Garantía en CI</div>
+        <div class="k-val">293<small> tests</small></div>
+        <div class="k-meta">26 checks de consistencia</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- H1 -->
+  <section>
+    <div class="s-head"><span class="s-num">H1</span><h2>Precisión de pose competitiva</h2><span class="tag">aceptada</span></div>
+    <p class="lead">La estimación de pose iguala al estado del arte y supera al baseline GDR-Net++ en ambos datasets.
+      El AUC ADD-S se reporta con intervalo de confianza al 95 % por bootstrap sobre las instancias evaluadas.</p>
+    <div class="cols">
+      <div class="card">
+        <h3>AUC ADD-S vs. baseline</h3>
+        <svg class="chart" viewBox="0 0 460 210" role="img" aria-label="AUC ADD-S comparado con GDR-Net++">
+          <line x1="150" y1="20" x2="150" y2="170" stroke="var(--grid)"/>
+          <line x1="260" y1="20" x2="260" y2="170" stroke="var(--grid)"/>
+          <line x1="370" y1="20" x2="370" y2="170" stroke="var(--grid)"/>
+          <text x="150" y="188" text-anchor="middle" font-size="10">0.90</text>
+          <text x="260" y="188" text-anchor="middle" font-size="10">0.95</text>
+          <text x="370" y="188" text-anchor="middle" font-size="10">1.00</text>
+          <!-- YCB-V -->
+          <text x="8" y="48" font-size="11" class="bar-lab">YCB-V</text>
+          <rect x="40" y="38" width="286" height="16" rx="3" fill="var(--accent)"/>
+          <rect x="40" y="58" width="235" height="10" rx="3" fill="var(--line-strong)"/>
+          <text x="332" y="51" font-size="11" class="val-lab">0.908</text>
+          <text x="281" y="67" font-size="9.5">GDR++ 0.867</text>
+          <!-- T-LESS -->
+          <text x="8" y="112" font-size="11" class="bar-lab">T-LESS</text>
+          <rect x="40" y="102" width="393" height="16" rx="3" fill="var(--accent-deep)"/>
+          <rect x="40" y="122" width="323" height="10" rx="3" fill="var(--line-strong)"/>
+          <text x="405" y="115" font-size="11" class="val-lab" text-anchor="end" fill="#fff" style="fill:var(--surface)">0.957</text>
+          <text x="369" y="131" font-size="9.5">GDR++ 0.767 · AR</text>
+        </svg>
+        <p class="cap">Barra sólida = FoundationPose (este trabajo) · barra fina = GDR-Net++ (BOP 2022)</p>
+      </div>
+      <div class="card">
+        <h3>Métricas de recuperación</h3>
+        <div class="mrow"><span class="m-k">Recall ADD-S &lt; 10 mm · YCB-V</span><span class="m-v">95.8 %</span></div>
+        <div class="mrow"><span class="m-k">Recall ADD-S &lt; 10 mm · T-LESS</span><span class="m-v">99.7 %</span></div>
+        <div class="mrow"><span class="m-k">IC 95 % AUC · YCB-V</span><span class="m-v">0.901–0.916</span></div>
+        <div class="mrow"><span class="m-k">IC 95 % AUC · T-LESS</span><span class="m-v">0.954–0.959</span></div>
+        <div class="mrow"><span class="m-k">Instancias evaluadas</span><span class="m-v">1098 · 1012</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- H2 -->
+  <section>
+    <div class="s-head"><span class="s-num">H2</span><h2>Planificación multimodal por difusión</h2><span class="tag">aceptada</span></div>
+    <p class="lead">Diffusion Policy genera trayectorias de agarre genuinamente diversas — a diferencia de la heurística,
+      determinista. El análisis de silueta detecta múltiples modos y la dispersión del <em>jerk</em> confirma la
+      multimodalidad, con una latencia de muestreo de 118 ms (DDIM-25).</p>
+    <div class="cols">
+      <div class="card">
+        <h3>Diversidad de trayectorias (jerk RMS · desviación estándar)</h3>
+        <svg class="chart" viewBox="0 0 460 130" role="img" aria-label="Diversidad diffusion vs heuristica">
+          <text x="8" y="42" font-size="11" class="bar-lab">Diffusion</text>
+          <rect x="92" y="30" width="330" height="18" rx="3" fill="var(--accent)"/>
+          <text x="416" y="44" font-size="11" class="val-lab" text-anchor="end" style="fill:var(--surface)">0.364</text>
+          <text x="8" y="92" font-size="11" class="bar-lab">Heurística</text>
+          <rect x="92" y="80" width="2" height="18" rx="1" fill="var(--muted)"/>
+          <text x="100" y="94" font-size="11" class="val-lab">≈ 0 (2·10⁻¹⁷)</text>
+        </svg>
+        <p class="cap">Mayor dispersión = más multimodalidad. La heurística no genera diversidad.</p>
+      </div>
+      <div class="card">
+        <h3>Evidencia</h3>
+        <div class="mrow"><span class="m-k">Modos detectados (silhouette)</span><span class="m-v">2</span></div>
+        <div class="mrow"><span class="m-k">Latencia muestreo DDIM-25</span><span class="m-v">118 ms</span></div>
+        <div class="mrow"><span class="m-k">Criterio de aceptación</span><span class="m-v pos">cumplido</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- H3 -->
+  <section>
+    <div class="s-head"><span class="s-num">H3</span><h2>Viabilidad temporal sin GPU dedicada</h2><span class="tag">aceptada</span></div>
+    <p class="lead">El ciclo completo de bin picking se ejecuta por debajo del umbral industrial de 10 s por instancia
+      sobre un MacBook Pro M1 — sin GPU NVIDIA. Medición live n=30 en CoppeliaSim.</p>
+    <div class="card">
+      <h3>Ciclo E2E p95 frente al umbral de 10 s</h3>
+      <svg class="chart" viewBox="0 0 900 128" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Cycle p95 vs umbral 10s">
+        <line x1="90" y1="18" x2="810" y2="18" stroke="var(--grid)"/>
+        <line x1="810" y1="12" x2="810" y2="112" stroke="var(--crit)" stroke-dasharray="4 4"/>
+        <text x="810" y="126" text-anchor="middle" font-size="11" fill="var(--crit)">10 s (umbral)</text>
+        <text x="90" y="126" text-anchor="middle" font-size="11">0 s</text>
+        <text x="10" y="42" font-size="12" class="bar-lab">YCB-V</text>
+        <rect x="90" y="30" width="453" height="20" rx="3" fill="var(--good)"/>
+        <text x="553" y="45" font-size="12" class="val-lab">6.29 s</text>
+        <text x="700" y="45" font-size="11" fill="var(--good)">margen 3.71 s</text>
+        <text x="10" y="86" font-size="12" class="bar-lab">T-LESS</text>
+        <rect x="90" y="74" width="481" height="20" rx="3" fill="var(--good)"/>
+        <text x="581" y="89" font-size="12" class="val-lab">6.68 s</text>
+        <text x="700" y="89" font-size="11" fill="var(--good)">margen 3.32 s</text>
+      </svg>
+      <p class="cap">Desglose: FoundationPose ~4.2 s + Diffusion (DDIM-25) + control + simulación. CoppeliaSim step 18.1 ms.</p>
+    </div>
+  </section>
+
+  <!-- Robustness & clutter -->
+  <section>
+    <div class="s-head"><span class="s-num">+</span><h2>Robustez y selección en clutter</h2><span class="tag">validado</span></div>
+    <div class="cols">
+      <div class="card">
+        <h3>Domain randomization (Iter 8)</h3>
+        <p>La randomización de apariencia <strong>triplica la precisión</strong> de agarre y la vuelve invariante a
+          forma y color.</p>
+        <div class="mrow"><span class="m-k">Proximidad de agarre · antes</span><span class="m-v">3.6 cm</span></div>
+        <div class="mrow"><span class="m-k">Proximidad de agarre · randomizado</span><span class="m-v pos">1.4 cm</span></div>
+        <div class="mrow"><span class="m-k">Errores de ejecución</span><span class="m-v">0</span></div>
+      </div>
+      <div class="card">
+        <h3>Selección entre distractores (Iter 9)</h3>
+        <p>El sistema elige la pieza indicada entre varias y <strong>verifica antes de actuar</strong> para no golpear
+          las demás.</p>
+        <div class="mrow"><span class="m-k">Agarre con distractores · v9</span><span class="m-v pos">100 %</span></div>
+        <div class="mrow"><span class="m-k">Agarre con distractores · v8</span><span class="m-v">84 %</span></div>
+        <div class="mrow"><span class="m-k">Verify-then-act (seguro)</span><span class="m-v">96 %</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- text-to-CAD extension -->
+  <section>
+    <div class="s-head"><span class="s-num">exp27</span><h2>Extensión text-to-CAD → simulación → pose → agarre</h2><span class="tag">nuevo · 100 % local</span></div>
+    <p class="lead">Genera piezas de prueba desde una descripción en lenguaje (build123d), las simula en CoppeliaSim con
+      física real, estima su pose 6-DoF desde profundidad <strong>real</strong> del sensor y ejecuta el agarre — todo
+      en el Mac, con un refinador de pose por gradiente sobre la GPU integrada (Apple MPS).</p>
+    <div class="cols">
+      <div class="card">
+        <h3>Pose 6-DoF por pieza (desde depth real)</h3>
+        <table class="ptable">
+          <thead><tr><th>Pieza</th><th>Traslación</th><th>Rotación</th><th>Agarre</th></tr></thead>
+          <tbody>
+            <tr><td>Escuadra en L</td><td>4.1 mm</td><td>1.3°</td><td><span class="pill g">4.9 cm</span></td></tr>
+            <tr><td>Bloque escalonado</td><td>1.0 mm</td><td>1.6°</td><td><span class="pill g">4.7 cm</span></td></tr>
+            <tr><td>Tuerca hexagonal</td><td>37 mm</td><td>179°*</td><td><span class="pill g">3.9 cm</span></td></tr>
+          </tbody>
+        </table>
+        <p class="cap">*Flip de 180° por simetría de orden 6 — la ambigüedad esperada bajo vista parcial.</p>
+      </div>
+      <div class="card">
+        <h3>Refinador de pose en Apple MPS</h3>
+        <svg class="chart" viewBox="0 0 440 118" role="img" aria-label="Recuperacion de pose por gradiente en MPS">
+          <text x="8" y="40" font-size="11" class="bar-lab">Init</text>
+          <rect x="70" y="28" width="330" height="16" rx="3" fill="var(--line-strong)"/>
+          <text x="404" y="41" font-size="11" class="val-lab" text-anchor="end">27.9 mm</text>
+          <text x="8" y="82" font-size="11" class="bar-lab">Refinado</text>
+          <rect x="70" y="70" width="75" height="16" rx="3" fill="var(--accent)"/>
+          <text x="152" y="83" font-size="11" class="val-lab pos">6.3 mm</text>
+        </svg>
+        <div class="mrow"><span class="m-k">Tasa de éxito (&lt; 10 mm)</span><span class="m-v pos">95 %</span></div>
+        <div class="mrow"><span class="m-k">Sin CUDA · GPU del M1 (MPS)</span><span class="m-v">~230 it/s</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Guarantees -->
+  <section>
+    <div class="s-head"><span class="s-num">✓</span><h2>Garantías automáticas (CI)</h2></div>
+    <p class="lead">Toda la evidencia está blindada: cualquier cambio que descuadre un número entre la tesis, los reports
+      y el dashboard —o que rompa la física— hace fallar la suite.</p>
+    <div class="guard">
+      <div class="g"><div class="g-t">Consistencia numérica</div><div class="g-v"><span class="mono">26/26</span> checks</div></div>
+      <div class="g"><div class="g-t">Física reproducible</div><div class="g-v"><span class="mono">z=7.0 mm</span> repetible</div></div>
+      <div class="g"><div class="g-t">Suite de tests</div><div class="g-v"><span class="mono">293</span> passed</div></div>
+      <div class="g"><div class="g-t">Linter (ruff)</div><div class="g-v"><span class="mono">0</span> errores</div></div>
+      <div class="g"><div class="g-t">Tipos (mypy)</div><div class="g-v"><span class="mono">0</span> errores · 81 files</div></div>
+      <div class="g"><div class="g-t">Reproducibilidad</div><div class="g-v">CAD determinista</div></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="fr">
+      <span>Giocrisrai Godoy Bonillo · José Miguel Carrasco — Dir. Ivón Oristela Benítez González</span>
+      <span class="note">Fuente de verdad: reports JSON · verificado en CI · junio 2026</span>
+    </div>
+  </footer>
+</main>
+</body></html>
