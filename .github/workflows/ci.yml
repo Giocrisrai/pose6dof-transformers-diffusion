@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Calidad · ruff · mypy · tests · consistencia
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: 'latest'
+
+      - name: Install dependencies (sin pesos ni CUDA)
+        run: |
+          uv venv
+          uv pip install --quiet \
+            numpy>=1.26 scipy>=1.11 \
+            torch>=2.1 torchvision>=0.16 --index-strategy unsafe-best-match \
+            matplotlib>=3.8 opencv-python-headless>=4.8 trimesh>=4.0 \
+            pyyaml tqdm pillow scikit-learn \
+            fastapi "uvicorn[standard]" pydantic requests \
+            transformers coppeliasim-zmqremoteapi-client \
+            ruff mypy pytest>=8.0
+          uv pip install --quiet -e packages/bop_bootstrap_ci
+
+      - name: Lint (ruff)
+        run: |
+          source .venv/bin/activate
+          ruff check .
+
+      - name: Type check (mypy)
+        run: |
+          source .venv/bin/activate
+          mypy src scripts dashboard.py packages/bop_bootstrap_ci/src
+
+      - name: Tests (TFM + paquete PyPI)
+        run: |
+          source .venv/bin/activate
+          pytest tests/ -q -m "not integration" \
+            --ignore=tests/test_foundationpose_eval.py \
+            --ignore=tests/test_gdrnet.py
+          pytest packages/bop_bootstrap_ci/tests/ -q
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Consistencia del TFM (garantía)
+        run: |
+          source .venv/bin/activate
+          python scripts/verify_tfm_consistency.py
+
+  docker:
+    name: Build imagen Docker (API + dashboard)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build API image (sin push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/api.Dockerfile
+          push: false
+          tags: tfm-pose6dof-api:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
