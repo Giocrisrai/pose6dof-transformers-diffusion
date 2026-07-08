@@ -25,10 +25,12 @@ experiments/results/**/*.pkl
 # Notebooks (no necesarios en imagen API)
 notebooks/
 
-# Docs
-docs/
+# Docs (excluir contenido pero permitir descender para re-incluir el dashboard)
+docs/**
 *.pdf
 *.docx
+# Excepción: el dashboard ejecutivo lo sirve la API (COPY en api.Dockerfile)
+!docs/dashboard_ejecutivo.html
 
 # Git
 .git/

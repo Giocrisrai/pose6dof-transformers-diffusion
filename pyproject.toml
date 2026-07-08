@@ -178,3 +178,11 @@ warn_return_any = false
 # experiments/ y notebooks/ son scripts de un solo uso (sin estructura de paquete);
 # se excluyen del type-check estricto, igual que en el tiering de ruff.
 exclude = ["^experiments/", "^notebooks/", "\\.ipynb$"]
+
+# `exclude` evita el descubrimiento por directorio, pero mypy SÍ sigue imports
+# explícitos (p. ej. scripts/demo_charla importa experiments.run_pick_with_diffusion).
+# Este override garantiza que los módulos de experiments no rompan el type-check.
+[[tool.mypy.overrides]]
+module = ["experiments.*", "run_pick_with_diffusion", "collect_diffusion_dataset*"]
+ignore_errors = true
+follow_imports = "skip"
