@@ -54,8 +54,10 @@ COPY docs/dashboard_ejecutivo.html /app/docs/dashboard_ejecutivo.html
 RUN mkdir -p /app/data/models /app/experiments/results /app/experiments/checkpoints
 
 # ─── Healthcheck ─────────────────────────────────────────────
+# Respeta $PORT (Render/Fly asignan uno propio). La forma shell del CMD
+# expande la variable en runtime; con exec-form quedaría literal y fallaría.
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-    CMD curl -fsS http://localhost:8000/health || exit 1
+    CMD curl -fsS "http://localhost:${PORT:-8000}/health" || exit 1
 
 EXPOSE 8000
 
