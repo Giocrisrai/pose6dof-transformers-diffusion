@@ -83,6 +83,46 @@ check("4.dash recall 95.8/99.7", num_in(dash, CANON["rec_ycbv"], 1) and num_in(d
 check("4.dash Δ +3.0/+3.6 pp", num_in(dash, CANON["dpp_ycbv"], 1) and num_in(dash, CANON["dpp_tless"], 1))
 check("4.dash CI95 0.901–0.916", num_in(dash, CANON["ci_ycbv_lo"], 3) and num_in(dash, CANON["ci_ycbv_hi"], 3))
 
+# ── 5. H2 (diversidad multimodal) + robustez (Iter8) + clutter (Iter9) ─
+div = json.loads((RES / "exp8_diversity/exp8_results.json").read_text())
+rob = json.loads((RES / "pick_with_diffusion/eval_v8_robustez.json").read_text())
+clt = json.loads((RES / "pick_with_diffusion/eval_v9_clutter.json").read_text())
+prof = json.loads((RES / "exp10_profiling/exp10_results.json").read_text())
+
+# H2: Diffusion Policy es multimodal (>=2 modos) y más diverso que la heurística
+n_modes = div["best_n_modes_silhouette"]
+diff_std = div["diffusion_jerk_rms"]["std"]
+heur_std = div["heuristic_jerk_rms"]["std"]
+check("H2.diffusion multimodal (>=2 modos)", n_modes >= 2, f"modos={n_modes}")
+check("H2.diffusion > heurística en diversidad", diff_std > heur_std * 1e6,
+      f"std={diff_std:.3f} vs heurística≈{heur_std:.0e}")
+
+# Robustez (Iter8): la domain randomization MEJORA la precisión de agarre
+def prox(c):
+    return rob["condiciones"][c]["resumen"]["mean_grasp_proximity_m"]
+check("robustez.randomización mejora precisión (v8<v7a)",
+      prox("v8_randomized__cubo_rojo") < prox("v7a_phase2__cubo_rojo"),
+      f"{prox('v8_randomized__cubo_rojo')*100:.1f}cm < {prox('v7a_phase2__cubo_rojo')*100:.1f}cm")
+check("robustez.sin errores en todas las condiciones",
+      all(c["resumen"]["errores"] == 0 for c in rob["condiciones"].values()))
+
+# Clutter (Iter9): grasp con distractores mejora sobre v8
+g_v9 = clt["condiciones"]["v9_clutter__con_distractores"]["resumen"]["grasp_pct"]
+g_v8 = clt["condiciones"]["v8_randomized__con_distractores_seguro"]["resumen"]["grasp_pct"]
+g_v9s = clt["condiciones"]["v9_clutter__con_distractores_seguro"]["resumen"]["grasp_pct"]
+check("clutter.v9 grasp 100% con distractores", g_v9 == 100.0, f"{g_v9}%")
+check("clutter.v9 mejora sobre v8 (84→100)", g_v9 > g_v8, f"v9={g_v9}% v8={g_v8}%")
+
+# Latencia de muestreo DDIM-25 (citada en E4 como ~118 ms)
+lat25 = round(prof["diffusion_profiles_by_steps"]["25"]["full_sample_ms"]["mean"])
+
+# La Entrega 4 cita coherentemente H2 y los números de clutter/latencia
+t4 = docx_text(REPO / "docs/entrega4/TFM_Entrega4_UNIR.docx")
+if t4:
+    check("E4.H2 multimodal", "H2" in t4 and "multimodal" in t4.lower())
+    check("E4.clutter 84/96/100 %", all(str(int(x)) in t4 for x in [g_v8, g_v9s, g_v9]))
+    check("E4.latencia 118 ms (DDIM-25)", num_in(t4, lat25, 0), f"{lat25}ms")
+
 # ── Informe ─────────────────────────────────────────────────────────
 print("\n=== VERIFICACIÓN DE CONSISTENCIA — TFM COMPLETO ===")
 print(f"Canónicos (fuente: reports JSON): {CANON}\n")
