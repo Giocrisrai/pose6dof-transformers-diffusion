@@ -18,6 +18,7 @@ Salida:
     experiments/results/exp20_vla_multi_object/exp20_results.json
 """
 from __future__ import annotations
+
 import argparse
 import json
 import sys
@@ -72,7 +73,7 @@ def get_device():
 
 class CLIPTextEncoder:
     def __init__(self, device):
-        from transformers import CLIPTokenizer, CLIPTextModel
+        from transformers import CLIPTextModel, CLIPTokenizer
         self.device = device
         self.tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")
         self.model = CLIPTextModel.from_pretrained("openai/clip-vit-base-patch32").to(device)
@@ -440,7 +441,7 @@ def main():
     scenes_val, ce_val = make_dataset(args.n_val, SEED + 1, clip_encoder)
     n_dist_train = np.bincount([s["n_obj"] for s in scenes_train], minlength=MAX_OBJ + 1)
     print(f"  Train N distribution: {dict(enumerate(n_dist_train))}")
-    print(f"  Ejemplos:")
+    print("  Ejemplos:")
     for s in scenes_train[:3]:
         print(f"    text='{s['text']}' | n_obj={s['n_obj']} | target={s['target_idx']}")
 
@@ -493,7 +494,7 @@ def main():
     print("\n" + "=" * 60)
     print(f"  GLOBAL selection acc: {metrics['selection_accuracy_global']:.1%}  "
           f"({'PASA' if pass_flags['global_above'] else 'FALLA'})")
-    print(f"  Por N de objetos:")
+    print("  Por N de objetos:")
     for N, acc in sorted(metrics["accuracy_by_n_objects"].items()):
         n = metrics["n_by_n_objects"][N]
         flag = "✓" if acc >= criteria["acc_min_per_n"] else "✗"

@@ -26,7 +26,11 @@ sys.path.insert(0, str(REPO))
 
 from experiments.collect_diffusion_dataset import _capture_rgbd_only, sample_pose
 from experiments.collect_diffusion_dataset_v8_randomized import (
-    COLORES, FORMAS, PALETA, PARK, _setup_piezas,
+    COLORES,
+    FORMAS,
+    PALETA,
+    PARK,
+    _setup_piezas,
 )
 from src.planning.diffusion_policy import DiffusionGraspPlanner
 

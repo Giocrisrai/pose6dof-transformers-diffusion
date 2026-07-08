@@ -1,7 +1,13 @@
 """Figura de percepción real del E2E: RGB, depth y nube segmentada + CAD registrado."""
-import sys; from pathlib import Path; import numpy as np
+import sys
+from pathlib import Path
+
+import numpy as np
+
 REPO=Path("/Users/giocrisraigodoy/Documents/MATLAB/TFM/repo_tfm"); sys.path.insert(0,str(REPO))
-import open3d as o3d, trimesh, json
+import open3d as o3d
+import trimesh
+import json
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 SCR=Path(__file__).resolve().parent/"figs"
 D=REPO/"experiments/results/exp27_text_to_cad"

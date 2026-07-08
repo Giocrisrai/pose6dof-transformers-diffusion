@@ -11,14 +11,18 @@ Cierra dos brechas del proxy previo:
 El estimador de pose sigue siendo clásico (FoundationPose neuronal necesita
 GPU/Colab), pero ahora alimentado con datos de sensor reales.
 """
-import sys, json, math
+import json
+import math
+import sys
 from pathlib import Path
+
 import numpy as np
 
 REPO = Path("/Users/giocrisraigodoy/Documents/MATLAB/TFM/repo_tfm")
 sys.path.insert(0, str(REPO))
 import open3d as o3d
 import trimesh
+
 from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
 from src.simulation.pick_sequence import run_pick_sequence
 

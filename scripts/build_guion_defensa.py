@@ -13,6 +13,7 @@ Uso:  ../.venv_thesis/bin/python scripts/build_guion_defensa.py
 from __future__ import annotations
 
 from pathlib import Path
+
 from docx import Document
 
 REPO = Path(__file__).resolve().parents[1]
@@ -307,7 +308,6 @@ def _del_defensa(doc):
 
 
 def main() -> int:
-    from docx.text.paragraph import Paragraph
 
     doc = Document(DOC)
     existed = _del_defensa(doc)

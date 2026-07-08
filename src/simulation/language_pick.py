@@ -203,7 +203,7 @@ def apply_scene(bridge, specs: list[SimObjectSpec]) -> list[SimObjectSpec]:
     """
     sim = bridge.sim
     try:
-        from src.simulation.multi_object_scene import _list_existing_cubes, PARK_POSITION
+        from src.simulation.multi_object_scene import PARK_POSITION, _list_existing_cubes
         for h in _list_existing_cubes(sim):
             sim.setObjectPosition(h, -1, list(PARK_POSITION))
     except Exception:
@@ -291,8 +291,9 @@ def run_language_pick(instruction: str, scene: str = "multi",
         Si CoppeliaSim no está accesible en localhost:23000.
     """
     from pathlib import Path as _Path
+
     from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
-    from src.simulation.pick_sequence import run_pick_sequence, compile_mp4
+    from src.simulation.pick_sequence import compile_mp4, run_pick_sequence
 
     REPO = _Path(__file__).resolve().parents[2]
     scenes_dir = REPO / "data" / "scenes"

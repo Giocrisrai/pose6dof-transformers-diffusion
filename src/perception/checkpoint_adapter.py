@@ -13,12 +13,10 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 
-from .pose_estimator import PoseEstimate, PoseEstimator
-
+from .pose_estimator import PoseEstimate
 
 # Calibracion empirica: niveles de ruido estimados a partir de los numeros
 # publicados de cada metodo open-license sobre los benchmarks BOP-19.

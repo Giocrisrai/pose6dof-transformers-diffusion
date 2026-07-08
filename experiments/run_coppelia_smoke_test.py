@@ -34,8 +34,8 @@ SCENE_PATH = Path(
 
 def main() -> int:
     try:
-        from PIL import Image
         import numpy as np
+        from PIL import Image
     except ImportError:
         print("[FAIL] Faltan numpy / Pillow en el venv")
         return 1

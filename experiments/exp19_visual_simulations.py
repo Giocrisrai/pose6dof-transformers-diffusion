@@ -11,6 +11,7 @@ Salida:
     experiments/results/exp19_visual_sims/grid_overview.png
 """
 from __future__ import annotations
+
 import json
 import sys
 from pathlib import Path
@@ -38,7 +39,7 @@ OUTPUT.mkdir(parents=True, exist_ok=True)
 
 
 def load_model():
-    from transformers import CLIPTokenizer, CLIPTextModel
+    from transformers import CLIPTextModel, CLIPTokenizer
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     tok = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")
     clip_mod = CLIPTextModel.from_pretrained("openai/clip-vit-base-patch32").to(device).eval()

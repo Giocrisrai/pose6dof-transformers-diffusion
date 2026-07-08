@@ -20,8 +20,8 @@ import shutil
 import sys
 
 from docx import Document
-from docx.shared import Inches, Pt  # noqa: F401  (Pt disponible por si se ajustan tamanos)
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.shared import Inches, Pt  # noqa: F401  (Pt disponible por si se ajustan tamanos)
 
 # --- Rutas (relativas a la raiz del repo repo_tfm) ---------------------------
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

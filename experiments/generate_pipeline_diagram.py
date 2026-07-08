@@ -14,6 +14,7 @@ Bloques: Imagen RGB-D + CAD -> FoundationPose (Transformer)
 Salida: experiments/results/pipeline_e2e/fig_pipeline_arquitectura.png
 """
 from __future__ import annotations
+
 import os
 from pathlib import Path
 

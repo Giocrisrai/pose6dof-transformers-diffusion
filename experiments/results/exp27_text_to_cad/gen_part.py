@@ -16,8 +16,8 @@ Uso:
 """
 from pathlib import Path
 
-from build123d import Box, Cylinder, Pos, Rot, export_step, export_stl, export_gltf
 import trimesh
+from build123d import Box, Cylinder, Pos, Rot, export_gltf, export_step, export_stl
 
 ASSETS = Path(__file__).resolve().parent / "assets"
 ASSETS.mkdir(exist_ok=True)

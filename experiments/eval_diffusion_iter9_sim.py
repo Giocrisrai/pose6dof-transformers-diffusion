@@ -28,10 +28,15 @@ import torch
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
-from experiments.eval_diffusion_iter2_sim import EVAL_SEED, sample_pose_eval
 from experiments.collect_diffusion_dataset_v9_clutter import park_piezas_fijas
+from experiments.eval_diffusion_iter2_sim import EVAL_SEED, sample_pose_eval
 from experiments.eval_diffusion_iter8_sim import (
-    COLORES, FORMAS, PALETA, _load_policy, _preparar_pieza, _resumen,
+    COLORES,
+    FORMAS,
+    PALETA,
+    _load_policy,
+    _preparar_pieza,
+    _resumen,
 )
 from experiments.run_pick_with_diffusion import pick_with_dp
 from src.planning.visual_encoder import ResNet18RGBDEncoder

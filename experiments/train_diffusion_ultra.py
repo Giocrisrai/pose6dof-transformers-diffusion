@@ -14,6 +14,7 @@ Objetivo: MSE final < 0.005 (vs 0.013 extended, 0.020 original).
 Salida: data/models/diffusion_policy_ultra.pth
 """
 from __future__ import annotations
+
 import json
 import sys
 import time
@@ -35,7 +36,6 @@ from src.planning.diffusion_policy import (
     DiffusionGraspPlanner,
     SimpleDDPMScheduler,
 )
-
 
 # CONFIG ULTRA
 N_SAMPLES = 10000

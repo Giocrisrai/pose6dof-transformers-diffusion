@@ -134,9 +134,6 @@ def pick_with_dp(
         }
     """
     import math
-    from src.simulation.pick_sequence import (
-        _move_tcp_via_ik, _setup_ik, set_gripper, setup_robot_control,
-    )
 
     GRASP_THRESHOLD_M = 0.05
     DEPOSIT_TARGET = [-0.30, -0.30, 0.30]

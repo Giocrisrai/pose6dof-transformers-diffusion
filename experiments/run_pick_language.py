@@ -24,9 +24,9 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
-from src.language import make_parser            # noqa: E402
-from src.language.demo import demo_scene        # noqa: E402
-from src.language.grounding import Grounder     # noqa: E402
+from src.language import make_parser  # noqa: E402
+from src.language.demo import demo_scene  # noqa: E402
+from src.language.grounding import Grounder  # noqa: E402
 
 RESULTS = REPO / "experiments/results/language_pick"
 

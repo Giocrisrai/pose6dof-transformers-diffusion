@@ -19,6 +19,7 @@ Uso:
          -d '{"object_position": [0.0, 0.0, 0.8], "model": "ultra"}'
 """
 from __future__ import annotations
+
 import json
 import sys
 import time
@@ -234,6 +235,7 @@ def load_model(name: str):
         raise HTTPException(status_code=404, detail=f"Pesos no encontrados: {info['path'].name}")
 
     import torch
+
     from src.planning.diffusion_policy import ConditionalUNet1D, SimpleDDPMScheduler
 
     device = get_device()

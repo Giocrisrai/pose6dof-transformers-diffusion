@@ -22,16 +22,16 @@ import torch
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
+from experiments.collect_diffusion_dataset import _capture_rgbd_for_pose
+from experiments.eval_diffusion_iter2_sim import sample_pose_eval
+from experiments.run_pick_with_diffusion import pick_with_dp
 from src.planning.diffusion_policy import DiffusionGraspPlanner
 from src.planning.visual_encoder import ResNet18RGBDEncoder
-from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
 from src.rl.dppo_agent import DPPOAgent, DPPOEpisode
 from src.rl.replay_buffer import EpisodeBuffer
 from src.rl.reward_fn import compute_terminal_reward
 from src.rl.value_net import ValueNet
-from experiments.run_pick_with_diffusion import pick_with_dp
-from experiments.collect_diffusion_dataset import _capture_rgbd_for_pose
-from experiments.eval_diffusion_iter2_sim import sample_pose_eval
+from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger("dppo_phaseA")
@@ -103,10 +103,14 @@ def main() -> int:
     rolling_rewards = []
     update_log = []
 
-    from src.simulation.pick_sequence import (
-        _move_tcp_via_ik, _setup_ik, set_gripper, setup_robot_control,
-    )
     import math
+
+    from src.simulation.pick_sequence import (
+        _move_tcp_via_ik,
+        _setup_ik,
+        set_gripper,
+        setup_robot_control,
+    )
     GRASP_THRESHOLD_M = 0.05
     DEPOSIT_TARGET = [-0.30, -0.30, 0.30]
     DEPOSIT_THRESHOLD_M = 0.30

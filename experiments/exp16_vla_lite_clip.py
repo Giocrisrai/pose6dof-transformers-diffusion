@@ -20,6 +20,7 @@ Salida:
     experiments/results/exp16_vla_lite/exp16_results.json
 """
 from __future__ import annotations
+
 import argparse
 import json
 import sys
@@ -75,7 +76,7 @@ def get_device():
 class CLIPTextEncoder:
     """Wrapper minimo del CLIP text encoder (frozen)."""
     def __init__(self, device):
-        from transformers import CLIPTokenizer, CLIPTextModel
+        from transformers import CLIPTextModel, CLIPTokenizer
         self.device = device
         self.tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")
         self.model = CLIPTextModel.from_pretrained("openai/clip-vit-base-patch32").to(device)

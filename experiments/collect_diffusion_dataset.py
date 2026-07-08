@@ -222,7 +222,10 @@ def phase_executed(n: int = N_EXECUTED) -> None:
     """
     from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
     from src.simulation.pick_sequence import (
-        _move_tcp_via_ik, _setup_ik, set_gripper, setup_robot_control,
+        _move_tcp_via_ik,
+        _setup_ik,
+        set_gripper,
+        setup_robot_control,
     )
     from src.utils.lie_groups import so3_log
 

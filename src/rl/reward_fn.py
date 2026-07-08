@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import numpy as np
 
-
 GRASP_PHASE_END = 6        # k=0..5: aproximación + grasp
 DEPOSIT_PHASE_START = 9    # k=9..15: lift + deposit
 

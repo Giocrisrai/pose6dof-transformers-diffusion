@@ -13,9 +13,7 @@ Uso:
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
-from matplotlib import font_manager
 from matplotlib import rcParams
-
 
 # ============================================================================
 # PALETA — design tokens cohesionados

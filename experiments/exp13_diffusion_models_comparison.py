@@ -18,6 +18,7 @@ Bootstrap CI 95% sobre 50 muestras por modelo.
 Salida: experiments/results/exp13_model_comparison/exp13_results.json + figura
 """
 from __future__ import annotations
+
 import json
 import sys
 import time
@@ -32,7 +33,6 @@ OUT = REPO / "experiments/results/exp13_model_comparison"
 OUT.mkdir(parents=True, exist_ok=True)
 
 from src.planning.diffusion_policy import ConditionalUNet1D, SimpleDDPMScheduler
-
 
 MODELS = {
     "original": {

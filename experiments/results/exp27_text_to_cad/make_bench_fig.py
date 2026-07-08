@@ -1,6 +1,7 @@
 """Figura del benchmark del refiner: init vs refinado (N semillas) + éxito."""
 from pathlib import Path
-import numpy as np, json
+import numpy as np
+import json
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 EXP = Path(__file__).resolve().parent
 b = json.loads((EXP/"mps_bench.json").read_text())

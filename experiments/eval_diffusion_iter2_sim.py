@@ -22,9 +22,9 @@ import torch
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
+from experiments.run_pick_with_diffusion import pick_with_dp
 from src.planning.diffusion_policy import DiffusionGraspPlanner
 from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
-from experiments.run_pick_with_diffusion import pick_with_dp
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger("eval_iter2_sim")

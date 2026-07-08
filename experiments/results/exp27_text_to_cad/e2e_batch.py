@@ -1,11 +1,17 @@
 """E2E real (depth real -> pose -> pick) para varias piezas text-to-CAD."""
-import sys, json
+import json
+import sys
 from pathlib import Path
+
 import numpy as np
+
 REPO = Path("/Users/giocrisraigodoy/Documents/MATLAB/TFM/repo_tfm"); sys.path.insert(0, str(REPO))
-import open3d as o3d, trimesh
-from src.simulation.coppeliasim_bridge import CoppeliaSimBridge, CameraConfig
+import open3d as o3d
+import trimesh
+
+from src.simulation.coppeliasim_bridge import CameraConfig, CoppeliaSimBridge
 from src.simulation.pick_sequence import run_pick_sequence
+
 RES = (1024, 768)   # sensor de mayor resolución -> nubes más densas
 ASSETS = REPO / "experiments/results/exp27_text_to_cad/assets"
 VOX = 0.003

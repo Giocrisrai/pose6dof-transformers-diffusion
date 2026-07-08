@@ -14,6 +14,7 @@ Uso:
     .venv/bin/python experiments/make_decision_visualization.py --n 6 --out decision_grid.png
 """
 from __future__ import annotations
+
 import argparse
 import json
 import sys
@@ -40,6 +41,7 @@ TLESS_NAMES = {i: f"obj_{i:02d}_industrial_part" for i in range(1, 31)}
 
 def load_diffusion():
     import torch
+
     from src.planning.diffusion_policy import ConditionalUNet1D, SimpleDDPMScheduler
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     model = ConditionalUNet1D(action_dim=7, horizon=16, cond_dim=64, hidden_dim=256).to(device)

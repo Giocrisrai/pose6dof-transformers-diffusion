@@ -16,6 +16,7 @@ Salida:
     experiments/results/exp18_vla_shapes/exp18_results.json
 """
 from __future__ import annotations
+
 import argparse
 import json
 import sys
@@ -32,7 +33,6 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from src.planning.diffusion_policy import ConditionalUNet1D, SimpleDDPMScheduler
-
 
 HORIZON = 16
 ACTION_DIM = 7
@@ -82,7 +82,7 @@ def get_device():
 
 class CLIPTextEncoder:
     def __init__(self, device):
-        from transformers import CLIPTokenizer, CLIPTextModel
+        from transformers import CLIPTextModel, CLIPTokenizer
         self.device = device
         self.tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")
         self.model = CLIPTextModel.from_pretrained("openai/clip-vit-base-patch32").to(device)
@@ -422,7 +422,7 @@ def main():
         args.n_val, SEED + 1, clip_encoder, device)
     modes_train = np.bincount([s["mode"] for s in scenes_train], minlength=3)
     print(f"  Train modes: color={modes_train[0]} shape={modes_train[1]} both={modes_train[2]}")
-    print(f"  Ejemplos:")
+    print("  Ejemplos:")
     for s in scenes_train[:3]:
         print(f"    text='{s['text']}' | A=({s['c_a']},{s['s_a']}) B=({s['c_b']},{s['s_b']}) tgt={s['target_idx']}")
 
@@ -479,7 +479,7 @@ def main():
     print("\n" + "=" * 60)
     print(f"  GLOBAL selection acc: {metrics['selection_accuracy_global']:.1%}  "
           f"({'PASA' if pass_flags['global_above_target'] else 'FALLA'})")
-    print(f"  Por modo:")
+    print("  Por modo:")
     for mode, acc in metrics["accuracy_by_mode"].items():
         n = metrics["n_by_mode"][mode]
         flag = "✓" if acc >= criteria["acc_min_per_mode"] else "✗"

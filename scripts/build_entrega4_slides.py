@@ -16,9 +16,9 @@ Requiere python-pptx (disponible en ../.venv_thesis). Ejecutar como:
 """
 
 from pptx import Presentation
-from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
+from pptx.util import Inches, Pt
 
 # --- Rutas (relativas a la raíz del repo, que es el cwd esperado) -----------
 DECK_DEFENSA = "docs/entrega3/Presentacion_Defensa_TFM.pptx"

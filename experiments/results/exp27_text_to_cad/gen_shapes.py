@@ -5,9 +5,9 @@ Cada pieza traduce una descripción a un sólido con geometría de ground-truth
 exacta, exportado a STL/OBJ para simulación y pose.
 """
 from pathlib import Path
-from build123d import (Box, Cylinder, Pos, Rot, RegularPolygon, Circle,
-                       extrude, export_stl)
+
 import trimesh
+from build123d import Box, Circle, Cylinder, Pos, RegularPolygon, Rot, export_stl, extrude
 
 ASSETS = Path(__file__).resolve().parent / "assets"
 ASSETS.mkdir(exist_ok=True)

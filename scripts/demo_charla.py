@@ -58,6 +58,7 @@ def _load():
     if "m" in _cache:
         return _cache["m"]
     import torch
+
     from src.planning.diffusion_policy import ConditionalUNet1D, SimpleDDPMScheduler
 
     device = "mps" if torch.backends.mps.is_available() else ("cuda" if torch.cuda.is_available() else "cpu")
@@ -653,6 +654,7 @@ def _load_sim_stack(politica: str):
     if clave in _cache:
         return _cache[clave]
     import torch
+
     from src.planning.diffusion_policy import DiffusionGraspPlanner
     from src.planning.visual_encoder import ResNet18RGBDEncoder
 

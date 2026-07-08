@@ -8,21 +8,19 @@ Outputs:
     docs/figures_hero/04_modelos_comparativa.png      — comparativa modelos
 """
 from __future__ import annotations
-import json
+
 import sys
 from pathlib import Path
 
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
-from matplotlib.lines import Line2D
+from matplotlib.patches import FancyBboxPatch
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
-from src.utils.plot_style import COLORS, CATEGORICAL, apply_style, add_value_labels
-
+from src.utils.plot_style import COLORS, apply_style
 
 OUT = REPO / "docs/figures_hero"
 OUT.mkdir(parents=True, exist_ok=True)

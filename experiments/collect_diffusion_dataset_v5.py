@@ -19,8 +19,8 @@ import torch
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
-from src.planning.diffusion_policy import DiffusionGraspPlanner
 from experiments.collect_diffusion_dataset import _capture_rgbd_for_pose, sample_pose
+from src.planning.diffusion_policy import DiffusionGraspPlanner
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger("collect_v5")

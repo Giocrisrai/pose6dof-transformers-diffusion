@@ -27,8 +27,11 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from src.simulation.reel_overlay import (
-    normalize_frame, draw_title_bar, draw_metrics, draw_honesty_tag,
+    draw_honesty_tag,
+    draw_metrics,
+    draw_title_bar,
     make_title_card,
+    normalize_frame,
 )
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")

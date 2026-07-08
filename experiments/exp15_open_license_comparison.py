@@ -33,6 +33,7 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from bop_bootstrap_ci import bootstrap_auc_adds, bootstrap_recall
+
 from src.perception.checkpoint_adapter import (
     NOISE_PROFILES,
     CheckpointPoseEstimator,

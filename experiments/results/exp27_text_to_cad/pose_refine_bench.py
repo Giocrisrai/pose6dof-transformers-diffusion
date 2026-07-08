@@ -5,11 +5,13 @@ Corre el refiner render-and-compare (point-to-plane, autograd) sobre N hipótesi
 perturbadas aleatoriamente y reporta la estadística de convergencia y el speedup
 MPS (GPU del M1) frente a CPU. Todo local, sin CUDA.
 """
-import json, time
+import json
+import time
 from pathlib import Path
+
 import numpy as np
-import torch
 import open3d as o3d
+import torch
 import trimesh
 
 EXP = Path(__file__).resolve().parent

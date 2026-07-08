@@ -19,6 +19,7 @@ Salida:
     experiments/results/exp22_vla_size/exp22_results.json
 """
 from __future__ import annotations
+
 import argparse
 import json
 import sys
@@ -87,7 +88,7 @@ def size_normalize(size_mm):
 
 class CLIPTextEncoder:
     def __init__(self, device):
-        from transformers import CLIPTokenizer, CLIPTextModel
+        from transformers import CLIPTextModel, CLIPTokenizer
         self.device = device
         self.tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")
         self.model = CLIPTextModel.from_pretrained("openai/clip-vit-base-patch32").to(device)
@@ -424,7 +425,7 @@ def main():
     scenes_train, ce_train = make_dataset(args.n_train, SEED, clip_encoder)
     scenes_val, ce_val = make_dataset(args.n_val, SEED + 1, clip_encoder)
     print(f"  Train: {len(scenes_train)}  Val: {len(scenes_val)}")
-    print(f"  Ejemplos:")
+    print("  Ejemplos:")
     for s in scenes_train[:4]:
         print(f"    '{s['text']}' | N={s['n_obj']} | target={s['target_idx']}")
 
@@ -466,11 +467,11 @@ def main():
     print("\n" + "=" * 60)
     print(f"  GLOBAL accuracy: {metrics['selection_accuracy_global']:.1%}  "
           f"({'PASA' if pass_flags['global_above'] else 'FALLA'})")
-    print(f"  Por N:")
+    print("  Por N:")
     for N, acc in sorted(metrics["accuracy_by_n_objects"].items()):
         n = metrics["n_by_n_objects"][N]
         print(f"    N={N}: {acc:.1%} (n={n})")
-    print(f"  Por template:")
+    print("  Por template:")
     for tpl, acc in sorted(metrics["accuracy_by_template"].items()):
         n = metrics["n_by_template"][tpl]
         flag = "✓" if acc >= criteria["acc_min_per_template"] else "✗"

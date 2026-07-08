@@ -11,10 +11,11 @@ Uso:  ../.venv_thesis/bin/python scripts/add_defensa_swap_slide.py
 from __future__ import annotations
 
 from pathlib import Path
+
 from pptx import Presentation
-from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
+from pptx.util import Inches, Pt
 
 REPO = Path(__file__).resolve().parents[1]
 DECK = REPO / "docs/entrega3/Presentacion_Defensa_TFM_base.pptx"

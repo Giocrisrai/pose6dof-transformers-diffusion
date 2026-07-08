@@ -1,6 +1,8 @@
 """Catálogo de piezas + figura consolidada de métricas del mini-batch."""
 from pathlib import Path
-import numpy as np, json, trimesh
+import numpy as np
+import json
+import trimesh
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 D = Path("/Users/giocrisraigodoy/Documents/MATLAB/TFM/repo_tfm/experiments/results/exp27_text_to_cad")

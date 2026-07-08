@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """exp27 · text-to-CAD — Regenera las figuras a partir de los .npy en figs/."""
 from pathlib import Path
-import numpy as np
+
 import matplotlib
+import numpy as np
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 

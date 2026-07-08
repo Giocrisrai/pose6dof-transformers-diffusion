@@ -1,7 +1,9 @@
 """Superpone un HUD sobre los frames cinematográficos del pick y compila MP4+GIF.
 Interfaz visual de nuestra simulación: estado (pieza, pose, fase) sobre la escena."""
-import subprocess, json
+import json
+import subprocess
 from pathlib import Path
+
 from PIL import Image, ImageDraw, ImageFont
 
 EXP = Path(__file__).resolve().parent

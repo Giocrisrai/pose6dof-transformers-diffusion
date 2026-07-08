@@ -30,7 +30,9 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from src.simulation.language_pick import (  # noqa: E402
-    SimObjectSpec, evaluate_selection, plan_language_scene,
+    SimObjectSpec,
+    evaluate_selection,
+    plan_language_scene,
 )
 
 OUT = REPO / "experiments" / "results" / "language_battery"

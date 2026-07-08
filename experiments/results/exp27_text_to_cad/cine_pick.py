@@ -1,12 +1,15 @@
 """Render cinematográfico del pick de la pieza text-to-CAD desde dentro de
 CoppeliaSim (3ª persona) + HUD superpuesto. Interfaz visual de nuestra simulación."""
-import sys, math
+import math
+import sys
 from pathlib import Path
+
 import numpy as np
+
 REPO = Path("/Users/giocrisraigodoy/Documents/MATLAB/TFM/repo_tfm"); sys.path.insert(0, str(REPO))
-from src.simulation.coppeliasim_bridge import CoppeliaSimBridge, CameraConfig
+from src.simulation.cine_camera import look_at_matrix, orbit_position
+from src.simulation.coppeliasim_bridge import CameraConfig, CoppeliaSimBridge
 from src.simulation.pick_sequence import run_pick_sequence
-from src.simulation.cine_camera import orbit_position, look_at_matrix
 
 EXP = REPO/"experiments/results/exp27_text_to_cad"
 OBJ = str(EXP/"assets/test_bracket.obj")

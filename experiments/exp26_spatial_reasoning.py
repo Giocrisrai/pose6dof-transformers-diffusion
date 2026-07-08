@@ -15,6 +15,7 @@ Salida:
     experiments/results/exp26_spatial/exp26_results.json
 """
 from __future__ import annotations
+
 import argparse
 import json
 import sys
@@ -79,7 +80,7 @@ def get_device():
 
 class CLIPTextEncoder:
     def __init__(self, device):
-        from transformers import CLIPTokenizer, CLIPTextModel
+        from transformers import CLIPTextModel, CLIPTokenizer
         self.device = device
         self.tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")
         self.model = CLIPTextModel.from_pretrained("openai/clip-vit-base-patch32").to(device)
@@ -393,11 +394,11 @@ def main():
     print("\n[1/4] CLIP text encoder...")
     clip_encoder = CLIPTextEncoder(device)
 
-    print(f"\n[2/4] Generando escenas con templates espaciales...")
+    print("\n[2/4] Generando escenas con templates espaciales...")
     scenes_train, ce_train = make_dataset(args.n_train, SEED, clip_encoder)
     scenes_val, ce_val = make_dataset(args.n_val, SEED + 1, clip_encoder)
     print(f"  Train: {len(scenes_train)}, Val: {len(scenes_val)}")
-    print(f"  Ejemplos:")
+    print("  Ejemplos:")
     for s in scenes_train[:4]:
         print(f"    '{s['text']}' | n_obj={s['n_obj']} | target={s['target_idx']}")
 
@@ -437,7 +438,7 @@ def main():
     print("\n" + "=" * 60)
     print(f"  GLOBAL accuracy: {metrics['selection_accuracy_global']:.1%}  "
           f"({'PASA' if pass_flags['global_above'] else 'FALLA'})")
-    print(f"  Por template:")
+    print("  Por template:")
     for tpl, acc in sorted(metrics["accuracy_by_template"].items(), key=lambda x: -x[1]):
         n = metrics["n_by_template"][tpl]
         flag = "✓" if acc >= criteria["acc_min_per_template"] else "✗"

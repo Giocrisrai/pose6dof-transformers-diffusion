@@ -28,6 +28,7 @@ Salida:
     experiments/results/exp24_clip_image/exp24_results.json
 """
 from __future__ import annotations
+
 import argparse
 import json
 import sys
@@ -143,7 +144,7 @@ def render_object_crop(color: str, shape: str, size_px: int = 64, rng=None) -> n
 class CLIPEncoders:
     """Wrapper que mantiene CLIP-text y CLIP-image cargados."""
     def __init__(self, device):
-        from transformers import CLIPTokenizer, CLIPTextModel, CLIPProcessor, CLIPVisionModel
+        from transformers import CLIPProcessor, CLIPTextModel, CLIPTokenizer, CLIPVisionModel
         self.device = device
         self.tok = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")
         self.text_model = CLIPTextModel.from_pretrained("openai/clip-vit-base-patch32").to(device).eval()
@@ -432,7 +433,7 @@ def main():
     print("\n[1/5] Cargando CLIP text + vision...")
     clip_encoders = CLIPEncoders(device)
 
-    print(f"\n[2/5] Generando escenas y precomputando CLIP-text + CLIP-image embeddings...")
+    print("\n[2/5] Generando escenas y precomputando CLIP-text + CLIP-image embeddings...")
     rng = np.random.default_rng(SEED)
     scenes_train = [generate_scene(rng) for _ in range(args.n_train)]
     scenes_val = [generate_scene(rng) for _ in range(args.n_val)]

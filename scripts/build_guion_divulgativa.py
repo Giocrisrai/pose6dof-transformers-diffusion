@@ -11,6 +11,7 @@ Uso:  ../.venv_thesis/bin/python scripts/build_guion_divulgativa.py
 from __future__ import annotations
 
 from pathlib import Path
+
 from docx import Document
 
 REPO = Path(__file__).resolve().parents[1]

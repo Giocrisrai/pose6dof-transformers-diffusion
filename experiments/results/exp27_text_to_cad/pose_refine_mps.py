@@ -6,11 +6,13 @@ Análogo local del refiner de FoundationPose: parte de una hipótesis global cl�
 autograd de PyTorch sobre la GPU Metal (MPS), la distancia de la nube de profundidad
 REAL observada al modelo CAD. Compara con la ground-truth exacta.
 """
-import sys, json
+import json
+import sys
 from pathlib import Path
+
 import numpy as np
-import torch
 import open3d as o3d
+import torch
 import trimesh
 
 REPO = Path("/Users/giocrisraigodoy/Documents/MATLAB/TFM/repo_tfm")
@@ -90,6 +92,7 @@ def loss_fn(R, t):
     return (p2plane.mean() + 0.1*p2point.mean())
 
 import time
+
 losses=[]; t0=time.time()
 for it in range(500):
     opt.zero_grad()

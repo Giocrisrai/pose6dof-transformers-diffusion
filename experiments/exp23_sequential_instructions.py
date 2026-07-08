@@ -22,6 +22,7 @@ Salida:
     experiments/results/exp23_sequential/scene_*.png
 """
 from __future__ import annotations
+
 import json
 import re
 import sys
@@ -118,7 +119,7 @@ class StepResult:
 
 
 def load_model():
-    from transformers import CLIPTokenizer, CLIPTextModel
+    from transformers import CLIPTextModel, CLIPTokenizer
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     tok = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")
     clip_mod = CLIPTextModel.from_pretrained("openai/clip-vit-base-patch32").to(device).eval()
@@ -364,7 +365,7 @@ def render_sequence(scene_idx, scene, result, save_path):
     ax2 = fig.add_subplot(gs[1])
     ax2.set_axis_off()
     text_lines = [
-        f"INSTRUCCIÓN COMPLETA",
+        "INSTRUCCIÓN COMPLETA",
         f'   "{scene["text"]}"',
         "",
         f"SUB-PASOS PARSEADOS ({len(result['parsed_steps'])})  +  RESULTADO POR PASO",
@@ -399,7 +400,7 @@ def render_sequence(scene_idx, scene, result, save_path):
 
 def main():
     print("[exp23] Ejecucion de instrucciones secuenciales multi-step")
-    print(f"  Reusando modelo del exp 20 (diffusion_policy_clip_multi.pth)")
+    print("  Reusando modelo del exp 20 (diffusion_policy_clip_multi.pth)")
     print(f"  {len(DEMO_SCENES)} escenas demostrativas")
     models = load_model()
     print(f"  device={models[-2]}")

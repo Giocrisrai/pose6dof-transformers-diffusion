@@ -74,6 +74,7 @@ sim.handleVisionSensor(vs)
 img, res = sim.getVisionSensorImg(vs)
 buf = sim.unpackUInt8Table(img) if isinstance(img, str) else list(img)
 from PIL import Image
+
 Image.fromarray(np.flipud(np.array(buf, np.uint8).reshape(res[1], res[0], 3))).save(FIGS / "sim_drop_final.png")
 final = sim.getObjectPosition(obj, -1)
 sim.stopSimulation()

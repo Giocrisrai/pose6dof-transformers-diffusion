@@ -52,10 +52,11 @@ def main() -> int:
     Finalmente compila todos los frames en un único language_reel.mp4.
     """
     import cv2
+
     from src.language import make_parser
+    from src.simulation import reel_overlay
     from src.simulation.language_pick import run_language_pick
     from src.simulation.pick_sequence import compile_mp4
-    from src.simulation import reel_overlay
 
     out_dir = REPO / "experiments" / "results" / "language_reel"
     all_frames_dir = out_dir / "frames"

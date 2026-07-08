@@ -12,6 +12,7 @@ Salida:
     experiments/results/exp17_vla_robustness/exp17_results.json
 """
 from __future__ import annotations
+
 import json
 import sys
 import time
@@ -26,7 +27,6 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from src.planning.diffusion_policy import ConditionalUNet1D
-
 
 OUTPUT = REPO / "experiments/results/exp17_vla_robustness"
 OUTPUT.mkdir(parents=True, exist_ok=True)
@@ -99,7 +99,7 @@ TEST_FAMILIES = {
 
 def load_vla_model():
     """Carga el modelo VLA-lite del exp16."""
-    from transformers import CLIPTokenizer, CLIPTextModel
+    from transformers import CLIPTextModel, CLIPTokenizer
 
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     tok = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")

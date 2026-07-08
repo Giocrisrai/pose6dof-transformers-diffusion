@@ -21,11 +21,11 @@ import torch
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
+from experiments.eval_diffusion_iter2_sim import EVAL_SEED, sample_pose_eval
+from experiments.run_pick_with_diffusion import pick_with_dp
 from src.planning.diffusion_policy import DiffusionGraspPlanner
 from src.planning.visual_encoder import ResNet18RGBDEncoder
 from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
-from experiments.run_pick_with_diffusion import pick_with_dp
-from experiments.eval_diffusion_iter2_sim import sample_pose_eval, EVAL_SEED
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger("eval_iter3_sim")

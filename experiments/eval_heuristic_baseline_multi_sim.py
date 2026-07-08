@@ -21,15 +21,19 @@ import numpy as np
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
+from experiments.eval_diffusion_iter2_sim import EVAL_SEED
 from src.planning.diffusion_policy import DiffusionGraspPlanner
 from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
 from src.simulation.multi_object_scene import (
-    measure_collision, setup_multi_object_scene,
+    measure_collision,
+    setup_multi_object_scene,
 )
 from src.simulation.pick_sequence import (
-    _move_tcp_via_ik, _setup_ik, set_gripper, setup_robot_control,
+    _move_tcp_via_ik,
+    _setup_ik,
+    set_gripper,
+    setup_robot_control,
 )
-from experiments.eval_diffusion_iter2_sim import EVAL_SEED
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger("eval_heur_multi")

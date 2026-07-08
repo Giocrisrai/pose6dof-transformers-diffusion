@@ -14,7 +14,6 @@ Muestra:
 - Video demo MP4 + diagrama arquitectura
 """
 import json
-import os
 from pathlib import Path
 
 import numpy as np
@@ -256,8 +255,8 @@ def render_language_tab(instruction: str) -> dict:
     Separada de los widgets para ser testeable sin servidor Streamlit.
     """
     from src.language import make_parser
-    from src.language.grounding import Grounder
     from src.language.demo import demo_scene
+    from src.language.grounding import Grounder
     objetos = demo_scene()
     instr = make_parser("deterministic").parse(instruction)
     res = Grounder(method="attribute").ground(instr, objetos)

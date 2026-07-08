@@ -16,6 +16,7 @@ Salida:
     experiments/results/exp25_robustness/fig_robustness_curves.png
 """
 from __future__ import annotations
+
 import json
 import sys
 import time
@@ -32,9 +33,16 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from bop_bootstrap_ci import bootstrap_recall  # reusa el paquete del exp 1
+
 from experiments.exp24_clip_image_grounding import (
-    CLIPEncoders, VisualGate, CLIPProjector,
-    render_object_crop, generate_scene, MAX_OBJ, COLORS, SHAPES,
+    COLORS,
+    MAX_OBJ,
+    SHAPES,
+    CLIPEncoders,
+    CLIPProjector,
+    VisualGate,
+    generate_scene,
+    render_object_crop,
 )
 
 OUTPUT = REPO / "experiments/results/exp25_robustness"
@@ -70,7 +78,7 @@ def perturb_crop(crop: np.ndarray, occlusion_pct: float, noise_sigma: float,
 
 
 def load_model(device):
-    from transformers import CLIPTokenizer, CLIPTextModel, CLIPProcessor, CLIPVisionModel
+    from transformers import CLIPProcessor, CLIPTextModel, CLIPTokenizer, CLIPVisionModel
     clip = CLIPEncoders(device)
     ckpt = torch.load(REPO / "data/models/diffusion_policy_clip_image.pth",
                        map_location=device, weights_only=True)
