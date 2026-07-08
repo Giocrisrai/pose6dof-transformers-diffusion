@@ -9,7 +9,9 @@ services:
     dockerfilePath: docker/api.Dockerfile
     dockerContext: .
     plan: free
-    healthCheckPath: /health
+    # Healthcheck en / (dashboard, ligero): no carga torch, así el free tier
+    # (512 MB) arranca robusto. torch se importa solo al llamar /plan-grasp o /e2e.
+    healthCheckPath: /
     # El CMD del Dockerfile ya arranca uvicorn en ${PORT:-8000} (dashboard en /,
     # API en /docs), así que Render lo usa tal cual con su $PORT.
     autoDeploy: true
