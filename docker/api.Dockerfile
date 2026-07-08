@@ -50,6 +50,8 @@ COPY scripts/api_server.py /app/scripts/api_server.py
 COPY scripts/gradio_demo.py /app/scripts/gradio_demo.py
 COPY scripts/launch_api_and_gradio.sh /app/scripts/launch_api_and_gradio.sh
 COPY README.md /app/README.md
+# Dashboard ejecutivo (servido en / por la API) — autocontenido
+COPY docs/dashboard_ejecutivo.html /app/docs/dashboard_ejecutivo.html
 
 # Los pesos y checkpoints se montan por volumen (no se incluyen en la imagen)
 RUN mkdir -p /app/data/models /app/experiments/results /app/experiments/checkpoints

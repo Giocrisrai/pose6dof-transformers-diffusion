@@ -28,9 +28,11 @@ from typing import Optional
 
 import numpy as np
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 
 REPO = Path(__file__).resolve().parents[1]
+DASHBOARD = REPO / "docs/dashboard_ejecutivo.html"
 sys.path.insert(0, str(REPO))
 
 app = FastAPI(
@@ -277,16 +279,29 @@ def ddim_sample(model, scheduler, cond, device, n_steps=25):
 # ENDPOINTS
 # ============================================================================
 
-@app.get("/", tags=["info"])
+@app.get("/", include_in_schema=False)
 def root():
-    """Información general del servicio."""
+    """Landing: el dashboard ejecutivo (o el JSON de servicio si no está)."""
+    if DASHBOARD.exists():
+        return FileResponse(str(DASHBOARD), media_type="text/html")
+    return JSONResponse(_service_info())
+
+
+def _service_info() -> dict:
     return {
         "service": "TFM Pose 6-DoF Pipeline API",
         "version": "1.0.0",
         "description": "Integración Transformer + Diffusion Policy para bin picking robótico",
         "docs": "/docs",
+        "dashboard": "/",
         "github": "https://github.com/Giocrisrai/pose6dof-transformers-diffusion",
     }
+
+
+@app.get("/api", tags=["info"])
+def api_info():
+    """Información general del servicio (contrato JSON)."""
+    return _service_info()
 
 
 @app.get("/health", response_model=HealthResponse, tags=["info"])

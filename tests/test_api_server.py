@@ -21,8 +21,15 @@ def client():
 
 
 class TestRootEndpoints:
-    def test_root_returns_info(self, client):
+    def test_root_serves_dashboard_or_info(self, client):
         r = client.get("/")
+        assert r.status_code == 200
+        ct = r.headers.get("content-type", "")
+        # landing = dashboard HTML si está presente; si no, JSON de servicio
+        assert "text/html" in ct or r.json()["service"] == "TFM Pose 6-DoF Pipeline API"
+
+    def test_api_info_contract(self, client):
+        r = client.get("/api")
         assert r.status_code == 200
         data = r.json()
         assert data["service"] == "TFM Pose 6-DoF Pipeline API"
