@@ -1,11 +1,11 @@
 # =============================================================
-# TFM Pose 6-DoF — API REST + Gradio demo (ligero, sin ROS)
+# TFM Pose 6-DoF — Aplicación: API REST + dashboard ejecutivo (ligero, sin ROS)
 # Multi-arch: ARM64 (Apple Silicon) y AMD64 (servidor x86)
 # =============================================================
 # Build:
 #   docker build -f docker/api.Dockerfile -t tfm-pose6dof-api:latest .
-# Run (API en 8000, Gradio en 7860):
-#   docker run --rm -p 8000:8000 -p 7860:7860 \
+# Run (dashboard en / y API en /docs, puerto 8000):
+#   docker run --rm -p 8000:8000 \
 #       -v $(pwd)/data/models:/app/data/models:ro \
 #       -v $(pwd)/experiments:/app/experiments:ro \
 #       tfm-pose6dof-api:latest
@@ -14,7 +14,7 @@
 FROM python:3.12-slim AS base
 
 LABEL maintainer="Giocrisrai Godoy <giocrisrai@gmail.com>"
-LABEL description="API REST + Gradio demo del pipeline TFM Pose 6-DoF"
+LABEL description="API REST + dashboard ejecutivo del pipeline TFM Pose 6-DoF"
 LABEL org.opencontainers.image.source="https://github.com/Giocrisrai/pose6dof-transformers-diffusion"
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -34,21 +34,18 @@ WORKDIR /app
 RUN pip install --no-cache-dir \
         torch==2.4.1 --index-url https://download.pytorch.org/whl/cpu
 
-# Resto de deps (FastAPI + Gradio + pipeline)
+# Resto de deps (FastAPI + pipeline). Sin Gradio: la API sirve el dashboard en /.
 RUN pip install --no-cache-dir \
         numpy scipy matplotlib \
         opencv-python-headless Pillow \
         pytransform3d trimesh \
         fastapi "uvicorn[standard]" pydantic \
-        gradio>=4.0 \
         diffusers tqdm pyyaml
 
 # ─── Código del proyecto ─────────────────────────────────────
 # Copiamos sólo lo necesario para inferencia (no notebooks, no docs)
 COPY src/ /app/src/
 COPY scripts/api_server.py /app/scripts/api_server.py
-COPY scripts/gradio_demo.py /app/scripts/gradio_demo.py
-COPY scripts/launch_api_and_gradio.sh /app/scripts/launch_api_and_gradio.sh
 COPY README.md /app/README.md
 # Dashboard ejecutivo (servido en / por la API) — autocontenido
 COPY docs/dashboard_ejecutivo.html /app/docs/dashboard_ejecutivo.html
@@ -56,13 +53,11 @@ COPY docs/dashboard_ejecutivo.html /app/docs/dashboard_ejecutivo.html
 # Los pesos y checkpoints se montan por volumen (no se incluyen en la imagen)
 RUN mkdir -p /app/data/models /app/experiments/results /app/experiments/checkpoints
 
-RUN chmod +x /app/scripts/launch_api_and_gradio.sh
-
 # ─── Healthcheck ─────────────────────────────────────────────
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
     CMD curl -fsS http://localhost:8000/health || exit 1
 
-EXPOSE 8000 7860
+EXPOSE 8000
 
-# Por defecto lanza API + Gradio en paralelo (script bash)
-CMD ["/app/scripts/launch_api_and_gradio.sh"]
+# API (sirve el dashboard en /, docs en /docs). PORT override para PaaS (Render/Fly).
+CMD ["sh", "-c", "uvicorn --app-dir scripts api_server:app --host 0.0.0.0 --port ${PORT:-8000}"]

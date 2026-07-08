@@ -85,11 +85,11 @@ services:
     command: bash
 
   # -----------------------------------------------------------
-  # API REST + Gradio demo (ligero, sin GPU, sin ROS)
+  # Aplicación: API REST + dashboard ejecutivo (ligero, sin GPU, sin ROS)
   # -----------------------------------------------------------
-  # Útil para deployment ligero del pipeline en cualquier host
-  # (Mac, Linux x86, Linux ARM). No requiere CUDA ni X11.
-  # API: http://localhost:8000/docs   Gradio: http://localhost:7860
+  # Deployment ligero del pipeline en cualquier host (Mac, Linux x86/ARM).
+  # No requiere CUDA ni X11.
+  # Dashboard: http://localhost:8000/   ·   API docs: http://localhost:8000/docs
   api:
     build:
       context: ..
@@ -98,7 +98,6 @@ services:
     image: tfm-pose6dof-api:latest
     ports:
       - "8000:8000"
-      - "7860:7860"
     volumes:
       - ../data/models:/app/data/models:ro
       - ../experiments/checkpoints:/app/experiments/checkpoints:ro
