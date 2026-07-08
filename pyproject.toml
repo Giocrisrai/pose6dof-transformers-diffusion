@@ -183,6 +183,6 @@ exclude = ["^experiments/", "^notebooks/", "\\.ipynb$"]
 # explícitos (p. ej. scripts/demo_charla importa experiments.run_pick_with_diffusion).
 # Este override garantiza que los módulos de experiments no rompan el type-check.
 [[tool.mypy.overrides]]
-module = ["experiments.*", "run_pick_with_diffusion", "collect_diffusion_dataset*"]
+module = ["experiments.*"]
 ignore_errors = true
 follow_imports = "skip"
