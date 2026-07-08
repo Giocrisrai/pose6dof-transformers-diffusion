@@ -32,9 +32,15 @@
     --warn-wash: #2c2411; --crit: #ef6a5c; --grid: #1a2833; --sh: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
   }
   * { box-sizing: border-box; }
+  html, body { max-width: 100%; overflow-x: hidden; }
   body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans);
     -webkit-font-smoothing: antialiased; line-height: 1.5; }
   .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  /* Los ítems de grid/flex por defecto usan min-width:auto (tamaño min-content),
+     de modo que una tabla ancha empuja su tarjeta más allá del viewport móvil.
+     min-width:0 permite que la tarjeta se encoja y el contenido ancho haga scroll. */
+  .cols > *, .kpis > *, .guard > * { min-width: 0; }
+  .tbl-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   a { color: var(--accent-deep); }
 
   /* ---- header ---- */
@@ -116,6 +122,12 @@
   @media (max-width: 760px) {
     .kpis { grid-template-columns: repeat(2, 1fr); }
     .cols { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 480px) {
+    .wrap { padding: 0 16px; }
+    .kpis { grid-template-columns: 1fr; }
+    h1 { font-size: 26px; }
+    .kpi .k-val { font-size: 24px; }
   }
 </style>
 
@@ -288,6 +300,7 @@
     <div class="cols">
       <div class="card">
         <h3>Pose 6-DoF por pieza (desde depth real)</h3>
+        <div class="tbl-scroll">
         <table class="ptable">
           <thead><tr><th>Pieza</th><th>Traslación</th><th>Rotación</th><th>Agarre</th></tr></thead>
           <tbody>
@@ -296,6 +309,7 @@
             <tr><td>Tuerca hexagonal</td><td>37 mm</td><td>179°*</td><td><span class="pill g">3.9 cm</span></td></tr>
           </tbody>
         </table>
+        </div>
         <p class="cap">*Flip de 180° por simetría de orden 6 — la ambigüedad esperada bajo vista parcial.</p>
       </div>
       <div class="card">
