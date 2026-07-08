@@ -59,7 +59,7 @@ class FoundationPoseEstimator:
         self.scorer_weights = scorer_weights
         self.device = device
         self._model = None
-        self._cad_model = None
+        self._cad_model: object = None
         self._initialized = False
 
     def initialize(self):
@@ -110,7 +110,8 @@ class FoundationPoseEstimator:
         if scale != 1.0:
             mesh.apply_scale(scale)
         self._cad_model = mesh
-        logger.info(f"Loaded CAD model: {cad_path} ({len(mesh.vertices)} vertices)")
+        n_verts = len(mesh.vertices)  # type: ignore[attr-defined]
+        logger.info(f"Loaded CAD model: {cad_path} ({n_verts} vertices)")
 
     def estimate_pose(
         self,

@@ -135,7 +135,7 @@ def sim_objects_to_views(specs: list[SimObjectSpec]) -> list[ObjectView]:
     list[ObjectView]
         Vistas ligeras consumibles por el Grounder.
     """
-    return [ObjectView(obj_id=s.obj_id, centroid=tuple(s.position),
+    return [ObjectView(obj_id=s.obj_id, centroid=(s.position[0], s.position[1], s.position[2]),
                        attributes={"color": s.color, "shape": s.shape, "size": s.size})
             for s in specs]
 
@@ -310,7 +310,7 @@ def run_language_pick(instruction: str, scene: str = "multi",
         bridge.load_scene(scenes_dir / "bin_base.ttt")
         apply_scene(bridge, specs)
         chosen, grounding, instr = select_sim_target(instruction, specs, parser_backend)
-        payload = {
+        payload: dict = {
             "instruction": instruction,
             "parsed": {
                 "color": instr.target.color,
@@ -338,7 +338,7 @@ def run_language_pick(instruction: str, scene: str = "multi",
             return payload
         result = run_pick_sequence(
             bridge, frames_dir,
-            target_object=chosen.alias,
+            target_object=chosen.alias,  # type: ignore[arg-type]
             pose_override_xyz=list(chosen.position),
         )
 

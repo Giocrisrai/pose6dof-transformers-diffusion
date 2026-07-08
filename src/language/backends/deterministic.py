@@ -18,9 +18,9 @@ _SEQ_SPLIT = re.compile(r"\b(?:and then|then|y luego|y despu[eé]s|luego)\b", re
 def _parse_target(text: str) -> TargetSpec:
     noun = next((n for n in vocab.NOUNS if re.search(rf"\b{re.escape(n)}\b", text.lower())), None)
     return TargetSpec(
-        color=vocab.normalize_color(text),
-        shape=vocab.normalize_shape(text),
-        size=vocab.normalize_size(text),
+        color=vocab.normalize_color(text),  # type: ignore[arg-type]
+        shape=vocab.normalize_shape(text),  # type: ignore[arg-type]
+        size=vocab.normalize_size(text),  # type: ignore[arg-type]
         raw_noun=noun,
     )
 
@@ -28,7 +28,7 @@ def _parse_target(text: str) -> TargetSpec:
 def _parse_single(text: str) -> Instruction:
     target = _parse_target(text)
     rel = vocab.normalize_relation(text)
-    spatial = SpatialRelation(relation=rel) if rel else None
+    spatial = SpatialRelation(relation=rel) if rel else None  # type: ignore[arg-type]
     # confianza baja si no se extrajo nada discriminativo
     conf = 1.0 if (not target.is_empty() or spatial) else 0.3
     return Instruction(

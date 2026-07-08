@@ -17,7 +17,7 @@ Usage:
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
@@ -91,8 +91,8 @@ class BinPickingPipeline:
 
     def __init__(self, config: PipelineConfig):
         self.config = config
-        self._pose_estimator = None
-        self._grasp_planner = None
+        self._pose_estimator: Any = None
+        self._grasp_planner: Any = None
         self._lang_parser = None
         self._lang_grounder = None
         self._initialized = False

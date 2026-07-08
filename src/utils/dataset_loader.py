@@ -66,7 +66,7 @@ class BOPDataset:
         if camera_path.exists():
             with open(camera_path) as f:
                 cam = json.load(f)
-            self.default_K = np.array([
+            self.default_K: object = np.array([
                 [cam["fx"], 0, cam["cx"]],
                 [0, cam["fy"], cam["cy"]],
                 [0, 0, 1]

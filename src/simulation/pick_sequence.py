@@ -57,7 +57,7 @@ class PickResult:
     ik_converged: bool
     pose_source: str                   # 'scene_groundtruth' | 'foundation_pose_ckpt' | etc
     mp4_path: Optional[Path]
-    frames_dir: Path
+    frames_dir: Optional[Path]
 
 
 def setup_robot_control(bridge: CoppeliaSimBridge) -> None:

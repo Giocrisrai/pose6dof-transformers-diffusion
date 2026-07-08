@@ -167,7 +167,7 @@ class GraspSampler:
         The approach direction is along -Z (downward), with random
         rotation around the vertical axis and small position jitter.
         """
-        candidates = []
+        candidates: list = []
         obj_pos = object_pose[:3, 3]
 
         for _ in range(n):
@@ -211,7 +211,7 @@ class GraspSampler:
         Finds pairs of surface points where normals are approximately
         anti-parallel and within the gripper width.
         """
-        candidates = []
+        candidates: list = []
         n_points = len(points)
 
         for _ in range(n * 5):  # oversample then filter
@@ -255,7 +255,7 @@ class GraspSampler:
             candidates.append(GraspCandidate(
                 pose=T,
                 score=antipodal_score,
-                width=dist,
+                width=float(dist),
                 contact_points=np.array([p1, p2]),
                 method="antipodal",
             ))
@@ -273,7 +273,7 @@ class GraspSampler:
         Selects random surface points and creates approach grasps
         targeting those points.
         """
-        candidates = []
+        candidates: list = []
         n_points = len(points)
 
         for _ in range(n):
@@ -304,7 +304,7 @@ class GraspSampler:
 
         Useful for objects on the edge of a bin or tall objects.
         """
-        candidates = []
+        candidates: list = []
         obj_pos = object_pose[:3, 3]
 
         for _ in range(n):

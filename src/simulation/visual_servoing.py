@@ -281,7 +281,7 @@ class HybridServoController:
         if distance < self.switch_distance and features_current is not None:
             self.mode = "ibvs"
             vel, error = self.ibvs.compute_velocity(
-                features_current, features_target, depths, K
+                features_current, features_target, depths, K  # type: ignore[arg-type]
             )
             converged = error < 2.0  # pixels
         else:

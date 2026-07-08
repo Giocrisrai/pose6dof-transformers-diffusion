@@ -69,7 +69,7 @@ def _load_mesh_points(model_path: Path, n_pts: int = 1000, seed: int = 42) -> np
         return None
     try:
         mesh = trimesh.load(str(model_path), process=False)
-        pts = np.array(mesh.vertices, dtype=np.float64)
+        pts = np.array(mesh.vertices, dtype=np.float64)  # type: ignore[attr-defined]
         if len(pts) > n_pts:
             rng = np.random.default_rng(seed)
             idx = rng.choice(len(pts), n_pts, replace=False)
@@ -163,7 +163,7 @@ def load_predictions_with_gt(
             t_pred=t_pred,
             R_gt=np.array(gt["cam_R_m2c"], dtype=np.float64),
             t_gt=np.array(gt["cam_t_m2c"], dtype=np.float64),
-            points=mesh_cache[obj_id],
+            points=mesh_cache[obj_id],  # type: ignore[arg-type]
             fp_time_ms=float(pred.get("time_s", 0.0)) * 1000.0,
             extra={"gt_idx": gt_idx},
         ))

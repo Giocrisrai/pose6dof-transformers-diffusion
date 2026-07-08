@@ -56,7 +56,7 @@ class PoseEvaluator:
         try:
             import trimesh
             mesh = trimesh.load(str(model_path))
-            points = np.array(mesh.vertices)
+            points = np.array(mesh.vertices)  # type: ignore[attr-defined]
             if len(points) > n_points:
                 idx = np.random.choice(len(points), n_points, replace=False)
                 points = points[idx]
@@ -268,7 +268,7 @@ def evaluate_method(
                 try:
                     import trimesh
                     mesh = trimesh.load(str(model_path))
-                    points = np.array(mesh.vertices)
+                    points = np.array(mesh.vertices)  # type: ignore[attr-defined]
                     # Subsample to max 1000 points
                     if len(points) > 1000:
                         idx = np.random.choice(len(points), 1000, replace=False)

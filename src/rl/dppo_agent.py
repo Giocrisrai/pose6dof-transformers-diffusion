@@ -59,7 +59,7 @@ def _gaussian_log_prob(x: torch.Tensor, mean: torch.Tensor, sigma) -> torch.Tens
     else:
         # sigma tensor: broadcast contra (B, H, action_dim) o (H, action_dim)
         var = sigma ** 2
-        log_norm = -0.5 * torch.log(2 * math.pi * var)
+        log_norm = -0.5 * torch.log(2 * math.pi * var)  # type: ignore[assignment]
     return (-0.5 * (x - mean) ** 2 / var + log_norm).mean(dim=(-1, -2))
 
 

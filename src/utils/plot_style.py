@@ -157,7 +157,7 @@ def add_value_labels(ax, fmt: str = "{:.1%}", **kwargs):
         )
 
 
-def style_axes(ax, title: str = None, xlabel: str = None, ylabel: str = None):
+def style_axes(ax, title: str | None = None, xlabel: str | None = None, ylabel: str | None = None):
     """Aplica estilo cohesionado a un axes individual."""
     if title:
         ax.set_title(title, color=COLORS["ink"], fontweight="bold")

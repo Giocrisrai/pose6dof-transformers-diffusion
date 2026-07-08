@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Optional
 
 import torch
 
@@ -12,7 +12,7 @@ class Episode:
     cond: torch.Tensor
     actions: torch.Tensor
     rewards: List[float] = field(default_factory=list)
-    log_probs: torch.Tensor = None  # set during sample
+    log_probs: Optional[torch.Tensor] = None  # set during sample
     value: float = 0.0
     advantage: float = 0.0
     return_: float = 0.0

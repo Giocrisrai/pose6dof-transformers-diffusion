@@ -49,19 +49,19 @@ def _json_to_instruction(raw_text: str, data: dict, model: str) -> Optional[Inst
     """Mapea el JSON del LLM a Instruction (normalizando con el léxico)."""
     try:
         target = TargetSpec(
-            color=vocab.normalize_color(str(data.get("color") or "")),
-            shape=vocab.normalize_shape(str(data.get("shape") or "")),
-            size=vocab.normalize_size(str(data.get("size") or "")),
+            color=vocab.normalize_color(str(data.get("color") or "")),  # type: ignore[arg-type]
+            shape=vocab.normalize_shape(str(data.get("shape") or "")),  # type: ignore[arg-type]
+            size=vocab.normalize_size(str(data.get("size") or "")),  # type: ignore[arg-type]
         )
         rel_raw = data.get("relation")
         rel = vocab.normalize_relation(str(rel_raw)) if rel_raw else None
-        spatial = SpatialRelation(relation=rel) if rel else None
+        spatial = SpatialRelation(relation=rel) if rel else None  # type: ignore[arg-type]
         intent = data.get("intent") or "pick"
         if intent not in ("pick", "pick_then_place", "sequence"):
             intent = "pick"
         if target.is_empty() and not spatial:
             return None  # nada útil -> fallback
-        return Instruction(raw_text=raw_text, target=target, intent=intent,
+        return Instruction(raw_text=raw_text, target=target, intent=intent,  # type: ignore[arg-type]
                            spatial=spatial, confidence=0.9,
                            backend=f"llm_local:{model}")
     except Exception:
