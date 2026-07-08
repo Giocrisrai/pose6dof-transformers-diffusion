@@ -1,0 +1,19 @@
+# Blueprint de deploy en Render.com (Docker, un clic).
+# Sirve la aplicación unificada: dashboard ejecutivo en / + API REST del pipeline.
+# Uso: New > Blueprint > conectar este repo. Render detecta render.yaml.
+# También válido como referencia para Fly.io / Hugging Face Spaces (Docker SDK).
+services:
+  - type: web
+    name: tfm-pose6dof-app
+    runtime: docker
+    dockerfilePath: docker/api.Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /health
+    # La imagen por defecto lanza API+Gradio; en un único puerto (Render) servimos
+    # solo la API, que ya incluye el dashboard en / y los docs en /docs.
+    dockerCommand: uvicorn --app-dir scripts api_server:app --host 0.0.0.0 --port $PORT
+    autoDeploy: true
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"

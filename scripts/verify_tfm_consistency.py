@@ -83,6 +83,11 @@ check("4.dash recall 95.8/99.7", num_in(dash, CANON["rec_ycbv"], 1) and num_in(d
 check("4.dash Δ +3.0/+3.6 pp", num_in(dash, CANON["dpp_ycbv"], 1) and num_in(dash, CANON["dpp_tless"], 1))
 check("4.dash CI95 0.901–0.916", num_in(dash, CANON["ci_ycbv_lo"], 3) and num_in(dash, CANON["ci_ycbv_hi"], 3))
 
+# ── 4b. README coherente (mismos números canónicos) ─────────────────
+readme = (REPO / "README.md").read_text()
+check("README.AUC 0.908/0.957", num_in(readme, CANON["auc_ycbv"], 3) and num_in(readme, CANON["auc_tless"], 3))
+check("README.cycle p95 6.29/6.68", num_in(readme, CANON["p95_ycbv"], 2) and num_in(readme, CANON["p95_tless"], 2))
+
 # ── 5. H2 (diversidad multimodal) + robustez (Iter8) + clutter (Iter9) ─
 div = json.loads((RES / "exp8_diversity/exp8_results.json").read_text())
 rob = json.loads((RES / "pick_with_diffusion/eval_v8_robustez.json").read_text())

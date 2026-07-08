@@ -2,10 +2,10 @@
 
 **Trabajo Fin de Master** | Master en Ingenieria Matematica y Computacion | UNIR 2026
 
-[![Tests](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/actions/workflows/tests.yml/badge.svg)](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/actions/workflows/tests.yml)
+[![Tests](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/actions/workflows/ci.yml/badge.svg)](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/actions/workflows/ci.yml)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
 [![License](https://img.shields.io/badge/license-Academic-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-255%20passing-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/tests-293%20passing-brightgreen)](tests/)
 [![Bootstrap CI](https://img.shields.io/badge/bootstrap-CI%2095%25-purple)](experiments/results/local_metrics_with_bootstrap.json)
 [![Exploraciones post-TFM](https://img.shields.io/badge/exploraciones-13%2F13%20%E2%9C%85-success)](docs/PLAN_EXPLORACIONES_POST_TFM.md)
 [![PyPI version](https://img.shields.io/pypi/v/bop-bootstrap-ci?label=PyPI%20bop-bootstrap-ci&color=blue)](https://pypi.org/project/bop-bootstrap-ci/)
@@ -25,11 +25,40 @@
 |-----------|----------|-----------|:------:|
 | H1 — Precisión pose | AUC ADD-S, Δ ≥ 3 pp vs GDR-Net++ | **0.908** [0.901, 0.916] YCB-V / **0.957** [0.954, 0.959] T-LESS | ✅ |
 | H2 — Multimodalidad | score ≥ 0.95, latencia < 50 ms | 0.96 score, sampling 1.88 ms, **MSE 0.020** entrenado MPS | ✅ |
-| H3 — Cycle E2E | p95 < 10 s/instancia | **6.12 s** YCB-V / **6.86 s** T-LESS (margen ≥ 3.14 s) | ✅ |
+| H3 — Cycle E2E | p95 < 10 s/instancia | **6.29 s** YCB-V / **6.68 s** T-LESS (margen ≥ 3.32 s) | ✅ |
 
 **Robustez verificada**: T-LESS aguanta 70 % oclusión con solo −1 pp AUC ADD-S. **PBVS** converge 100 % en 50 muestras. **Cuello de botella identificado**: FoundationPose 80 % del ciclo.
 
 **Material disponible** en [`docs/entrega3/`](docs/entrega3/) y [`docs/entrega4/`](docs/entrega4/): memoria del TFM (docx), presentaciones (defensa + divulgativa) con vídeos y QR, guion completo y dossier de comparativa/validación.
+
+---
+
+## 🚀 Aplicación desplegable
+
+El pipeline se empaqueta como una aplicación web autocontenida: **dashboard ejecutivo** (resumen de hipótesis, robustez/clutter, extensión text-to-CAD y vídeo del pick) servido junto a la **API REST** del pipeline.
+
+```bash
+docker compose -f docker/docker-compose.yml up api      # imagen CPU, sin GPU ni ROS
+# → Dashboard   http://localhost:8000/
+# → API docs    http://localhost:8000/docs
+# → Health      http://localhost:8000/health
+# → Pipeline    POST /plan-grasp · POST /e2e · GET /metrics
+```
+
+Sin Docker, en local:
+
+```bash
+uv run uvicorn --app-dir scripts api_server:app --port 8000   # misma app
+```
+
+| Superficie | Ruta | Descripción |
+|-----------|------|-------------|
+| Dashboard | `/` | Web ejecutiva autocontenida (`docs/dashboard_ejecutivo.html`), temas claro/oscuro |
+| API docs | `/docs` | OpenAPI/Swagger interactivo |
+| Pipeline | `/plan-grasp`, `/e2e` | Planificación de agarre y ciclo E2E (Diffusion Policy) |
+| Métricas | `/metrics` | AUC ADD-S, recall, cycle p95 (fuente: reports JSON) |
+
+**Deploy:** la imagen `docker/api.Dockerfile` (CPU, multi-arch) despliega en cualquier host — Render, Fly.io o Hugging Face Spaces (ver [`docker/README-API.md`](docker/README-API.md)). Todos los números del dashboard están **garantizados en CI** por `scripts/verify_tfm_consistency.py`.
 
 ---
 
@@ -261,7 +290,7 @@ uv sync
 pip install -e ".[dev,colab]"
 
 # Tests
-pytest tests/ packages/bop_bootstrap_ci/tests/ -v  # 255 passing (sin GPU)
+pytest tests/ packages/bop_bootstrap_ci/tests/ -v  # 293 passing (sin GPU)
 
 # Descargar datasets BOP (requiere ~30 GB)
 bash scripts/download_datasets.sh
