@@ -2,12 +2,12 @@
 import numpy as np
 
 from src.simulation.reel_overlay import (
+    draw_honesty_tag,
+    draw_metrics,
+    draw_title_bar,
+    make_title_card,
     normalize_frame,
     truncate,
-    draw_title_bar,
-    draw_metrics,
-    draw_honesty_tag,
-    make_title_card,
 )
 
 

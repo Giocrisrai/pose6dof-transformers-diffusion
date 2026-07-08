@@ -173,7 +173,7 @@ def main():
         elapsed = time.time() - t0
         acc_mean = float(correct.mean())
         # Bootstrap CI 95% sobre acc usando bop-bootstrap-ci
-        ci = bootstrap_recall(correct, threshold=0.5, B=1000, seed=42)
+        _ci = bootstrap_recall(correct, threshold=0.5, B=1000, seed=42)  # noqa: F841 (referencia; enfoque descartado, ver comentario)
         # bootstrap_recall(<0.5) no es lo que queremos — necesitamos bootstrap sobre la media de correct
         # Usemos bootstrap_ci general con statistic=mean
         from bop_bootstrap_ci import bootstrap_ci

@@ -27,8 +27,8 @@ class TestPoseEstimatorProtocol:
         assert est.confidence == 0.95
 
     def test_protocol_compatibility(self):
-        from src.perception.pose_estimator import PoseEstimator
         from src.perception.checkpoint_adapter import CheckpointPoseEstimator
+        from src.perception.pose_estimator import PoseEstimator
         # Verifica que CheckpointPoseEstimator cumple el protocolo (runtime_checkable)
         # Nota: necesitamos una instancia para verificar
         ckpt_path = REPO / "experiments/checkpoints/fp_ycbv_checkpoint.json"

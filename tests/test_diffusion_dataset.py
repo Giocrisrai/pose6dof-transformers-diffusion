@@ -1,7 +1,5 @@
 """Smoke tests para SimPickDataset."""
-from pathlib import Path
 
-import pytest
 import torch
 
 

@@ -2,8 +2,9 @@
 
 import numpy as np
 import pytest
-from src.planning.grasp_sampler import GraspSampler, GraspCandidate
-from src.utils.lie_groups import so3_exp, pose_from_Rt
+
+from src.planning.grasp_sampler import GraspCandidate, GraspSampler
+from src.utils.lie_groups import pose_from_Rt, so3_exp
 
 
 @pytest.fixture

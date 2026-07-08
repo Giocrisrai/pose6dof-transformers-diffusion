@@ -1,6 +1,7 @@
 """Tests de la agregación de selection-accuracy (núcleo puro)."""
 import numpy as np
-from experiments.run_language_battery import build_cases, aggregate
+
+from experiments.run_language_battery import aggregate, build_cases
 
 
 def test_build_cases_genera_instruccion_y_expected():

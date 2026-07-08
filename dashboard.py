@@ -13,6 +13,7 @@ Muestra:
 - Per-object analysis
 - Video demo MP4 + diagrama arquitectura
 """
+
 import json
 from pathlib import Path
 
@@ -30,7 +31,8 @@ st.set_page_config(
 )
 
 # CSS custom — tema profesional cohesionado
-st.markdown("""
+st.markdown(
+    """
 <style>
     /* Tema principal */
     .stApp {
@@ -210,7 +212,9 @@ st.markdown("""
         max-width: 1400px;
     }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 
 # Sidebar
@@ -224,12 +228,24 @@ with st.sidebar:
     st.markdown("---")
     section = st.radio(
         "Sección",
-        ["📊 Resumen", "🔬 Exploraciones post-TFM",
-         "🤖 Robustez y clutter", "💡 Innovación y SOTA",
-         "🧠 Decisiones del pipeline", "🗣️ Lenguaje natural",
-         "🎯 Hipótesis", "📈 Métricas FP",
-         "🛡️ Robustez", "⚙️ Profiling", "🌳 Diversidad",
-         "🎮 PBVS", "📦 Per-Object", "🛠️ text-to-CAD", "🎬 Video", "📚 Recursos"]
+        [
+            "📊 Resumen",
+            "🔬 Exploraciones post-TFM",
+            "🤖 Robustez y clutter",
+            "💡 Innovación y SOTA",
+            "🧠 Decisiones del pipeline",
+            "🗣️ Lenguaje natural",
+            "🎯 Hipótesis",
+            "📈 Métricas FP",
+            "🛡️ Robustez",
+            "⚙️ Profiling",
+            "🌳 Diversidad",
+            "🎮 PBVS",
+            "📦 Per-Object",
+            "🛠️ text-to-CAD",
+            "🎬 Video",
+            "📚 Recursos",
+        ],
     )
 
 
@@ -257,15 +273,23 @@ def render_language_tab(instruction: str) -> dict:
     from src.language import make_parser
     from src.language.demo import demo_scene
     from src.language.grounding import Grounder
+
     objetos = demo_scene()
     instr = make_parser("deterministic").parse(instruction)
     res = Grounder(method="attribute").ground(instr, objetos)
     return {
-        "parsed": {"color": instr.target.color, "shape": instr.target.shape,
-                   "size": instr.target.size,
-                   "spatial": instr.spatial.relation if instr.spatial else None},
-        "grounding": {"target_obj_id": res.target_obj_id, "scores": res.scores,
-                      "ambiguous": res.ambiguous, "method": res.method},
+        "parsed": {
+            "color": instr.target.color,
+            "shape": instr.target.shape,
+            "size": instr.target.size,
+            "spatial": instr.spatial.relation if instr.spatial else None,
+        },
+        "grounding": {
+            "target_obj_id": res.target_obj_id,
+            "scores": res.scores,
+            "ambiguous": res.ambiguous,
+            "method": res.method,
+        },
     }
 
 
@@ -327,7 +351,9 @@ elif section == "🔬 Exploraciones post-TFM":
     if diag_workflow.exists():
         with st.expander("🔗 Dependencias entre exploraciones (DAG)", expanded=False):
             st.image(str(diag_workflow), width="stretch")
-            st.caption("Cada flecha indica que el resultado de una exploración se reutiliza en la siguiente.")
+            st.caption(
+                "Cada flecha indica que el resultado de una exploración se reutiliza en la siguiente."
+            )
     st.markdown("---")
 
     st.markdown(
@@ -365,12 +391,21 @@ elif section == "🔬 Exploraciones post-TFM":
         "El modelo `ultra` (DDIM-25, 93 ms) se destila a un student `ultra_fast` de "
         "**1 forward pass**. Verificado en vivo en la API REST."
     )
-    st.table(pd.DataFrame({
-        "Métrica": ["MSE vs GT heurístico", "Jerk RMS", "Latencia por trayectoria", "NFE inference"],
-        "Teacher ultra (DDIM-25)": ["0.0129", "0.064", "48.5 ms", "25"],
-        "Student ultra_fast": ["**0.0124**", "**0.018**", "**0.09 ms**", "**1**"],
-        "Mejora": ["−4 %", "−71 %", "**×517 speedup**", "×25 menos"],
-    }))
+    st.table(
+        pd.DataFrame(
+            {
+                "Métrica": [
+                    "MSE vs GT heurístico",
+                    "Jerk RMS",
+                    "Latencia por trayectoria",
+                    "NFE inference",
+                ],
+                "Teacher ultra (DDIM-25)": ["0.0129", "0.064", "48.5 ms", "25"],
+                "Student ultra_fast": ["**0.0124**", "**0.018**", "**0.09 ms**", "**1**"],
+                "Mejora": ["−4 %", "−71 %", "**×517 speedup**", "×25 menos"],
+            }
+        )
+    )
     st.info(
         "**Hallazgo metodológico**: el 'MSE 0.0022' reportado en el TFM original "
         "era *noise-prediction loss* durante el training, no MSE de trayectoria "
@@ -387,8 +422,11 @@ elif section == "🔬 Exploraciones post-TFM":
 
     img_pareto = REPO / "experiments/results/exp15_open_license/fig_pareto.png"
     if img_pareto.exists():
-        st.image(str(img_pareto), caption="Pareto licencia × performance — bootstrap CI 95 %",
-                  width="stretch")
+        st.image(
+            str(img_pareto),
+            caption="Pareto licencia × performance — bootstrap CI 95 %",
+            width="stretch",
+        )
 
     st.markdown(
         "**Conclusión**: cambiar a **FreeZeV2 (Apache-2.0)** cuesta solo **−3 pp AUC** "
@@ -451,8 +489,9 @@ elif section == "🔬 Exploraciones post-TFM":
     )
     img_grid = REPO / "experiments/results/exp19_visual_sims/grid_overview.png"
     if img_grid.exists():
-        st.image(str(img_grid), caption="12 escenas demostrativas — 12/12 correctas",
-                  width="stretch")
+        st.image(
+            str(img_grid), caption="12 escenas demostrativas — 12/12 correctas", width="stretch"
+        )
 
     # Exploración 8
     st.subheader("8️⃣  VLA-lite multi-objeto N=2..5  ✅")
@@ -500,7 +539,8 @@ elif section == "🔬 Exploraciones post-TFM":
     col_11a, col_11b = st.columns(2)
     col_11a.metric("Selection accuracy", "100 %", "n=500 val")
     col_11b.metric("Latencia training", "1.4 min M1 Pro", "")
-    st.code("""
+    st.code(
+        """
     Camera RGB-D → segmentación (SAM2) → crops 64×64 RGB
                                                 ↓
                           CLIP-image (frozen, 86M) → embedding 768-D
@@ -508,7 +548,9 @@ elif section == "🔬 Exploraciones post-TFM":
                           CLIP-text(instrucción) + VisualGate
                                                 ↓
                           Diffusion Policy → trayectoria
-    """, language="text")
+    """,
+        language="text",
+    )
 
     # Exploración 12
     st.subheader("1️⃣2️⃣  Robustez CLIP-image con domain randomization  ✅")
@@ -519,8 +561,7 @@ elif section == "🔬 Exploraciones post-TFM":
     )
     img_robust = REPO / "experiments/results/exp25_robustness/fig_robustness_curves.png"
     if img_robust.exists():
-        st.image(str(img_robust), caption="Curvas de robustez con CI 95 % B=1000",
-                  width="stretch")
+        st.image(str(img_robust), caption="Curvas de robustez con CI 95 % B=1000", width="stretch")
     col_12a, col_12b, col_12c = st.columns(3)
     col_12a.metric("Condiciones robustas", "12/12 ≥ 75 %", "")
     col_12b.metric("Accuracy media", "95.3 %", "")
@@ -581,23 +622,55 @@ elif section == "🤖 Robustez y clutter":
         "hace invariante**, sin sacrificar el caso original."
     )
     if d8:
+
         def _r8(cond):
             r = d8["condiciones"][cond]["resumen"]
-            return [f"{r['pick_place_pct']:.0f} %", f"{r['grasp_pct']:.0f} %",
-                    f"{r['deposit_pct']:.0f} %", f"{r['mean_grasp_proximity_m']*100:.1f} cm"]
-        st.table(pd.DataFrame({
-            "Política × condición": ["original × cubo rojo", "original × randomizada",
-                                     "robusta × cubo rojo", "robusta × randomizada"],
-            "Pick&Place E2E": [_r8("v7a_phase2__cubo_rojo")[0], _r8("v7a_phase2__randomizada")[0],
-                               _r8("v8_randomized__cubo_rojo")[0], _r8("v8_randomized__randomizada")[0]],
-            "Agarre": [_r8("v7a_phase2__cubo_rojo")[1], _r8("v7a_phase2__randomizada")[1],
-                       _r8("v8_randomized__cubo_rojo")[1], _r8("v8_randomized__randomizada")[1]],
-            "Depósito": [_r8("v7a_phase2__cubo_rojo")[2], _r8("v7a_phase2__randomizada")[2],
-                         _r8("v8_randomized__cubo_rojo")[2], _r8("v8_randomized__randomizada")[2]],
-            "Proximidad": [_r8("v7a_phase2__cubo_rojo")[3], _r8("v7a_phase2__randomizada")[3],
-                           _r8("v8_randomized__cubo_rojo")[3], _r8("v8_randomized__randomizada")[3]],
-        }))
-        st.caption("El depósito bajo en randomizada (esferas/cilindros) es física: ruedan al soltarse, no es la percepción.")
+            return [
+                f"{r['pick_place_pct']:.0f} %",
+                f"{r['grasp_pct']:.0f} %",
+                f"{r['deposit_pct']:.0f} %",
+                f"{r['mean_grasp_proximity_m'] * 100:.1f} cm",
+            ]
+
+        st.table(
+            pd.DataFrame(
+                {
+                    "Política × condición": [
+                        "original × cubo rojo",
+                        "original × randomizada",
+                        "robusta × cubo rojo",
+                        "robusta × randomizada",
+                    ],
+                    "Pick&Place E2E": [
+                        _r8("v7a_phase2__cubo_rojo")[0],
+                        _r8("v7a_phase2__randomizada")[0],
+                        _r8("v8_randomized__cubo_rojo")[0],
+                        _r8("v8_randomized__randomizada")[0],
+                    ],
+                    "Agarre": [
+                        _r8("v7a_phase2__cubo_rojo")[1],
+                        _r8("v7a_phase2__randomizada")[1],
+                        _r8("v8_randomized__cubo_rojo")[1],
+                        _r8("v8_randomized__randomizada")[1],
+                    ],
+                    "Depósito": [
+                        _r8("v7a_phase2__cubo_rojo")[2],
+                        _r8("v7a_phase2__randomizada")[2],
+                        _r8("v8_randomized__cubo_rojo")[2],
+                        _r8("v8_randomized__randomizada")[2],
+                    ],
+                    "Proximidad": [
+                        _r8("v7a_phase2__cubo_rojo")[3],
+                        _r8("v7a_phase2__randomizada")[3],
+                        _r8("v8_randomized__cubo_rojo")[3],
+                        _r8("v8_randomized__randomizada")[3],
+                    ],
+                }
+            )
+        )
+        st.caption(
+            "El depósito bajo en randomizada (esferas/cilindros) es física: ruedan al soltarse, no es la percepción."
+        )
     else:
         st.warning("No se encontró `eval_v8_robustez.json`.")
 
@@ -610,20 +683,32 @@ elif section == "🤖 Robustez y clutter":
         "con distractores; la de clutter recupera el 100 % de agarre."
     )
     if d9:
+
         def _r9(cond):
             r = d9["condiciones"][cond]["resumen"]
-            return [f"{r['grasp_pct']:.0f} %", f"{r.get('mean_grasp_proximity_m', 0)*100:.1f} cm"]
-        st.table(pd.DataFrame({
-            "Política × condición": ["robusta (Iter 8) × con distractores",
-                                     "clutter (Iter 9) × sin distractores",
-                                     "clutter (Iter 9) × con distractores"],
-            "Agarre": [_r9("v8_randomized__con_distractores")[0],
-                       _r9("v9_clutter__sin_distractores")[0],
-                       _r9("v9_clutter__con_distractores")[0]],
-            "Proximidad": [_r9("v8_randomized__con_distractores")[1],
-                           _r9("v9_clutter__sin_distractores")[1],
-                           _r9("v9_clutter__con_distractores")[1]],
-        }))
+            return [f"{r['grasp_pct']:.0f} %", f"{r.get('mean_grasp_proximity_m', 0) * 100:.1f} cm"]
+
+        st.table(
+            pd.DataFrame(
+                {
+                    "Política × condición": [
+                        "robusta (Iter 8) × con distractores",
+                        "clutter (Iter 9) × sin distractores",
+                        "clutter (Iter 9) × con distractores",
+                    ],
+                    "Agarre": [
+                        _r9("v8_randomized__con_distractores")[0],
+                        _r9("v9_clutter__sin_distractores")[0],
+                        _r9("v9_clutter__con_distractores")[0],
+                    ],
+                    "Proximidad": [
+                        _r9("v8_randomized__con_distractores")[1],
+                        _r9("v9_clutter__sin_distractores")[1],
+                        _r9("v9_clutter__con_distractores")[1],
+                    ],
+                }
+            )
+        )
     else:
         st.warning("No se encontró `eval_v9_clutter.json`.")
 
@@ -637,28 +722,50 @@ elif section == "🤖 Robustez y clutter":
         "(desplazamiento = golpe real; las piezas redondas ruedan y dan outliers)."
     )
     if d9:
+
         def _cubos(cond):
             rs = d9["condiciones"].get(cond, {}).get("resultados", [])
-            desp = [dd for r in rs if "error" not in r
-                    for di, dd in zip(r.get("distractores", []),
-                                      r.get("desplazamiento_distractores_m", []))
-                    if di["forma"] == "cubo"]
+            desp = [
+                dd
+                for r in rs
+                if "error" not in r
+                for di, dd in zip(
+                    r.get("distractores", []), r.get("desplazamiento_distractores_m", [])
+                )
+                if di["forma"] == "cubo"
+            ]
             if not desp:
                 return "—", "—"
             a = np.array(desp)
-            return f"{100*float((a > 0.02).mean()):.0f} %", f"{100*float(np.percentile(a, 90)):.1f} cm"
-        st.table(pd.DataFrame({
-            "Política × condición": ["robusta × con distractores", "robusta × con verificación",
-                                     "clutter × con distractores", "clutter × con verificación"],
-            "Cubos golpeados >2cm": [_cubos("v8_randomized__con_distractores")[0],
-                                     _cubos("v8_randomized__con_distractores_seguro")[0],
-                                     _cubos("v9_clutter__con_distractores")[0],
-                                     _cubos("v9_clutter__con_distractores_seguro")[0]],
-            "Peor caso (p90)": [_cubos("v8_randomized__con_distractores")[1],
-                                _cubos("v8_randomized__con_distractores_seguro")[1],
-                                _cubos("v9_clutter__con_distractores")[1],
-                                _cubos("v9_clutter__con_distractores_seguro")[1]],
-        }))
+            return (
+                f"{100 * float((a > 0.02).mean()):.0f} %",
+                f"{100 * float(np.percentile(a, 90)):.1f} cm",
+            )
+
+        st.table(
+            pd.DataFrame(
+                {
+                    "Política × condición": [
+                        "robusta × con distractores",
+                        "robusta × con verificación",
+                        "clutter × con distractores",
+                        "clutter × con verificación",
+                    ],
+                    "Cubos golpeados >2cm": [
+                        _cubos("v8_randomized__con_distractores")[0],
+                        _cubos("v8_randomized__con_distractores_seguro")[0],
+                        _cubos("v9_clutter__con_distractores")[0],
+                        _cubos("v9_clutter__con_distractores_seguro")[0],
+                    ],
+                    "Peor caso (p90)": [
+                        _cubos("v8_randomized__con_distractores")[1],
+                        _cubos("v8_randomized__con_distractores_seguro")[1],
+                        _cubos("v9_clutter__con_distractores")[1],
+                        _cubos("v9_clutter__con_distractores_seguro")[1],
+                    ],
+                }
+            )
+        )
     st.info(
         "**Honestidad**: verify-then-act reduce los golpes (v8 robusta: 18 %→0 %, peor "
         "caso 13.6→0.2 cm) a un costo pequeño de precisión. NO cubre piezas redondas "
@@ -746,16 +853,44 @@ elif section == "💡 Innovación y SOTA":
     )
 
     st.markdown("### Comparativa de posicionamiento")
-    st.table(pd.DataFrame({
-        "Aspecto": ["Hardware", "Código", "Rigor estadístico", "Latencia",
-                    "Lenguaje natural", "Coste estación industrial"],
-        "Este TFM": ["~2 000 USD (M1 Pro)", "Open MIT", "Bootstrap CI 95 %",
-                     "6-7 s", "No", "< 5 000 USD"],
-        "SOTA puntera (RDT-1B, π0)": ["20-200 k USD cluster", "Open mayoritario",
-                                       "Habitualmente puntos", "1-3 s", "Sí (VLA)", "N/A"],
-        "Industriales (Isaac, Symbotic)": ["15-150 k USD", "Cerrado", "N/A publicado",
-                                            "< 1 s", "A veces", "15-150 k USD"],
-    }))
+    st.table(
+        pd.DataFrame(
+            {
+                "Aspecto": [
+                    "Hardware",
+                    "Código",
+                    "Rigor estadístico",
+                    "Latencia",
+                    "Lenguaje natural",
+                    "Coste estación industrial",
+                ],
+                "Este TFM": [
+                    "~2 000 USD (M1 Pro)",
+                    "Open MIT",
+                    "Bootstrap CI 95 %",
+                    "6-7 s",
+                    "No",
+                    "< 5 000 USD",
+                ],
+                "SOTA puntera (RDT-1B, π0)": [
+                    "20-200 k USD cluster",
+                    "Open mayoritario",
+                    "Habitualmente puntos",
+                    "1-3 s",
+                    "Sí (VLA)",
+                    "N/A",
+                ],
+                "Industriales (Isaac, Symbotic)": [
+                    "15-150 k USD",
+                    "Cerrado",
+                    "N/A publicado",
+                    "< 1 s",
+                    "A veces",
+                    "15-150 k USD",
+                ],
+            }
+        )
+    )
 
     st.markdown("---")
     st.markdown(
@@ -784,10 +919,15 @@ elif section == "🧠 Decisiones del pipeline":
         )
     else:
         ds_filter = st.radio("Filtrar dataset", ["Todos", "YCB-V", "T-LESS"], horizontal=True)
-        filtered = [c for c in cards if
-                    (ds_filter == "Todos" or
-                     (ds_filter == "YCB-V" and "ycbv" in c.name) or
-                     (ds_filter == "T-LESS" and "tless" in c.name))]
+        filtered = [
+            c
+            for c in cards
+            if (
+                ds_filter == "Todos"
+                or (ds_filter == "YCB-V" and "ycbv" in c.name)
+                or (ds_filter == "T-LESS" and "tless" in c.name)
+            )
+        ]
         for card in filtered:
             obj_id = card.stem.split("_obj")[-1]
             dataset = "YCB-V" if "ycbv" in card.name else "T-LESS"
@@ -860,12 +1000,16 @@ elif section == "📈 Métricas FP":
             st.subheader(ds.upper())
             cols = st.columns(4)
             cols[0].metric("n", d["n_evaluated"])
-            cols[1].metric("AUC ADD-S",
+            cols[1].metric(
+                "AUC ADD-S",
                 f"{d['auc_adds_50mm']:.3f}",
-                f"[{d['auc_adds_50mm_ci95']['lo']:.3f}, {d['auc_adds_50mm_ci95']['hi']:.3f}]")
-            cols[2].metric("Recall@10mm",
-                f"{d['recall_adds_10mm']*100:.1f}%",
-                f"[{d['recall_adds_10mm_ci95']['lo']*100:.1f}%, {d['recall_adds_10mm_ci95']['hi']*100:.1f}%]")
+                f"[{d['auc_adds_50mm_ci95']['lo']:.3f}, {d['auc_adds_50mm_ci95']['hi']:.3f}]",
+            )
+            cols[2].metric(
+                "Recall@10mm",
+                f"{d['recall_adds_10mm'] * 100:.1f}%",
+                f"[{d['recall_adds_10mm_ci95']['lo'] * 100:.1f}%, {d['recall_adds_10mm_ci95']['hi'] * 100:.1f}%]",
+            )
             cols[3].metric("Median ADD-S", f"{d['adds_median_mm']:.2f} mm")
     else:
         st.warning("Ejecuta `python experiments/recompute_metrics_with_bootstrap.py`")
@@ -875,8 +1019,10 @@ elif section == "🛡️ Robustez":
     col1, col2 = st.columns(2)
     img1 = load_image("experiments/results/exp6_robustness/fig_robustness_occlusion.png")
     img2 = load_image("experiments/results/exp6_robustness/fig_robustness_noise.png")
-    if img1: col1.image(img1, caption="Oclusión simulada {0, 30, 50, 70} %")
-    if img2: col2.image(img2, caption="Ruido sensor sigma {0, 2, 5, 10} mm")
+    if img1:
+        col1.image(img1, caption="Oclusión simulada {0, 30, 50, 70} %")
+    if img2:
+        col2.image(img2, caption="Ruido sensor sigma {0, 2, 5, 10} mm")
 
     data = load_json("experiments/results/exp6_robustness/exp6_results.json")
     if data:
@@ -884,28 +1030,47 @@ elif section == "🛡️ Robustez":
         for ds, r in data.get("datasets", {}).items():
             st.markdown(f"#### {ds.upper()}")
             df_occ = pd.DataFrame(r["occlusion"])
-            st.dataframe(df_occ.style.format({"auc_adds_50mm": "{:.4f}", "recall_adds_10mm": "{:.1%}"}))
+            st.dataframe(
+                df_occ.style.format({"auc_adds_50mm": "{:.4f}", "recall_adds_10mm": "{:.1%}"})
+            )
 
 elif section == "⚙️ Profiling":
     st.title("Profiling del pipeline — Cuello de botella")
     img = load_image("experiments/results/exp10_profiling/fig_profiling.png")
-    if img: st.image(img, caption="Distribución de tiempo de ciclo + latencia DDIM por n_steps")
+    if img:
+        st.image(img, caption="Distribución de tiempo de ciclo + latencia DDIM por n_steps")
     data = load_json("experiments/results/exp10_profiling/exp10_results.json")
     if data:
         b = data.get("bottleneck_analysis", {})
         col1, col2, col3 = st.columns(3)
-        col1.metric("FoundationPose", f"{b.get('FP_fraction_pct', 0):.1f}%", f"{b.get('FoundationPose_ms', 0):.0f} ms")
-        col2.metric("Diffusion DDIM-25", f"{b.get('Diff_fraction_pct', 0):.1f}%", f"{b.get('Diffusion_DDIM25_ms', 0):.0f} ms")
-        col3.metric("CoppeliaSim", f"{b.get('Sim_fraction_pct', 0):.1f}%", f"{b.get('CoppeliaSim_50steps_ms', 0):.0f} ms")
-        st.info(f"📊 **Conclusión**: FoundationPose es el cuello de botella dominante "
-                f"({b.get('FP_fraction_pct', 0):.0f}% del ciclo). Optimización debe priorizar FP.")
+        col1.metric(
+            "FoundationPose",
+            f"{b.get('FP_fraction_pct', 0):.1f}%",
+            f"{b.get('FoundationPose_ms', 0):.0f} ms",
+        )
+        col2.metric(
+            "Diffusion DDIM-25",
+            f"{b.get('Diff_fraction_pct', 0):.1f}%",
+            f"{b.get('Diffusion_DDIM25_ms', 0):.0f} ms",
+        )
+        col3.metric(
+            "CoppeliaSim",
+            f"{b.get('Sim_fraction_pct', 0):.1f}%",
+            f"{b.get('CoppeliaSim_50steps_ms', 0):.0f} ms",
+        )
+        st.info(
+            f"📊 **Conclusión**: FoundationPose es el cuello de botella dominante "
+            f"({b.get('FP_fraction_pct', 0):.0f}% del ciclo). Optimización debe priorizar FP."
+        )
 
 elif section == "🌳 Diversidad":
     st.title("Diversidad multimodal Diffusion Policy")
     img1 = load_image("experiments/results/exp8_diversity/fig_diversity_pca.png")
     img2 = load_image("experiments/results/exp9_3d_viz/fig_trajectories_3d.png")
-    if img1: st.image(img1, caption="PCA 2D + comparación jerk Diffusion vs heurístico")
-    if img2: st.image(img2, caption="50 trayectorias 3D — multimodal")
+    if img1:
+        st.image(img1, caption="PCA 2D + comparación jerk Diffusion vs heurístico")
+    if img2:
+        st.image(img2, caption="50 trayectorias 3D — multimodal")
 
     data = load_json("experiments/results/exp8_diversity/exp8_results.json")
     if data:
@@ -917,7 +1082,8 @@ elif section == "🌳 Diversidad":
 elif section == "🎮 PBVS":
     st.title("Visual Servoing PBVS — Convergencia")
     img = load_image("experiments/results/exp7_pbvs/fig_pbvs_convergence.png")
-    if img: st.image(img)
+    if img:
+        st.image(img)
     data = load_json("experiments/results/exp7_pbvs/exp7_results.json")
     if data:
         s = data.get("summary", {})
@@ -931,8 +1097,10 @@ elif section == "📦 Per-Object":
     col1, col2 = st.columns(2)
     img1 = load_image("experiments/results/exp12_per_object/fig_per_object_ycbv.png")
     img2 = load_image("experiments/results/exp12_per_object/fig_per_object_tless.png")
-    if img1: col1.image(img1)
-    if img2: col2.image(img2)
+    if img1:
+        col1.image(img1)
+    if img2:
+        col2.image(img2)
     data = load_json("experiments/results/exp12_per_object/exp12_results.json")
     if data:
         for ds, r in data.get("datasets", {}).items():
@@ -940,10 +1108,14 @@ elif section == "📦 Per-Object":
             cols = st.columns(2)
             cols[0].markdown("**Peores 3 objetos** (failure cases)")
             for o in r["worst_3"]:
-                cols[0].markdown(f"- obj_id={o['obj_id']}: AUC {o['auc_adds_50mm']:.3f}, R@10mm {o['recall_10mm']:.1%}")
+                cols[0].markdown(
+                    f"- obj_id={o['obj_id']}: AUC {o['auc_adds_50mm']:.3f}, R@10mm {o['recall_10mm']:.1%}"
+                )
             cols[1].markdown("**Mejores 3 objetos**")
             for o in r["best_3"]:
-                cols[1].markdown(f"- obj_id={o['obj_id']}: AUC {o['auc_adds_50mm']:.3f}, R@10mm {o['recall_10mm']:.1%}")
+                cols[1].markdown(
+                    f"- obj_id={o['obj_id']}: AUC {o['auc_adds_50mm']:.3f}, R@10mm {o['recall_10mm']:.1%}"
+                )
 
 elif section == "🛠️ text-to-CAD":
     st.title("🛠️ Simulación text-to-CAD → pose 6-DoF → agarre")
@@ -957,20 +1129,41 @@ elif section == "🛠️ text-to-CAD":
 
     gif = load_image(f"{EXP}/figs/cine_pick_hud.gif")
     if gif:
-        st.image(gif, caption="Pick de la pieza generada en CoppeliaSim (render 3ª persona + HUD)",
-                 width="stretch")
+        st.image(
+            gif,
+            caption="Pick de la pieza generada en CoppeliaSim (render 3ª persona + HUD)",
+            width="stretch",
+        )
 
     st.subheader("Panel · elige una pieza generada")
     piezas = {
-        "Escuadra en L (asimétrica)":
-            {"size": "60×40×45 mm", "t": 4.1, "r": 1.3, "prox": 4.9, "ok": True,
-             "img": f"{EXP}/figs/preview_bracket.png", "nota": "pose 6-DoF inequívoca"},
-        "Bloque escalonado (asimétrico)":
-            {"size": "70×45×32 mm", "t": 1.0, "r": 1.6, "prox": 4.7, "ok": True,
-             "img": None, "nota": "mejor pose del lote (~1 mm / 1.6°)"},
-        "Tuerca hexagonal (simetría 6)":
-            {"size": "44×38×18 mm", "t": 37.0, "r": 179.0, "prox": 3.9, "ok": True,
-             "img": None, "nota": "flip de 180° por simetría de orden 6 (ambigüedad esperada)"},
+        "Escuadra en L (asimétrica)": {
+            "size": "60×40×45 mm",
+            "t": 4.1,
+            "r": 1.3,
+            "prox": 4.9,
+            "ok": True,
+            "img": f"{EXP}/figs/preview_bracket.png",
+            "nota": "pose 6-DoF inequívoca",
+        },
+        "Bloque escalonado (asimétrico)": {
+            "size": "70×45×32 mm",
+            "t": 1.0,
+            "r": 1.6,
+            "prox": 4.7,
+            "ok": True,
+            "img": None,
+            "nota": "mejor pose del lote (~1 mm / 1.6°)",
+        },
+        "Tuerca hexagonal (simetría 6)": {
+            "size": "44×38×18 mm",
+            "t": 37.0,
+            "r": 179.0,
+            "prox": 3.9,
+            "ok": True,
+            "img": None,
+            "nota": "flip de 180° por simetría de orden 6 (ambigüedad esperada)",
+        },
     }
     elegida = st.selectbox("Pieza", list(piezas.keys()))
     p = piezas[elegida]
@@ -1026,22 +1219,22 @@ elif section == "🎬 Video":
     )
 
     st.markdown("### Lo que vas a ver en el video")
-    colA, colB, colC = st.columns(3)
-    with colA:
+    col_a, col_b, col_c = st.columns(3)
+    with col_a:
         st.markdown(
             "**1. Percepcion 6-DoF**\n\n"
             "FoundationPose recibe RGB-D + CAD y devuelve la pose `(R, t)` en "
             "**~ 3.8 s**. El HUD lateral marca *FASE ACTUAL: PERCEPCION* y la "
             "latencia acumulada."
         )
-    with colB:
+    with col_b:
         st.markdown(
             "**2. Planificacion Diffusion**\n\n"
             "Diffusion Policy genera **10 trayectorias multimodales** "
             "condicionadas a la pose en **~ 90 ms (DDIM-25)**. El HUD pasa "
             "a *PLANIFICACION DIFFUSION*."
         )
-    with colC:
+    with col_c:
         st.markdown(
             "**3. Ejecucion + control**\n\n"
             "Una trayectoria se ejecuta en CoppeliaSim (**~ 1.2 s**) cerrando "
@@ -1076,10 +1269,14 @@ elif section == "🎬 Video":
     st.subheader("Resumen visual en una sola imagen")
     img = load_image("experiments/results/pipeline_e2e/highlights_v2/composite_v2_3phases.png")
     if img:
-        st.image(img, caption=(
-            "Composite v2: las 3 fases (percepcion -> planificacion -> "
-            "ejecucion) en un solo cuadro. Util para slides de defensa."
-        ), width="stretch")
+        st.image(
+            img,
+            caption=(
+                "Composite v2: las 3 fases (percepcion -> planificacion -> "
+                "ejecucion) en un solo cuadro. Util para slides de defensa."
+            ),
+            width="stretch",
+        )
 
 elif section == "📚 Recursos":
     st.title("Recursos y entregables")

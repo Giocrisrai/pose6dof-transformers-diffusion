@@ -27,7 +27,7 @@ def _load_clip(model_name: str):
 def _best_label(crop, table, model_name):
     model, proc, torch = _load_clip(model_name)
     labels = list(table.keys())
-    prompts = [f"a photo of a {l} object" for l in labels]
+    prompts = [f"a photo of a {label} object" for label in labels]
     inputs = proc(text=prompts, images=crop, return_tensors="pt", padding=True)
     with torch.no_grad():
         logits = model(**inputs).logits_per_image.softmax(dim=1)[0]

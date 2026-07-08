@@ -21,10 +21,10 @@ Quick start
 """
 from .ci import (
     BootstrapResult,
+    auc_from_errors,
+    bootstrap_auc_adds,
     bootstrap_ci,
     bootstrap_recall,
-    bootstrap_auc_adds,
-    auc_from_errors,
     recall_at_threshold,
 )
 

@@ -2,16 +2,22 @@
 
 import numpy as np
 import torch
-import pytest
-from src.utils.rotations import (
-    quat_to_matrix, matrix_to_quat,
-    quat_multiply, quat_conjugate, quat_angular_distance,
-    axisangle_to_matrix, matrix_to_axisangle,
-    euler_to_matrix, matrix_to_euler,
-    matrix_to_6d, sixd_to_matrix,
-    sixd_to_matrix_torch, matrix_to_6d_torch,
-)
+
 from src.utils.lie_groups import so3_exp
+from src.utils.rotations import (
+    axisangle_to_matrix,
+    euler_to_matrix,
+    matrix_to_6d,
+    matrix_to_axisangle,
+    matrix_to_euler,
+    matrix_to_quat,
+    quat_angular_distance,
+    quat_conjugate,
+    quat_multiply,
+    quat_to_matrix,
+    sixd_to_matrix,
+    sixd_to_matrix_torch,
+)
 
 TOL = 1e-10
 

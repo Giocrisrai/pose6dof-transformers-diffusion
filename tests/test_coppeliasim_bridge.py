@@ -1,6 +1,5 @@
 """Tests para src/simulation/coppeliasim_bridge.py."""
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import pytest
 

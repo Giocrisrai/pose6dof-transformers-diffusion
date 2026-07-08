@@ -121,7 +121,7 @@ packages = ["src"]
 [tool.ruff]
 line-length = 100
 target-version = "py310"
-exclude = [".venv", ".git", "__pycache__", "build", "dist", "data/datasets"]
+exclude = [".venv", ".git", "__pycache__", "build", "dist", "data/datasets", "**/*.ipynb"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N"]
@@ -137,13 +137,17 @@ ignore = [
     "E501",  # line-too-long
     # N802: nombres como 'so3_log', 'se3_error' son convenciones del campo (Lie groups)
     "N802",  # invalid-function-name
+    # N812: 'import torch.nn.functional as F' es la convención universal de PyTorch
+    "N812",  # lowercase-imported-as-non-lowercase
 ]
 
 [tool.ruff.lint.per-file-ignores]
-# Notebooks Jupyter convertidos pueden tener imports al medio
-"notebooks/**/*.py" = ["E402", "F401"]
-# Scripts de experimentos pueden tener imports usados condicionalmente
-"experiments/**/*.py" = ["F401", "E701"]
+# Notebooks Jupyter convertidos: imports al medio y estilo compacto (celdas)
+"notebooks/**/*.py" = ["E402", "F401", "E702", "E731"]
+# Scripts de experimentos: imports condicionales y estilo compacto permitido
+# (código exploratorio de un solo uso; E701/E702 = varias sentencias por línea,
+# E731 = asignación de lambda son idioms habituales en scripts de análisis).
+"experiments/**/*.py" = ["F401", "E701", "E702", "E731", "I001", "N816", "E741"]
 # __init__.py: imports son re-exports (parte de API pública)
 "**/__init__.py" = ["F401"]
 # ros2_interface: imports condicionales (ROS 2 puede no estar disponible)

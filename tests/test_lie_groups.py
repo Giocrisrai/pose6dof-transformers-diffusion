@@ -1,13 +1,20 @@
 """Tests for SE(3) and SO(3) Lie group operations."""
 
 import numpy as np
-import pytest
+
 from src.utils.lie_groups import (
-    so3_exp, so3_log, so3_hat, so3_vee,
-    se3_exp, se3_log,
-    se3_compose, se3_inverse,
-    pose_from_Rt, pose_to_Rt,
-    geodesic_distance_SO3, geodesic_distance_SE3,
+    geodesic_distance_SE3,
+    geodesic_distance_SO3,
+    pose_from_Rt,
+    pose_to_Rt,
+    se3_compose,
+    se3_exp,
+    se3_inverse,
+    se3_log,
+    so3_exp,
+    so3_hat,
+    so3_log,
+    so3_vee,
 )
 
 TOL = 1e-10

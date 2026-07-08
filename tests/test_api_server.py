@@ -2,8 +2,8 @@
 
 Usa fastapi.testclient para tests sin levantar servidor.
 """
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 def client():
     """TestClient compartido para todos los tests."""
     from fastapi.testclient import TestClient
+
     from scripts.api_server import app
     return TestClient(app)
 

@@ -10,6 +10,7 @@ Solo se añade:
 NO toca el original: lee SRC y escribe DST.
 Uso:  ../.venv_thesis/bin/python scripts/refresh_defensa.py
 """
+
 from __future__ import annotations
 
 import shutil
@@ -26,10 +27,10 @@ REPO = Path(__file__).resolve().parents[1]
 SRC = REPO / "docs/entrega3/Presentacion_Defensa_TFM_base.pptx"
 DST = REPO / "docs/entrega3/Presentacion_Defensa_TFM.pptx"
 
-NAVY = RGBColor(0x1F, 0x4E, 0x79)        # acento institucional (ya usado en el deck)
-GREY = RGBColor(0x8A, 0x8A, 0x8A)        # pie de página discreto
+NAVY = RGBColor(0x1F, 0x4E, 0x79)  # acento institucional (ya usado en el deck)
+GREY = RGBColor(0x8A, 0x8A, 0x8A)  # pie de página discreto
 FOOTER_LEFT = "TFM · UNIR · Junio 2026"
-MARK = "footer_unir"                      # marca de idempotencia
+MARK = "footer_unir"  # marca de idempotencia
 
 
 def _has_marker(slide) -> bool:
@@ -44,14 +45,19 @@ def add_footer(slide, page: int, total: int) -> None:
     left = slide.shapes.add_textbox(Inches(0.4), Inches(7.05), Inches(6.0), Inches(0.35))
     left.name = MARK
     p = left.text_frame.paragraphs[0]
-    r = p.add_run(); r.text = FOOTER_LEFT
-    r.font.size = Pt(9); r.font.color.rgb = GREY
+    r = p.add_run()
+    r.text = FOOTER_LEFT
+    r.font.size = Pt(9)
+    r.font.color.rgb = GREY
     # derecha (numeración)
     right = slide.shapes.add_textbox(Inches(11.0), Inches(7.05), Inches(1.9), Inches(0.35))
     right.name = MARK
-    pr = right.text_frame.paragraphs[0]; pr.alignment = PP_ALIGN.RIGHT
-    rr = pr.add_run(); rr.text = f"{page} / {total}"
-    rr.font.size = Pt(9); rr.font.color.rgb = GREY
+    pr = right.text_frame.paragraphs[0]
+    pr.alignment = PP_ALIGN.RIGHT
+    rr = pr.add_run()
+    rr.text = f"{page} / {total}"
+    rr.font.size = Pt(9)
+    rr.font.color.rgb = GREY
 
 
 def add_title_accent_rule(slide) -> None:
@@ -60,13 +66,16 @@ def add_title_accent_rule(slide) -> None:
     Estilo membrete: una banda fina arriba y otra abajo. No colisiona con el
     bloque de título centrado.
     """
-    top = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE,
-                                 Inches(0.0), Inches(0.0), Inches(13.333), Pt(9))
-    bottom = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE,
-                                    Inches(0.0), Inches(7.4), Inches(13.333), Pt(9))
+    top = slide.shapes.add_shape(
+        MSO_SHAPE.RECTANGLE, Inches(0.0), Inches(0.0), Inches(13.333), Pt(9)
+    )
+    bottom = slide.shapes.add_shape(
+        MSO_SHAPE.RECTANGLE, Inches(0.0), Inches(7.4), Inches(13.333), Pt(9)
+    )
     for band in (top, bottom):
         band.name = MARK
-        band.fill.solid(); band.fill.fore_color.rgb = NAVY
+        band.fill.solid()
+        band.fill.fore_color.rgb = NAVY
         band.line.fill.background()
 
 

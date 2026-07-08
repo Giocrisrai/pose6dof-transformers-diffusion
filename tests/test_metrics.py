@@ -2,10 +2,17 @@
 
 import numpy as np
 import pytest
+
 from src.utils.metrics import (
-    add_metric, add_s_metric, compute_add, compute_adds,
-    vsd, mssd, mspd,
-    compute_recall, compute_auc,
+    add_metric,
+    add_s_metric,
+    compute_add,
+    compute_adds,
+    compute_auc,
+    compute_recall,
+    mspd,
+    mssd,
+    vsd,
 )
 
 

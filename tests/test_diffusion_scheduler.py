@@ -1,5 +1,4 @@
 """Tests para SimpleDDPMScheduler.add_noise_batch."""
-import numpy as np
 import torch
 
 from src.planning.diffusion_policy import SimpleDDPMScheduler

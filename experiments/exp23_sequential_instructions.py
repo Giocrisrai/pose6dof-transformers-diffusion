@@ -373,8 +373,6 @@ def render_sequence(scene_idx, scene, result, save_path):
     ]
     for k, (step, ok) in enumerate(zip(result["step_results"], result["step_correctness"])):
         obj = scene["objects"][step.chosen_idx]
-        expected = scene["target_sequence"][k] if k < len(scene["target_sequence"]) else -1
-        exp_obj = scene["objects"][expected] if expected >= 0 else None
         flag = "✓" if ok else "✗"
         text_lines.append(
             f"   {flag} Paso {k+1}: '{step.sub_text}'  →  Eligió #{step.chosen_idx+1} "

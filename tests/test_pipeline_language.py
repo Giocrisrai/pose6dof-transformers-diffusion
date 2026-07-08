@@ -9,7 +9,9 @@ from src.pipeline import BinPickingPipeline, PipelineConfig, PoseResult
 
 
 def _pose(obj_id, x, color, shape):
-    T = np.eye(4); T[0, 3] = x; T[2, 3] = 0.5
+    T = np.eye(4)
+    T[0, 3] = x
+    T[2, 3] = 0.5
     return PoseResult(obj_id=obj_id, R=np.eye(3), t=np.array([x, 0, 0.5]),
                       score=0.9, T=T, attributes={"color": color, "shape": shape})
 
@@ -108,6 +110,7 @@ def test_cli_language_parsea_args():
 
 def test_cli_dry_run_ejecuta_grounding(capsys):
     import json
+
     from experiments.run_pick_language import run_dry
     code = run_dry("dame el cubo rojo de la izquierda")
     out = capsys.readouterr().out

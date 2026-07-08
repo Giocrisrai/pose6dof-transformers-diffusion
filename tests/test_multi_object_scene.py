@@ -1,7 +1,9 @@
 import numpy as np
 
 from src.simulation.multi_object_scene import (
-    BIN_X_RANGE, BIN_Y_RANGE, MIN_DIST_M,
+    BIN_X_RANGE,
+    BIN_Y_RANGE,
+    MIN_DIST_M,
     sample_non_overlapping_positions,
 )
 

@@ -2,14 +2,14 @@
 
 import numpy as np
 import torch
-import pytest
+
 from src.planning.diffusion_policy import (
-    SimpleDDPMScheduler,
     ConditionalUNet1D,
-    SinusoidalPosEmb,
     DiffusionGraspPlanner,
+    SimpleDDPMScheduler,
+    SinusoidalPosEmb,
 )
-from src.utils.lie_groups import so3_exp, pose_from_Rt
+from src.utils.lie_groups import pose_from_Rt, so3_exp
 
 
 class TestDDPMScheduler:

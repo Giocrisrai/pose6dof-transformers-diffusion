@@ -372,7 +372,6 @@ def evaluate(model, projector, gate, scheduler, scenes, clip_embs, device, batch
         for i in range(0, n, batch_size):
             batch = scenes[i:i+batch_size]
             attrs = torch.tensor(np.stack([scene_to_tensors(s)[0] for s in batch]), device=device)
-            pos = torch.tensor(np.stack([scene_to_tensors(s)[1] for s in batch]), device=device)
             mask = torch.tensor(np.stack([scene_to_tensors(s)[2] for s in batch]), device=device)
             ce = torch.tensor(clip_embs[i:i+batch_size], device=device)
             gates = gate(ce, attrs, mask)

@@ -1,8 +1,13 @@
 """Tests del núcleo puro de language_pick (sin CoppeliaSim)."""
 import numpy as np
+
 from src.simulation.language_pick import (
-    SimObjectSpec, color_name_from_rgb, plan_language_scene,
-    sim_objects_to_views, select_sim_target, evaluate_selection,
+    SimObjectSpec,
+    color_name_from_rgb,
+    evaluate_selection,
+    plan_language_scene,
+    select_sim_target,
+    sim_objects_to_views,
 )
 
 
@@ -98,8 +103,8 @@ def test_run_language_pick_smoke():
 
 
 def test_spec_matches_instruction_honesto():
-    from src.simulation.language_pick import spec_matches_instruction
     from src.language import make_parser
+    from src.simulation.language_pick import spec_matches_instruction
     p = make_parser("deterministic")
     red_cube = SimObjectSpec(0, (0, 0, 0.5), "red", "cube", "large")
     assert spec_matches_instruction(red_cube, p.parse("pick the red cube")) is True

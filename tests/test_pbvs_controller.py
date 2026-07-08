@@ -1,7 +1,7 @@
 """Tests unitarios para src/control/pbvs.py."""
 import numpy as np
-import pytest
-from src.control import PBVSController, simulate_pbvs_loop, se3_error, so3_log
+
+from src.control import PBVSController, se3_error, simulate_pbvs_loop, so3_log
 
 
 def make_T(R=None, t=None):

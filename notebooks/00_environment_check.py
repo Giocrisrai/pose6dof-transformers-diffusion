@@ -10,8 +10,8 @@ Verifica que todo el entorno está correctamente configurado:
 Ejecutar: python notebooks/00_environment_check.py
 """
 
-import sys
 import importlib
+import sys
 from pathlib import Path
 
 
@@ -66,7 +66,7 @@ def main():
         else:
             check("GPU", lambda: "CPU only (MPS and CUDA unavailable)")
             passed += 1
-    except:
+    except Exception:
         print("  ✗ GPU check failed")
 
     # ── 3D Libraries ──
@@ -98,6 +98,7 @@ def main():
     total += 1
     try:
         import numpy as np
+
         from src.utils.lie_groups import so3_exp, so3_log
         omega = np.array([0.1, 0.2, 0.3])
         R = so3_exp(omega)

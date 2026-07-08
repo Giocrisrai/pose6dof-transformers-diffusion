@@ -6,6 +6,7 @@
 No requieren CLIP weights ni training, solo verifican la mecanica.
 """
 from __future__ import annotations
+
 import sys
 from pathlib import Path
 

@@ -343,10 +343,8 @@ def run_pick_sequence(
     sim.setObjectParent(obj_h, -1, True)
     sim.setObjectInt32Param(obj_h, sim.shapeintparam_respondable, 1)
     sim.setObjectInt32Param(obj_h, sim.shapeintparam_static, 0)
-    reset_dynamic_ok = False
     try:
         sim.resetDynamicObject(obj_h)
-        reset_dynamic_ok = True
     except Exception as e:
         # FAIL LOUD: si resetDynamicObject falla, el cubo VOLARÁ por
         # inercia y deposit_error_m será grande. No silenciar.

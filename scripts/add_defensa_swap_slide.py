@@ -8,6 +8,7 @@ bloque de percepción es intercambiable por uno open-license sin tocar el resto.
 Idempotente (no duplica si ya existe). Correr; luego refresh_defensa.py.
 Uso:  ../.venv_thesis/bin/python scripts/add_defensa_swap_slide.py
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -57,19 +58,27 @@ def main() -> int:
     tb.text_frame.word_wrap = True
     r = tb.text_frame.paragraphs[0].add_run()
     r.text = TITLE
-    r.font.size = Pt(30); r.font.bold = True; r.font.color.rgb = NAVY
+    r.font.size = Pt(30)
+    r.font.bold = True
+    r.font.color.rgb = NAVY
     # Divisor
-    div = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.5), Inches(1.35),
-                                 Inches(12.33), Pt(2.5))
-    div.fill.solid(); div.fill.fore_color.rgb = NAVY; div.line.fill.background()
+    div = slide.shapes.add_shape(
+        MSO_SHAPE.RECTANGLE, Inches(0.5), Inches(1.35), Inches(12.33), Pt(2.5)
+    )
+    div.fill.solid()
+    div.fill.fore_color.rgb = NAVY
+    div.line.fill.background()
     # Bullets
     bb = slide.shapes.add_textbox(Inches(0.6), Inches(1.7), Inches(12.33), Inches(5.0))
-    btf = bb.text_frame; btf.word_wrap = True
+    btf = bb.text_frame
+    btf.word_wrap = True
     for i, b in enumerate(BULLETS):
         p = btf.paragraphs[0] if i == 0 else btf.add_paragraph()
         p.space_after = Pt(10)
-        run = p.add_run(); run.text = "•  " + b
-        run.font.size = Pt(17); run.font.color.rgb = INK
+        run = p.add_run()
+        run.text = "•  " + b
+        run.font.size = Pt(17)
+        run.font.color.rgb = INK
 
     # mover el slide recién creado a la posición after+1
     lst = prs.slides._sldIdLst

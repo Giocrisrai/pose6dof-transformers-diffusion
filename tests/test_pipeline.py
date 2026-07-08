@@ -1,8 +1,8 @@
 """Tests for the end-to-end pipeline module."""
 
 import numpy as np
-import pytest
-from src.pipeline import PipelineConfig, PoseResult, GraspResult, PipelineResult
+
+from src.pipeline import GraspResult, PipelineConfig, PipelineResult, PoseResult
 
 
 class TestDataClasses:

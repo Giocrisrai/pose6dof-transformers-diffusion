@@ -222,7 +222,6 @@ def render_scene(scene, traj, gate_probs, text, target_idx, chosen_idx, save_pat
 
 
 def run_inference(text, scene, tok, clip_mod, model, proj, gate, device):
-    n_obj = scene["n_obj"]
     attrs_pad = np.zeros((MAX_OBJ, ATTR_DIM), dtype=np.float32)
     pos_pad = np.zeros((MAX_OBJ, 3), dtype=np.float32)
     mask = np.zeros(MAX_OBJ, dtype=np.float32)

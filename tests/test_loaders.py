@@ -1,10 +1,14 @@
 """Tests para src/utils/loaders.py."""
 from pathlib import Path
+
 import numpy as np
 import pytest
 
 from src.utils.loaders import (
-    PoseSample, DATASET_INFO, _normalize_translation, load_predictions_with_gt,
+    DATASET_INFO,
+    PoseSample,
+    _normalize_translation,
+    load_predictions_with_gt,
 )
 
 

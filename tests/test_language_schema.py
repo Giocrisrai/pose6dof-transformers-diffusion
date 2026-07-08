@@ -1,6 +1,9 @@
 """Tests para src/language/schema.py — dataclasses puras."""
 from src.language.schema import (
-    TargetSpec, SpatialRelation, Instruction, GroundingResult, ObjectView,
+    GroundingResult,
+    Instruction,
+    ObjectView,
+    TargetSpec,
 )
 
 

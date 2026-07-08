@@ -1,7 +1,7 @@
 """Tests para src/utils/logger.py."""
 import logging
 import os
-from pathlib import Path
+
 from src.utils.logger import get_logger, log_run_metadata
 
 

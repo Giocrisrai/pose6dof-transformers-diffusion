@@ -10,11 +10,9 @@ Uso:
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
 import numpy as np
-
 from bop_bootstrap_ci import bootstrap_auc_adds, bootstrap_recall
 
 

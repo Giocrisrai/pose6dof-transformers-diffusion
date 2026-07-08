@@ -1,5 +1,6 @@
 """Tests del Grounder (selección de target). Base 100% determinista."""
 import pytest
+
 from src.language import make_parser
 from src.language.grounding import Grounder
 from src.language.schema import ObjectView
@@ -87,6 +88,7 @@ def test_clip_attributes_clasifica_color():
     pytest.importorskip("transformers")
     pytest.importorskip("torch")
     import numpy as np
+
     from src.language._clip import clip_attributes
     rgb = np.zeros((64, 64, 3), dtype=np.uint8)
     rgb[..., 0] = 220   # parche rojo

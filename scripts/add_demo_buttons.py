@@ -12,6 +12,7 @@ Correr ANTES de restyle_divulga_pastel.py.
 
 Uso:  ../.venv_thesis/bin/python scripts/add_demo_buttons.py
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -32,10 +33,14 @@ MARK = "demo_btn"
 
 # (idx_slide_1based, marcador_titulo, texto_boton, url/href, color)
 BUTTONS = [
-    (11, "DEMO 1", "▶  Abrir demo interactiva  ·  localhost:7860",
-     "http://127.0.0.1:7860", CYAN),
-    (13, "DEMO 2", "▶  Abrir demo E2E grabada",
-     "videos_proyeccion/03_e2e_con_telemetria.mp4", LIME),
+    (11, "DEMO 1", "▶  Abrir demo interactiva  ·  localhost:7860", "http://127.0.0.1:7860", CYAN),
+    (
+        13,
+        "DEMO 2",
+        "▶  Abrir demo E2E grabada",
+        "videos_proyeccion/03_e2e_con_telemetria.mp4",
+        LIME,
+    ),
 ]
 
 
@@ -52,17 +57,23 @@ def _has(slide):
 
 
 def add_button(slide, text, href, color):
-    btn = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
-                                 Inches(0.7), Inches(6.45), Inches(6.4), Inches(0.7))
+    btn = slide.shapes.add_shape(
+        MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.7), Inches(6.45), Inches(6.4), Inches(0.7)
+    )
     btn.name = MARK
-    btn.fill.solid(); btn.fill.fore_color.rgb = color
+    btn.fill.solid()
+    btn.fill.fore_color.rgb = color
     btn.line.fill.background()
-    btn.click_action.hyperlink.address = href     # toda la forma es clicable
+    btn.click_action.hyperlink.address = href  # toda la forma es clicable
     tf = btn.text_frame
     tf.word_wrap = True
-    p = tf.paragraphs[0]; p.alignment = PP_ALIGN.CENTER
-    r = p.add_run(); r.text = text
-    r.font.size = Pt(18); r.font.bold = True; r.font.color.rgb = WHITE
+    p = tf.paragraphs[0]
+    p.alignment = PP_ALIGN.CENTER
+    r = p.add_run()
+    r.text = text
+    r.font.size = Pt(18)
+    r.font.bold = True
+    r.font.color.rgb = WHITE
 
 
 def main() -> int:

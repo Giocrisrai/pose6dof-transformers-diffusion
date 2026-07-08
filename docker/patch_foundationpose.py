@@ -73,7 +73,7 @@ def patch_utils_py():
         return False
 
     UTILS_PATH.write_text(content + UTILS_FALLBACK)
-    print(f"[OK] Utils.py parcheado: erode_depth, bilateral_filter_depth (Python fallbacks)")
+    print("[OK] Utils.py parcheado: erode_depth, bilateral_filter_depth (Python fallbacks)")
     return True
 
 

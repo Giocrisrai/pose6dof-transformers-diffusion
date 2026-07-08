@@ -1,10 +1,13 @@
-import os, sys
+import os
+import sys
 from pathlib import Path
+
 if Path('.').resolve().name == 'notebooks':
     os.chdir('..')
 sys.path.insert(0, '.')
 
 import torch
+
 device = 'mps' if torch.backends.mps.is_available() else ('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'Device: {device} | torch: {torch.__version__}')
 OUTPUT_DIR = Path('data/models')

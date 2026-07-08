@@ -5,7 +5,6 @@ import math
 
 import numpy as np
 import pytest
-
 from bop_bootstrap_ci import (
     BootstrapResult,
     auc_from_errors,
