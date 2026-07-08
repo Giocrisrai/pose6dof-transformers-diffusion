@@ -342,7 +342,7 @@ def verify_dataset(dataset_root: str, split: str = "test") -> Dict:
         dict with verification results
     """
     ds = BOPDataset(dataset_root, split)
-    results = {
+    results: dict = {
         "root": str(ds.root),
         "split": split,
         "scenes": len(ds.scenes),

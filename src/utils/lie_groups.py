@@ -284,7 +284,7 @@ def geodesic_distance_SO3(R1: np.ndarray, R2: np.ndarray) -> float:
         Angular distance in radians
     """
     R_diff = R1.T @ R2
-    return np.linalg.norm(so3_log(R_diff))
+    return float(np.linalg.norm(so3_log(R_diff)))
 
 
 def geodesic_distance_SE3(T1: np.ndarray, T2: np.ndarray) -> Tuple[float, float]:
@@ -303,4 +303,4 @@ def geodesic_distance_SE3(T1: np.ndarray, T2: np.ndarray) -> Tuple[float, float]
     R2, t2 = pose_to_Rt(T2)
     rot_dist = geodesic_distance_SO3(R1, R2)
     trans_dist = np.linalg.norm(t1 - t2)
-    return rot_dist, trans_dist
+    return rot_dist, float(trans_dist)

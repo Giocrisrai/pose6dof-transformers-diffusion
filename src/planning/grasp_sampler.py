@@ -126,7 +126,7 @@ class GraspSampler:
                 methods = ["topdown"]
 
         n_per_method = max(1, n_candidates // len(methods))
-        candidates = []
+        candidates: list = []
 
         for method in methods:
             if method == "topdown":

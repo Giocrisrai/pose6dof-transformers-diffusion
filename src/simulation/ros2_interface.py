@@ -70,7 +70,7 @@ _BaseNode = Node if _ROS2_AVAILABLE else _StubNode
 # Perception Node
 # ================================================================
 
-class PoseEstimationNode(_BaseNode):
+class PoseEstimationNode(_BaseNode):  # type: ignore[misc,valid-type]  # base condicional (ROS2 opcional)
     """ROS 2 node for 6-DoF pose estimation.
 
     Subscribes:
@@ -164,7 +164,7 @@ class PoseEstimationNode(_BaseNode):
 # Grasp Planning Node
 # ================================================================
 
-class GraspPlannerNode(_BaseNode):
+class GraspPlannerNode(_BaseNode):  # type: ignore[misc,valid-type]  # base condicional (ROS2 opcional)
     """ROS 2 node for grasp trajectory planning.
 
     Subscribes:

@@ -167,3 +167,11 @@ dev = [
     "pytest-cov>=4.0",
     "ruff>=0.4",
 ]
+
+[tool.mypy]
+python_version = "3.10"
+# Código científico (numpy/torch/trimesh/cv2/coppeliasim) sin stubs de tipos:
+# ignoramos imports sin tipos y no exigimos anotar todo.
+ignore_missing_imports = true
+disallow_untyped_defs = false
+warn_return_any = false

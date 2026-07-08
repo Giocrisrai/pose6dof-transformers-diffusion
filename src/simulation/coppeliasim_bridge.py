@@ -18,7 +18,7 @@ import logging
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -104,17 +104,19 @@ class CoppeliaSimBridge:
         self.robot_config = robot_config or RobotConfig()
         self.camera_config = camera_config or CameraConfig()
 
-        self._client = None
-        self._sim = None
+        # El cliente y el objeto `sim` de la ZMQ Remote API son dinámicos (sin
+        # tipos): Any es su tipo honesto.
+        self._client: Any = None
+        self._sim: Any = None
         self._connected = False
 
         # Object handles (populated on connect)
-        self._robot_handle = None
-        self._joint_handles = []
-        self._camera_rgb_handle = None
-        self._camera_depth_handle = None
-        self._gripper_handle = None
-        self._tip_handle = None
+        self._robot_handle: Optional[int] = None
+        self._joint_handles: List[int] = []
+        self._camera_rgb_handle: Optional[int] = None
+        self._camera_depth_handle: Optional[int] = None
+        self._gripper_handle: Optional[int] = None
+        self._tip_handle: Optional[int] = None
         self._object_handles: Dict[str, int] = {}
 
     def __enter__(self):

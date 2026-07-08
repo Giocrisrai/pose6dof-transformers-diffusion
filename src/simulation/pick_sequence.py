@@ -274,7 +274,7 @@ def run_pick_sequence(
     tip_h = sim.getObject("/tip")
 
     counter = [0]
-    ik_convergence = []  # tracker: True por cada substep que IK convergió
+    ik_convergence: list[bool] = []  # tracker: True por cada substep que IK convergió
 
     set_gripper(bridge, True)
     for _ in range(GRIPPER_OPEN_SETTLE_STEPS):

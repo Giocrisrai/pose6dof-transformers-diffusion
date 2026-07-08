@@ -40,7 +40,7 @@ class ColoredFormatter(logging.Formatter):
         return super().format(record)
 
 
-_loggers_configured = set()
+_loggers_configured: set[str] = set()
 
 
 def get_logger(name: str = "tfm", level: Optional[str] = None,

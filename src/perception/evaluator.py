@@ -86,7 +86,7 @@ class PoseEvaluator:
         if metrics is None:
             metrics = ["add", "adds", "mssd", "mspd"]
 
-        errors = {m: [] for m in metrics}
+        errors: dict[str, list] = {m: [] for m in metrics}
         n_evaluated = 0
 
         for pred in predictions:

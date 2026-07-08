@@ -100,7 +100,7 @@ class PBVSController:
         if ang_norm > self.max_angular_vel:
             velocity[3:] *= self.max_angular_vel / ang_norm
 
-        return velocity, converged
+        return velocity, bool(converged)
 
     def servo_trajectory(
         self,
@@ -233,7 +233,7 @@ class IBVSController:
         if vel_norm > self.max_velocity:
             velocity *= self.max_velocity / vel_norm
 
-        return velocity, error_norm
+        return velocity, float(error_norm)
 
 
 class HybridServoController:

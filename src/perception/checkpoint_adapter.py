@@ -126,7 +126,7 @@ class CheckpointPoseEstimator:
             self._index[key] = r
 
     def is_commercializable(self) -> bool:
-        return self._commercial
+        return bool(self._commercial)
 
     def predict_pose(self, rgb=None, depth=None, cam_K=None,
                        obj_id=None, scene_id=None, img_id=None, gt_idx=-1):
