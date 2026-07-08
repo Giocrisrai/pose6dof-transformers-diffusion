@@ -10,9 +10,8 @@ services:
     dockerContext: .
     plan: free
     healthCheckPath: /health
-    # La imagen por defecto lanza API+Gradio; en un único puerto (Render) servimos
-    # solo la API, que ya incluye el dashboard en / y los docs en /docs.
-    dockerCommand: uvicorn --app-dir scripts api_server:app --host 0.0.0.0 --port $PORT
+    # El CMD del Dockerfile ya arranca uvicorn en ${PORT:-8000} (dashboard en /,
+    # API en /docs), así que Render lo usa tal cual con su $PORT.
     autoDeploy: true
     envVars:
       - key: PYTHONUNBUFFERED

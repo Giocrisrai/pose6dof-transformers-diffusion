@@ -226,7 +226,7 @@ def load_model(name: str):
             status_code=400,
             detail=(
                 f"Modelo VLA-lite '{name}' requiere CLIP encoder + gate especifico. "
-                "Usa Gradio (puerto 7860) tab 'Hablar al robot' o el script "
+                "Usa el demo Gradio (python scripts/demo_charla.py) o el script "
                 f"experiments/exp{16 if 'shapes' not in name and name == 'clip' else 18}.py."
             ),
         )
