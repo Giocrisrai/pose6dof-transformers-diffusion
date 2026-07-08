@@ -1136,7 +1136,7 @@ elif section == "🛠️ text-to-CAD":
         )
 
     st.subheader("Panel · elige una pieza generada")
-    piezas = {
+    piezas: dict = {
         "Escuadra en L (asimétrica)": {
             "size": "60×40×45 mm",
             "t": 4.1,

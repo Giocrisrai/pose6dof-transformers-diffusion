@@ -45,7 +45,7 @@ app = FastAPI(
 )
 
 # Cache de modelos
-_models_cache = {}
+_models_cache: dict = {}
 
 
 # ============================================================================
@@ -109,7 +109,7 @@ class E2EResponse(BaseModel):
 # HELPERS
 # ============================================================================
 
-MODELS_INFO = {
+MODELS_INFO: dict = {
     "original": {
         "path": REPO / "data/models/diffusion_policy_grasp.pth",
         "hidden_dim": 128,
@@ -244,7 +244,7 @@ def load_model(name: str):
     ).to(device)
     ckpt = torch.load(info["path"], map_location=device, weights_only=True)
     sd = ckpt.get("model_state_dict", ckpt.get("model", ckpt)) if isinstance(ckpt, dict) else ckpt
-    model.load_state_dict(sd)
+    model.load_state_dict(sd)  # type: ignore[arg-type]  # sd es el state_dict del checkpoint
     model.eval()
     scheduler = SimpleDDPMScheduler(num_timesteps=100)
     _models_cache[name] = {"model": model, "scheduler": scheduler, "device": device, "info": info}

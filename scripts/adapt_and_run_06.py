@@ -20,7 +20,7 @@ with open(NB_IN) as f:
 
 # Celda 1 actual: !nvidia-smi + git clone + pip install
 # Reemplazar por celda local sin shell magic
-new_cell_1 = {
+new_cell_1: dict = {
     "cell_type": "code",
     "execution_count": None,
     "metadata": {},

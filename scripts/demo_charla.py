@@ -729,7 +729,7 @@ def _crear_distractores_sim(sim, n: int, target_xy, target_app, rng):
     objetivo y entre sí. El robot debe ir por la pieza indicada (su pose),
     ignorando estas — selección en clutter. (Las fijas ya están estacionadas.)"""
     puestos = [tuple(target_xy)]
-    creados = []
+    creados: list = []
     intentos = 0
     while len(creados) < n and intentos < 400:   # tope: a veces no caben 2
         intentos += 1

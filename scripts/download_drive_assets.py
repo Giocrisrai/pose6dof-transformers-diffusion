@@ -21,7 +21,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 # ─── Manifest de assets en Drive ──────────────────────────────────
-ASSETS = {
+ASSETS: dict = {
     "foundationpose_scorer": {
         "drive_id": "1DJlDdd4rnqiPjOpemxfn1Y7bawjYoGIY",
         "dest": "data/models/foundationpose/2024-01-11-20-02-45/model_best.pth",

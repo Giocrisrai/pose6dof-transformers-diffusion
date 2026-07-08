@@ -19,7 +19,7 @@ sys.path.insert(0, str(REPO_ROOT))
 
 def check_dataset(root: Path, name: str) -> dict:
     """Check a single BOP dataset and return status."""
-    status = {
+    status: dict = {
         "name": name,
         "root": str(root),
         "exists": root.exists(),
@@ -81,7 +81,7 @@ def check_dataset(root: Path, name: str) -> dict:
             continue
 
         split_name = split_dir.name
-        split_status = {
+        split_status: dict = {
             "n_scenes": len(scenes),
             "scenes_with_rgb": 0,
             "scenes_with_depth": 0,

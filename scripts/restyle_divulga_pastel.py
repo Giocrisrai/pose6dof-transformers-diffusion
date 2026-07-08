@@ -119,7 +119,7 @@ def _is_white_bg(blob) -> bool:
         im = Image.open(io.BytesIO(blob)).convert("RGB")
         w, h = im.size
         pts = [(2, 2), (w - 3, 2), (2, h - 3), (w - 3, h - 3), (w // 2, 2), (w // 2, h - 3)]
-        return sum(1 for (x, y) in pts if min(im.getpixel((x, y))) > 235) >= 5
+        return sum(1 for (x, y) in pts if min(im.getpixel((x, y))) > 235) >= 5  # type: ignore[arg-type,misc]
     except Exception:
         return False
 

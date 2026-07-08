@@ -137,7 +137,7 @@ def auc_from_errors(
     if hasattr(np, "trapezoid"):
         integral = np.trapezoid(recalls, thresholds)
     else:
-        integral = np.trapz(recalls, thresholds)  # numpy < 2.0
+        integral = np.trapz(recalls, thresholds)  # type: ignore[attr-defined]  # numpy < 2.0
     return float(integral / max_threshold)
 
 
