@@ -193,6 +193,27 @@ Vídeo completo: `figs/cine_pick_hud.mp4`. Es la interfaz visual de *nuestra*
 simulación (no la GUI del escritorio): muestra el robot UR5e manipulando la pieza
 generada por texto, con el estado del pipeline sobrepuesto.
 
+## Garantía de consistencia ✅
+
+`verify_consistency.py` es una **garantía re-ejecutable** de que todo es coherente
+y físicamente plausible. Comprueba (24 checks + física en vivo opt-in):
+
+- **Numérica**: los números coinciden entre los reports JSON (fuente de verdad),
+  el README, la **Tabla 11 de la Entrega 4** y el **dashboard** — sin contradicciones.
+- **Física**: la trayectoria cae, se asienta (σ < 1 mm), no atraviesa el suelo y no
+  gana energía; la ground-truth del report es coherente.
+- **CAD**: el sólido es determinista (volumen 19 575.9 mm³, watertight, bbox exacto).
+- **Física EN VIVO** (opt-in `EXP27_LIVE_PHYSICS=1`): re-ejecuta la simulación y
+  verifica que reproduce la evidencia (zf = 7.0 mm en runs repetidos).
+
+Se ejecuta en la suite de tests (`tests/test_exp27_consistency.py`), así que la
+coherencia queda **garantizada en CI**.
+
+```bash
+python verify_consistency.py                    # 24 checks (sin sim)
+EXP27_LIVE_PHYSICS=1 python verify_consistency.py  # + física en vivo (CoppeliaSim)
+```
+
 ## Reproducción
 
 Entorno: `.venv` del repo (uv) + CoppeliaSim Edu V4.10 en `localhost:23000`.
