@@ -29,10 +29,12 @@ from typing import Optional
 import numpy as np
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 REPO = Path(__file__).resolve().parents[1]
 DASHBOARD = REPO / "docs/dashboard_ejecutivo.html"
+ASSETS = REPO / "docs/assets"  # vídeo demo + poster (servidos como estáticos, no inline)
 sys.path.insert(0, str(REPO))
 
 app = FastAPI(
@@ -45,6 +47,11 @@ app = FastAPI(
     },
     license_info={"name": "MIT (TFM components)"},
 )
+
+# Sirve el vídeo demo y el poster como archivos estáticos en /assets (el dashboard
+# los referencia con rutas relativas), en vez de embeberlos como data-URI en el HTML.
+if ASSETS.is_dir():
+    app.mount("/assets", StaticFiles(directory=str(ASSETS)), name="assets")
 
 # Cache de modelos
 _models_cache: dict = {}

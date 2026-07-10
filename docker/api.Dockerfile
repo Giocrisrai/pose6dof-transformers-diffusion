@@ -47,8 +47,10 @@ RUN pip install --no-cache-dir \
 COPY src/ /app/src/
 COPY scripts/api_server.py /app/scripts/api_server.py
 COPY README.md /app/README.md
-# Dashboard ejecutivo (servido en / por la API) — autocontenido
+# Dashboard ejecutivo (servido en / por la API) + assets (vídeo demo + poster,
+# servidos en /assets como estáticos — HTML ligero, el vídeo carga bajo demanda).
 COPY docs/dashboard_ejecutivo.html /app/docs/dashboard_ejecutivo.html
+COPY docs/assets/ /app/docs/assets/
 
 # Los pesos y checkpoints se montan por volumen (no se incluyen en la imagen)
 RUN mkdir -p /app/data/models /app/experiments/results /app/experiments/checkpoints

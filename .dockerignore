@@ -29,8 +29,10 @@ notebooks/
 docs/**
 *.pdf
 *.docx
-# Excepción: el dashboard ejecutivo lo sirve la API (COPY en api.Dockerfile)
+# Excepción: el dashboard ejecutivo y sus assets (vídeo demo + poster) los sirve la API
 !docs/dashboard_ejecutivo.html
+!docs/assets
+!docs/assets/**
 
 # Git
 .git/
