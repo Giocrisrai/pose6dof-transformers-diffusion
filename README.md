@@ -3,6 +3,7 @@
 **Trabajo Fin de Master** | Master en Ingenieria Matematica y Computacion | UNIR 2026
 
 [![Tests](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/actions/workflows/ci.yml/badge.svg)](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/actions/workflows/ci.yml)
+[![Dashboard en vivo](https://img.shields.io/badge/dashboard-en%20vivo-0098cd?logo=githubpages&logoColor=white)](https://giocrisrai.github.io/pose6dof-transformers-diffusion/)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
 [![License](https://img.shields.io/badge/license-Academic-green.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-293%20passing-brightgreen)](tests/)
@@ -36,6 +37,9 @@
 ## 🚀 Aplicación desplegable
 
 El pipeline se empaqueta como una aplicación web autocontenida: **dashboard ejecutivo** (resumen de hipótesis, robustez/clutter, extensión text-to-CAD y vídeo del pick) servido junto a la **API REST** del pipeline.
+
+> 🌐 **Dashboard en vivo (GitHub Pages):** **<https://giocrisrai.github.io/pose6dof-transformers-diffusion/>**
+> — versión estática con el vídeo del pick servido como asset. La API interactiva (`/plan-grasp`, `/e2e`, `/docs`) se levanta con Docker o en un host de contenedor.
 
 ```bash
 docker compose -f docker/docker-compose.yml up api      # imagen CPU, sin GPU ni ROS
