@@ -85,6 +85,24 @@
   .chart { width: 100%; height: auto; display: block; }
   .cap { font-family: var(--mono); font-size: 11.5px; color: var(--muted); margin: 10px 2px 0; }
   .demo-vid { width: 100%; border-radius: 8px; display: block; background: #000; border: 1px solid var(--line); }
+  /* ---- inmersivo: visor 3D (estudio) + vídeo cinematográfico ---- */
+  .stage { position: relative; width: 100%; aspect-ratio: 16 / 11; border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--line); background: radial-gradient(130% 130% at 50% 12%, #14243400 0%, #05070a 72%), #0a1420;
+    cursor: grab; touch-action: none; }
+  .stage:active { cursor: grabbing; }
+  .stage canvas { display: block; width: 100%; height: 100%; }
+  .stage .ov { position: absolute; font-family: var(--mono); font-size: 11px; z-index: 2; }
+  .stage .hint { left: 13px; bottom: 11px; color: #93a8bd; background: rgba(5,7,10,.5); padding: 5px 9px;
+    border-radius: 6px; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); pointer-events: none; }
+  .stage .badge3d { right: 13px; top: 11px; color: var(--good); background: var(--good-wash);
+    padding: 4px 9px; border-radius: 6px; pointer-events: none; }
+  .stage .fallback { inset: 0; display: grid; place-items: center; text-align: center; color: #8093a6;
+    font-family: var(--sans); font-size: 13px; padding: 24px; }
+  .cine { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--line);
+    background: #000; box-shadow: 0 12px 44px rgba(0,0,0,.42); }
+  .cine .demo-vid { border: 0; border-radius: 0; }
+  .cine::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+    box-shadow: inset 0 0 110px rgba(0,0,0,.5); }
   text { font-family: var(--mono); fill: var(--muted); }
   .bar-lab { fill: var(--ink-soft); font-weight: 600; }
   .val-lab { fill: var(--ink); font-weight: 700; }
@@ -326,12 +344,25 @@
         <div class="mrow"><span class="m-k">Sin CUDA · GPU del M1 (MPS)</span><span class="m-v">~230 it/s</span></div>
       </div>
     </div>
-    <div class="card" style="margin-top:22px">
-      <h3>Demo · pick en CoppeliaSim (render 3ª persona + HUD)</h3>
-      <video class="demo-vid" controls muted loop playsinline preload="metadata" poster="assets/demo_cine_poster.jpg">
-        <source src="assets/demo_cine.mp4" type="video/mp4">
-      </video>
-      <p class="cap">Ciclo completo del bracket generado: aproximación → descenso → agarre snap+attach → elevación → depósito. HUD con pieza, pose 6-DoF y fase en vivo.</p>
+    <div class="cols" style="margin-top:22px">
+      <div class="card">
+        <h3>Explora la pieza en 3D (generada desde texto)</h3>
+        <div class="stage" id="stage3d" role="img" aria-label="Visor 3D interactivo de la escuadra en L generada por text-to-CAD">
+          <span class="ov badge3d">● interactivo</span>
+          <span class="ov hint">arrastra para rotar · scroll para zoom</span>
+          <div class="ov fallback" id="stage3dFb">Cargando modelo 3D…</div>
+        </div>
+        <p class="cap">Escuadra en L (60×40×45 mm), malla real de build123d — la misma pieza que el pipeline simula, estima y agarra.</p>
+      </div>
+      <div class="card">
+        <h3>Demo · pick en CoppeliaSim (3ª persona + HUD)</h3>
+        <div class="cine">
+          <video class="demo-vid" controls muted loop playsinline preload="none" poster="assets/demo_cine_poster.jpg">
+            <source src="assets/demo_cine.mp4" type="video/mp4">
+          </video>
+        </div>
+        <p class="cap">Ciclo completo del bracket: aproximación → descenso → agarre snap+attach → elevación → depósito. Se reproduce solo al entrar en vista.</p>
+      </div>
     </div>
   </section>
 
@@ -345,7 +376,7 @@
       <div class="g"><div class="g-t">Física reproducible</div><div class="g-v"><span class="mono">z=7.0 mm</span> repetible</div></div>
       <div class="g"><div class="g-t">Suite de tests</div><div class="g-v"><span class="mono">293</span> passed</div></div>
       <div class="g"><div class="g-t">Linter (ruff)</div><div class="g-v"><span class="mono">0</span> errores</div></div>
-      <div class="g"><div class="g-t">Tipos (mypy)</div><div class="g-v"><span class="mono">0</span> errores · 81 files</div></div>
+      <div class="g"><div class="g-t">Tipos (mypy)</div><div class="g-v"><span class="mono">0</span> errores · 82 files</div></div>
       <div class="g"><div class="g-t">Reproducibilidad</div><div class="g-v">CAD determinista</div></div>
     </div>
   </section>
@@ -357,4 +388,75 @@
     </div>
   </footer>
 </main>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"}}
+</script>
+<script type="module">
+  // Vídeo demo: se reproduce solo al entrar en vista (inmersivo pero ligero)
+  const vid = document.querySelector('.cine video');
+  if (vid) new IntersectionObserver(es => es.forEach(e => e.isIntersecting ? vid.play().catch(()=>{}) : vid.pause()), {threshold: 0.5}).observe(vid);
+
+  // Visor 3D de la pieza generada (Three.js). Degrada con elegancia si no hay red/WebGL.
+  const stage = document.getElementById('stage3d');
+  const fb = document.getElementById('stage3dFb');
+  try {
+    const THREE = await import('three');
+    const { OrbitControls } = await import('three/addons/controls/OrbitControls.js');
+    const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
+    const { RoomEnvironment } = await import('three/addons/environments/RoomEnvironment.js');
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(stage.clientWidth, stage.clientHeight);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
+    stage.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+    const camera = new THREE.PerspectiveCamera(38, stage.clientWidth / stage.clientHeight, 0.001, 100);
+    camera.position.set(0.11, 0.085, 0.15);
+
+    const key = new THREE.DirectionalLight(0xffffff, 2.4); key.position.set(0.25, 0.5, 0.3); scene.add(key);
+    scene.add(new THREE.HemisphereLight(0x9ec5ff, 0x0a0f16, 0.55));
+
+    const floor = new THREE.Mesh(
+      new THREE.CircleGeometry(0.6, 64),
+      new THREE.MeshStandardMaterial({ color: 0x0b1017, roughness: 0.95, metalness: 0 }));
+    floor.rotation.x = -Math.PI / 2; scene.add(floor);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true; controls.dampingFactor = 0.08;
+    controls.autoRotate = true; controls.autoRotateSpeed = 1.1;
+    controls.enablePan = false; controls.minDistance = 0.06; controls.maxDistance = 0.6;
+
+    new GLTFLoader().load('assets/pieza_escuadra.glb', (gltf) => {
+      const obj = gltf.scene;
+      obj.traverse(o => { if (o.isMesh) o.material = new THREE.MeshStandardMaterial({ color: 0xbcc6d2, metalness: 0.88, roughness: 0.34 }); });
+      const box = new THREE.Box3().setFromObject(obj);
+      const c = box.getCenter(new THREE.Vector3()), sz = box.getSize(new THREE.Vector3());
+      obj.position.sub(c);
+      const k = 0.09 / Math.max(sz.x, sz.y, sz.z); obj.scale.setScalar(k);
+      const half = (sz.y * k) / 2; obj.position.y += half;
+      controls.target.set(0, half * 0.5, 0); controls.update();
+      scene.add(obj);
+      fb.style.display = 'none';
+    }, undefined, () => { fb.textContent = 'No se pudo cargar el modelo 3D.'; });
+
+    addEventListener('resize', () => {
+      const w = stage.clientWidth, h = stage.clientHeight;
+      renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix();
+    });
+
+    let visible = false;
+    new IntersectionObserver(es => es.forEach(e => visible = e.isIntersecting), { threshold: 0.05 }).observe(stage);
+    renderer.setAnimationLoop(() => { if (visible) { controls.update(); renderer.render(scene, camera); } });
+  } catch (e) {
+    if (fb) fb.textContent = 'Visor 3D no disponible en este contexto (requiere WebGL y red).';
+    console.warn('[viewer3d]', e);
+  }
+</script>
 </body></html>
