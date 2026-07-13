@@ -14,7 +14,7 @@ from src.simulation.pick_sequence import run_pick_sequence
 EXP = REPO/"experiments/results/exp27_text_to_cad"
 OBJ = str(EXP/"assets/test_bracket.obj")
 FRAMES = EXP/"cine_frames"
-RES = (1280, 720)
+RES = (1920, 1080)  # 1080p para un render más nítido/inmersivo
 
 with CoppeliaSimBridge() as bridge:
     bridge.set_stepping(True)
