@@ -64,7 +64,7 @@ check("1.CI95 contiene el punto", yc["auc_adds_50mm_ci95"]["lo"] <= yc["auc_adds
 check("1.FP supera baseline (Δ>0)", CANON["dpp_ycbv"] > 0 and CANON["dpp_tless"] > 0)
 
 # ── 2/3. Entrega 4 y Entrega 3 citan los mismos números ─────────────
-for tag, docx in [("E4", REPO / "docs/entrega4/TFM_Entrega4_UNIR.docx"),
+for tag, docx in [("E4", REPO / "docs/predeposito/TFM_Predeposito_UNIR.docx"),
                   ("E3", REPO / "docs/entrega3/TFM_Entrega3_UNIR.docx")]:
     t = docx_text(docx)
     if t is None:
@@ -122,7 +122,7 @@ check("clutter.v9 mejora sobre v8 (84→100)", g_v9 > g_v8, f"v9={g_v9}% v8={g_v
 lat25 = round(prof["diffusion_profiles_by_steps"]["25"]["full_sample_ms"]["mean"])
 
 # La Entrega 4 cita coherentemente H2 y los números de clutter/latencia
-t4 = docx_text(REPO / "docs/entrega4/TFM_Entrega4_UNIR.docx")
+t4 = docx_text(REPO / "docs/predeposito/TFM_Predeposito_UNIR.docx")
 if t4:
     check("E4.H2 multimodal", "H2" in t4 and "multimodal" in t4.lower())
     check("E4.clutter 84/96/100 %", all(str(int(x)) in t4 for x in [g_v8, g_v9s, g_v9]))

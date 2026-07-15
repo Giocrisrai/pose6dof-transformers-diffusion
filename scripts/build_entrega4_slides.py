@@ -23,7 +23,7 @@ from pptx.util import Inches, Pt
 # --- Rutas (relativas a la raíz del repo, que es el cwd esperado) -----------
 DECK_DEFENSA = "docs/entrega3/Presentacion_Defensa_TFM.pptx"
 DECK_DIVULGA = "docs/entrega3/Presentacion_Robotica_IA.pptx"
-ASSET_IMG = "docs/entrega4/assets/fig_language_pick.png"
+ASSET_IMG = "docs/predeposito/assets/fig_language_pick.png"
 
 # --- Marcadores de idempotencia ---------------------------------------------
 MARKER_DEFENSA = "Bin picking guiado por lenguaje natural"
