@@ -24,7 +24,7 @@ from pptx.enum.text import PP_ALIGN
 from pptx.util import Inches, Pt
 
 REPO = Path(__file__).resolve().parents[1]
-DECK = REPO / "docs/entrega3/Presentacion_Robotica_IA_base.pptx"
+DECK = REPO / "docs/defensa/Presentacion_Robotica_IA_base.pptx"
 
 CYAN = RGBColor(0x22, 0xD3, 0xEE)
 LIME = RGBColor(0x34, 0xD3, 0x99)

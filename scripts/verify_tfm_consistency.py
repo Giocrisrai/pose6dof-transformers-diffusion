@@ -3,8 +3,9 @@
 Verificador de consistencia del TFM COMPLETO — garantía re-ejecutable.
 
 Cruza los números canónicos de las hipótesis (fuente de verdad = los reports
-JSON de experiments/results) contra dónde se citan: Entrega 3, Entrega 4 y el
-dashboard. Garantiza que NO hay contradicciones en la tesis.
+JSON de experiments/results) contra dónde se citan: el depósito del TFM, la
+versión base del pipeline y el dashboard. Garantiza que NO hay contradicciones
+en la tesis.
 
 Claims verificados:
   H1 (precisión): AUC ADD-S 0.908/0.957 [IC95], recall 95.8%/99.7%, Δ+3.0/+3.6pp
@@ -63,9 +64,9 @@ check("1.p95 < umbral H3 (10 s)", CANON["p95_ycbv"] < 10 and CANON["p95_tless"] 
 check("1.CI95 contiene el punto", yc["auc_adds_50mm_ci95"]["lo"] <= yc["auc_adds_50mm"] <= yc["auc_adds_50mm_ci95"]["hi"])
 check("1.FP supera baseline (Δ>0)", CANON["dpp_ycbv"] > 0 and CANON["dpp_tless"] > 0)
 
-# ── 2/3. Entrega 4 y Entrega 3 citan los mismos números ─────────────
-for tag, docx in [("E4", REPO / "docs/predeposito/TFM_Predeposito_UNIR.docx"),
-                  ("E3", REPO / "docs/entrega3/TFM_Entrega3_UNIR.docx")]:
+# ── 2/3. El depósito y la versión base del pipeline citan los mismos números ─
+for tag, docx in [("DEP", REPO / "docs/predeposito/TFM_Predeposito_UNIR.docx"),
+                  ("BASE", REPO / "docs/defensa/TFM_version_base_pipeline.docx")]:
     t = docx_text(docx)
     if t is None:
         check(f"{tag}.docx presente", False, "no encontrado")
@@ -118,10 +119,10 @@ g_v9s = clt["condiciones"]["v9_clutter__con_distractores_seguro"]["resumen"]["gr
 check("clutter.v9 grasp 100% con distractores", g_v9 == 100.0, f"{g_v9}%")
 check("clutter.v9 mejora sobre v8 (84→100)", g_v9 > g_v8, f"v9={g_v9}% v8={g_v8}%")
 
-# Latencia de muestreo DDIM-25 (citada en E4 como ~118 ms)
+# Latencia de muestreo DDIM-25 (citada en el depósito como ~118 ms)
 lat25 = round(prof["diffusion_profiles_by_steps"]["25"]["full_sample_ms"]["mean"])
 
-# La Entrega 4 cita coherentemente H2 y los números de clutter/latencia
+# El depósito cita coherentemente H2 y los números de clutter/latencia
 t4 = docx_text(REPO / "docs/predeposito/TFM_Predeposito_UNIR.docx")
 if t4:
     check("E4.H2 multimodal", "H2" in t4 and "multimodal" in t4.lower())

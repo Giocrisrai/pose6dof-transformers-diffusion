@@ -23,8 +23,8 @@ from pptx.dml.color import RGBColor
 from pptx.util import Inches, Pt
 
 REPO = Path(__file__).resolve().parents[1]
-DECK = REPO / "docs/entrega3/Presentacion_Robotica_IA_base.pptx"
-QR = REPO / "docs/entrega3/assets/qr"
+DECK = REPO / "docs/defensa/Presentacion_Robotica_IA_base.pptx"
+QR = REPO / "docs/defensa/assets/qr"
 
 TITLE_GREEN = RGBColor(0x00, 0xE0, 0x8F)   # -> LIME tras restyle
 TERM_BLUE = RGBColor(0x00, 0x98, 0xCD)     # -> CYAN tras restyle

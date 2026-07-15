@@ -5,7 +5,7 @@ Verificador de consistencia de exp27 — garantía re-ejecutable.
 Comprueba que TODO es coherente y físicamente plausible:
   1. Reports JSON internamente válidos.
   2. Los números del README coinciden con los reports (fuente de verdad).
-  3. La tabla de la Entrega 4 (docx) coincide con los reports.
+  3. La tabla del TFM (docx) coincide con los reports.
   4. El panel del dashboard coincide con los reports.
   5. El CAD generado es determinista (volumen, watertight).
   6. La física registrada es plausible (cae, se asienta, dentro del bin) y
@@ -65,7 +65,7 @@ check("2.README stepped t_err", in_text(readme, stepped["t_err_mm"], "mm"), f"{s
 check("2.README mps exito", f"{mps['success_rate_pct']:.0f}" in readme and "95" in readme)
 check("2.README mps ref_median", in_text(readme, mps["ref_median"], "mm"), f"{mps['ref_median']:.1f}mm")
 
-# ── 3. Entrega 4 (docx) coincide ────────────────────────────────────
+# ── 3. TFM (docx) coincide ──────────────────────────────────────────
 if DOCX.exists():
     xml = zipfile.ZipFile(DOCX).read("word/document.xml").decode("utf-8", "ignore")
     plain = re.sub(r"<[^>]+>", "", xml)

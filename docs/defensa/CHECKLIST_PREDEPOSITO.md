@@ -1,6 +1,6 @@
 # Checklist final — Predepósito TFM (Entrega 3)
 
-> Documento: `TFM_Entrega3_UNIR.docx`. Estado: todo el feedback automatizable del tutor aplicado (26-jun-2026).
+> Documento: `TFM_version_base_pipeline.docx`. Estado: todo el feedback automatizable del tutor aplicado (26-jun-2026).
 > Esta lista cubre lo que falta **antes de enviar**. Marca cada casilla.
 
 ---

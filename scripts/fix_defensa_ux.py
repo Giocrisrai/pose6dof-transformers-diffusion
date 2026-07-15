@@ -20,8 +20,8 @@ from pptx.enum.text import PP_ALIGN
 from pptx.util import Inches, Pt
 
 REPO = Path(__file__).resolve().parents[1]
-DECK = REPO / "docs/entrega3/Presentacion_Defensa_TFM_base.pptx"
-QR_REPO = REPO / "docs/entrega3/assets/qr/qr_github.png"
+DECK = REPO / "docs/defensa/Presentacion_Defensa_TFM_base.pptx"
+QR_REPO = REPO / "docs/defensa/assets/qr/qr_github.png"
 
 TITULO_TESIS = ("Estimación de Pose 6-DoF con Transformers y Modelos de Difusión "
                 "para Bin Picking Robótico")

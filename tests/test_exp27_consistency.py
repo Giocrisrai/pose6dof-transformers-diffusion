@@ -1,7 +1,7 @@
 """Garantía de consistencia de exp27 (text-to-CAD).
 
 Ejecuta el verificador que cruza los números entre reports JSON, README,
-Entrega 4 (docx) y dashboard, comprueba el determinismo del CAD y la
+el TFM (docx) y dashboard, comprueba el determinismo del CAD y la
 plausibilidad de la física registrada. La física EN VIVO (CoppeliaSim) es
 opt-in vía EXP27_LIVE_PHYSICS=1 y se omite aquí.
 """

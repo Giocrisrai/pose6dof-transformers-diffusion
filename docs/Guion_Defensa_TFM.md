@@ -144,7 +144,7 @@
 
 ---
 
-## Slide 13 — Bin picking guiado por lenguaje natural (1:00) · NUEVA (Entrega 4)
+## Slide 13 — Bin picking guiado por lenguaje natural (1:00) · Capa de lenguaje natural
 **Visual:** `fig_language_pick.png` (la instrucción en texto + la pieza seleccionada/agarrada por el robot).
 **Bullets:**
 - Le dices «dame el cubo rojo de la izquierda» y el robot selecciona y agarra el objeto descrito
@@ -152,7 +152,7 @@
 - Open-license, corre en portátil; capa **opt-in** sobre el pipeline base (no lo altera)
 - Validado E2E en CoppeliaSim: **selección 100 %** (banco controlado: pura n=90 / sim n=9), agarre cinemático 4 mm, IK convergente
 **Guión hablado:**
-> "Como capa adicional de Entrega 4, el pipeline ahora entiende lenguaje natural. Le digo, por ejemplo, «dame el cubo rojo de la izquierda», y el sistema ancla esa instrucción a un objeto concreto por sus atributos —color, forma, tamaño— y su relación espacial, y luego lo agarra con la misma cadena de percepción y planificación de antes. Por defecto usa un parser determinista en español e inglés, reproducible y sin red; opcionalmente se puede enchufar un modelo de lenguaje local. Soy transparente con la validación: la *selección* del objeto correcto acierta el 100 % en banco controlado —noventa instrucciones puras más nueve en simulación— y la robustez ante distractores está cubierta en los experimentos 16 a 26; el agarre sigue siendo cinemático, validado por proximidad pinza-objeto de 4 milímetros y convergencia de la cinemática inversa. Es una capa opt-in: no altera el pipeline base, lo extiende."
+> "Como capa adicional de este trabajo, el pipeline ahora entiende lenguaje natural. Le digo, por ejemplo, «dame el cubo rojo de la izquierda», y el sistema ancla esa instrucción a un objeto concreto por sus atributos —color, forma, tamaño— y su relación espacial, y luego lo agarra con la misma cadena de percepción y planificación de antes. Por defecto usa un parser determinista en español e inglés, reproducible y sin red; opcionalmente se puede enchufar un modelo de lenguaje local. Soy transparente con la validación: la *selección* del objeto correcto acierta el 100 % en banco controlado —noventa instrucciones puras más nueve en simulación— y la robustez ante distractores está cubierta en los experimentos 16 a 26; el agarre sigue siendo cinemático, validado por proximidad pinza-objeto de 4 milímetros y convergencia de la cinemática inversa. Es una capa opt-in: no altera el pipeline base, lo extiende."
 
 ---
 

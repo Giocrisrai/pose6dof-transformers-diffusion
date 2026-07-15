@@ -19,7 +19,7 @@ from pptx.enum.shapes import MSO_SHAPE
 from pptx.util import Inches, Pt
 
 REPO = Path(__file__).resolve().parents[1]
-DECK = REPO / "docs/entrega3/Presentacion_Defensa_TFM_base.pptx"
+DECK = REPO / "docs/defensa/Presentacion_Defensa_TFM_base.pptx"
 
 NAVY = RGBColor(0x1F, 0x4E, 0x79)
 INK = RGBColor(0x22, 0x22, 0x22)

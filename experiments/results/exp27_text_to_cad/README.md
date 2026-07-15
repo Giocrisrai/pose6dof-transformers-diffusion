@@ -199,7 +199,7 @@ generada por texto, con el estado del pipeline sobrepuesto.
 y físicamente plausible. Comprueba (24 checks + física en vivo opt-in):
 
 - **Numérica**: los números coinciden entre los reports JSON (fuente de verdad),
-  el README, la **Tabla 11 de la Entrega 4** y el **dashboard** — sin contradicciones.
+  el README, la **Tabla 11 del TFM** y el **dashboard** — sin contradicciones.
 - **Física**: la trayectoria cae, se asienta (σ < 1 mm), no atraviesa el suelo y no
   gana energía; la ground-truth del report es coherente.
 - **CAD**: el sólido es determinista (volumen 19 575.9 mm³, watertight, bbox exacto).

@@ -24,8 +24,8 @@ from pptx.util import Inches, Pt
 
 REPO = Path(__file__).resolve().parents[1]
 # SRC = original pre-estilo (fuente); DST = archivo principal (con el refresco).
-SRC = REPO / "docs/entrega3/Presentacion_Defensa_TFM_base.pptx"
-DST = REPO / "docs/entrega3/Presentacion_Defensa_TFM.pptx"
+SRC = REPO / "docs/defensa/Presentacion_Defensa_TFM_base.pptx"
+DST = REPO / "docs/defensa/Presentacion_Defensa_TFM.pptx"
 
 NAVY = RGBColor(0x1F, 0x4E, 0x79)  # acento institucional (ya usado en el deck)
 GREY = RGBColor(0x8A, 0x8A, 0x8A)  # pie de página discreto

@@ -183,7 +183,7 @@ SLIDES = [
                  "trayectoria… ahí agarra… y deposita\". Fíjate en el panel de "
                  "telemetría: el ciclo total y el veredicto H3 en vivo.]"),
         ("note", "[Plan B: si no reproduce, descríbelo con calma y sigue, sin "
-                 "dramatismo. Vídeos sueltos en docs/entrega3/videos_proyeccion/.]"),
+                 "dramatismo. Vídeos sueltos en docs/defensa/videos_proyeccion/.]"),
     ]),
     ("Slide 13 — Bin picking guiado por lenguaje natural", [
         ("cue", "[LENGUAJE NATURAL (VÍDEO) · ~60 s — EXTENSIÓN QUE ABRE EL FUTURO]"),

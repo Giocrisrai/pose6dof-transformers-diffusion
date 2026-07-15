@@ -138,4 +138,4 @@ la reproducibilidad no dependen del estimador.
 *Referencias del contrato en código:* `src/perception/pose_estimator.py`
 (protocolo), `src/perception/gdrnet.py` (alternativa Apache-2.0 scaffolded),
 `src/pipeline.py` (`PipelineConfig.pose_method`). Estado del arte y licencias:
-ver la memoria del TFM (`docs/entrega3/`) y `docs/COMPARATIVA_SOTA_LENGUAJE.md`.
+ver la memoria del TFM (`docs/defensa/`) y `docs/COMPARATIVA_SOTA_LENGUAJE.md`.

@@ -2,7 +2,7 @@
 """Embebe videos de simulación en los *_base.pptx (fuente reproducible).
 
 Motivación: poder PROYECTAR las simulaciones desde la propia presentación.
-El reel de lenguaje natural (la contribución más nueva, Entrega 4) no estaba
+El reel de lenguaje natural (la contribución más nueva) no estaba
 en ninguna presentación; este script lo embebe en el slide correspondiente de
 ambas, reemplazando la imagen estática por el video (con poster frame).
 
@@ -32,9 +32,9 @@ MARK = "sim_video"  # marca de idempotencia (prefijo del nombre del shape)
 JOBS = [
     # Se usa el corte de ~39s (5 instrucciones a 4.5x) para no comerse el
     # tiempo de la defensa; el reel completo queda en videos_proyeccion/.
-    ("docs/entrega3/Presentacion_Defensa_TFM_base.pptx", 13,
+    ("docs/defensa/Presentacion_Defensa_TFM_base.pptx", 13,
      "language_reel/language_reel_corto.mp4", "Picture 4", 3.0),
-    ("docs/entrega3/Presentacion_Robotica_IA_base.pptx", 13,
+    ("docs/defensa/Presentacion_Robotica_IA_base.pptx", 13,
      "language_reel/language_reel_corto.mp4", "Picture 3", 3.0),
 ]
 

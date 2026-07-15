@@ -319,7 +319,7 @@ if section == "📊 Resumen":
 
     col1, col2, col3 = st.columns(3)
     col1.metric("Páginas TFM", "63")
-    col2.metric("Experimentos", "26", "+25 vs entrega 1")
+    col2.metric("Experimentos", "26", "+25 vs base")
     col3.metric("Tests pasando", "173", "✓ CI verde")
 
     col4, col5, col6 = st.columns(3)
@@ -1281,12 +1281,14 @@ elif section == "🎬 Video":
 elif section == "📚 Recursos":
     st.title("Recursos y entregables")
     st.markdown("""
-    ### Entregables `docs/entrega2/`
-    - 📄 [TFM_Entrega2_UNIR.docx](docs/entrega2/TFM_Entrega2_UNIR.docx)
-    - 📄 [TFM_Entrega2_UNIR.pdf](docs/entrega2/TFM_Entrega2_UNIR.pdf) (62 págs)
-    - 📄 TFM_Entrega2_UNIR.md
-    - 🎬 TFM_Defensa_Slides.pptx (20 slides)
-    - 📋 FAQ_DEFENSA.md (30+ preguntas anticipadas)
+    ### Memoria del TFM `docs/predeposito/`
+    - 📄 [TFM_Predeposito_UNIR.docx](docs/predeposito/TFM_Predeposito_UNIR.docx)
+    - 📄 [TFM_Predeposito_UNIR.pdf](docs/predeposito/TFM_Predeposito_UNIR.pdf) (91 págs)
+
+    ### Materiales de defensa `docs/defensa/`
+    - 🎬 Presentacion_Defensa_TFM.pptx (con vídeos y QR)
+    - 🎬 Presentacion_Robotica_IA.pptx (charla divulgativa)
+    - 📋 FAQ_Defensa_preguntas_dificiles.md + Guion_Defensa_TFM.md
 
     ### Repositorio público
     https://github.com/Giocrisrai/pose6dof-transformers-diffusion

@@ -1,8 +1,9 @@
 """Garantía de consistencia del TFM completo.
 
 Cruza los números canónicos de las hipótesis (AUC ADD-S, cycle p95, recall,
-Δ vs baseline, IC95) entre los reports JSON (fuente de verdad), la Entrega 3,
-la Entrega 4 y el dashboard. Falla si hay cualquier contradicción.
+Δ vs baseline, IC95) entre los reports JSON (fuente de verdad), la versión base
+del pipeline, el depósito del TFM y el dashboard. Falla si hay cualquier
+contradicción.
 """
 import subprocess
 import sys

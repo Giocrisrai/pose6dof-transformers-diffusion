@@ -26,8 +26,8 @@ from pptx.oxml.ns import qn
 from pptx.util import Inches, Pt
 
 REPO = Path(__file__).resolve().parents[1]
-SRC = REPO / "docs/entrega3/Presentacion_Robotica_IA_base.pptx"
-DST = REPO / "docs/entrega3/Presentacion_Robotica_IA.pptx"
+SRC = REPO / "docs/defensa/Presentacion_Robotica_IA_base.pptx"
+DST = REPO / "docs/defensa/Presentacion_Robotica_IA.pptx"
 
 # ---- Paleta Menta & Coral (clara) ----
 CREAM = RGBColor(0xFF, 0xFD, 0xF7)  # fondo
