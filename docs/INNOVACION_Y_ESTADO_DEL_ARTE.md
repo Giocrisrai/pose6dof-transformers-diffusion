@@ -234,7 +234,7 @@ Para quien quiera **reproducir** y obtener métricas equivalentes:
 
 ---
 
-## 7. Cómo funciona el sistema *hoy* (mayo 2026, post-Entrega 2)
+## 7. Cómo funciona el sistema *hoy* (mayo 2026)
 
 Lo que está vivo y funcionando ahora mismo:
 

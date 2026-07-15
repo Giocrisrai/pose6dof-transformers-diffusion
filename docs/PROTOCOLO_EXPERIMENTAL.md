@@ -1,6 +1,6 @@
 # Protocolo experimental — TFM Pose 6-DoF Transformer + Diffusion
 
-> Documento de soporte para la Entrega 1 del TFM. Define el diseño experimental
+> Documento de soporte del TFM. Define el diseño experimental
 > formal exigido por la tutora: hipótesis verificables, variables, particiones
 > de datos, semillas, métricas justificadas y test estadístico.
 >

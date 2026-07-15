@@ -14,7 +14,7 @@
 
 ## Cerrado en simulación — disponible hoy en `main`
 
-### Pipeline core (TFM entrega 2, junio 2026)
+### Pipeline core (TFM, junio 2026)
 
 ✅ FoundationPose 6-DoF · AUC ADD-S 0.908 YCB-V / 0.957 T-LESS
 ✅ Diffusion Policy multimodal · MSE 0.0022 noise pred

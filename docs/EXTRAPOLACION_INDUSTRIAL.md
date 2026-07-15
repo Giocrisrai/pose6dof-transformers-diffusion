@@ -14,7 +14,7 @@ Lo que el TFM ya demostró cuantitativamente:
 
 | Capacidad | Métrica | Source |
 |---|---|---|
-| Pose 6-DoF reproducible | AUC ADD-S 0.908 YCB-V / 0.957 T-LESS | TFM original (entrega 2) |
+| Pose 6-DoF reproducible | AUC ADD-S 0.908 YCB-V / 0.957 T-LESS | TFM original |
 | Trayectoria multimodal | MSE 0.0022, jerk 0.053 | TFM original |
 | Cycle E2E < 10 s | p95 6.29 s YCB-V / 6.68 s T-LESS | TFM original |
 | Lenguaje natural por **color** | 100 % accuracy sobre 6 familias | Exp 16, 17 |

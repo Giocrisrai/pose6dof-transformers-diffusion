@@ -107,7 +107,7 @@ Pipeline ahora es modular.
 
 ## Implicaciones para el TFM
 
-- **Sección "Trabajo futuro"** de la Entrega 2 ahora tiene un análisis
+- **Sección "Trabajo futuro"** del TFM ahora tiene un análisis
   cuantitativo en lugar de una afirmación cualitativa.
 - **Sección "Limitaciones"** se refina: la licencia NC ya no es un
   bloqueo absoluto; hay un camino documentado a comercialización con

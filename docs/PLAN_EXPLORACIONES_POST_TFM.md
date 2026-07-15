@@ -200,7 +200,7 @@ sobre escenas multi-objeto). Bootstrap CI sobre ello.
    - Mantener el documento de exploración con los datos del intento
    - Resumir en `docs/HALLAZGOS_NEGATIVOS.md` (también es contribución)
 5. **Si tras el budget no hay convergencia** clara: abortar.
-6. **TFM Entrega 2 no se toca**. Las nuevas mejoras serán Entrega 3 o paper.
+6. **El TFM depositado no se toca**. Las nuevas mejoras serán exploraciones post-TFM o paper.
 
 ---
 
