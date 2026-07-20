@@ -65,7 +65,7 @@ check("1.CI95 contiene el punto", yc["auc_adds_50mm_ci95"]["lo"] <= yc["auc_adds
 check("1.FP supera baseline (Δ>0)", CANON["dpp_ycbv"] > 0 and CANON["dpp_tless"] > 0)
 
 # ── 2/3. El depósito y la versión base del pipeline citan los mismos números ─
-for tag, docx in [("DEP", REPO / "docs/predeposito/TFM_Predeposito_UNIR.docx"),
+for tag, docx in [("DEP", REPO / "docs/deposito/TFM_UNIR_Godoy_Carrasco.docx"),
                   ("BASE", REPO / "docs/defensa/TFM_version_base_pipeline.docx")]:
     t = docx_text(docx)
     if t is None:
@@ -123,7 +123,7 @@ check("clutter.v9 mejora sobre v8 (84→100)", g_v9 > g_v8, f"v9={g_v9}% v8={g_v
 lat25 = round(prof["diffusion_profiles_by_steps"]["25"]["full_sample_ms"]["mean"])
 
 # El depósito cita coherentemente H2 y los números de clutter/latencia
-t4 = docx_text(REPO / "docs/predeposito/TFM_Predeposito_UNIR.docx")
+t4 = docx_text(REPO / "docs/deposito/TFM_UNIR_Godoy_Carrasco.docx")
 if t4:
     check("E4.H2 multimodal", "H2" in t4 and "multimodal" in t4.lower())
     check("E4.clutter 84/96/100 %", all(str(int(x)) in t4 for x in [g_v8, g_v9s, g_v9]))

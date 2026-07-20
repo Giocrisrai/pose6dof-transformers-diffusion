@@ -24,7 +24,7 @@ import numpy as np
 
 EXP = Path(__file__).resolve().parent
 REPO = EXP.parents[2]
-DOCX = REPO / "docs/predeposito/TFM_Predeposito_UNIR.docx"
+DOCX = REPO / "docs/deposito/TFM_UNIR_Godoy_Carrasco.docx"
 TOL = 0.15  # tolerancia absoluta para números redondeados (mm/°/cm)
 
 checks: list[tuple[str, bool, str]] = []

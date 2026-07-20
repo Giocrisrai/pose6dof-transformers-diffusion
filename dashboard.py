@@ -1281,9 +1281,9 @@ elif section == "🎬 Video":
 elif section == "📚 Recursos":
     st.title("Recursos y entregables")
     st.markdown("""
-    ### Memoria del TFM `docs/predeposito/`
-    - 📄 [TFM_Predeposito_UNIR.docx](docs/predeposito/TFM_Predeposito_UNIR.docx)
-    - 📄 [TFM_Predeposito_UNIR.pdf](docs/predeposito/TFM_Predeposito_UNIR.pdf) (91 págs)
+    ### Memoria del TFM `docs/deposito/`
+    - 📄 [TFM_UNIR_Godoy_Carrasco.docx](docs/deposito/TFM_UNIR_Godoy_Carrasco.docx)
+    - 📄 [TFM_UNIR_Godoy_Carrasco.pdf](docs/deposito/TFM_UNIR_Godoy_Carrasco.pdf) (91 págs)
 
     ### Materiales de defensa `docs/defensa/`
     - 🎬 Presentacion_Defensa_TFM.pptx (con vídeos y QR)

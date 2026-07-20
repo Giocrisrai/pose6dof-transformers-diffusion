@@ -30,7 +30,7 @@
 
 **Robustez verificada**: T-LESS aguanta 70 % oclusión con solo −1 pp AUC ADD-S. **PBVS** converge 100 % en 50 muestras. **Cuello de botella identificado**: FoundationPose 80 % del ciclo.
 
-**Material disponible** en [`docs/defensa/`](docs/defensa/) y [`docs/predeposito/`](docs/predeposito/): memoria del TFM (docx + pdf), presentaciones (defensa + divulgativa) con vídeos y QR, y guion completo de defensa.
+**Material disponible** en [`docs/defensa/`](docs/defensa/) y [`docs/deposito/`](docs/deposito/): memoria del TFM (docx + pdf), presentaciones (defensa + divulgativa) con vídeos y QR, y guion completo de defensa.
 
 ---
 
