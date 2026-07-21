@@ -28,5 +28,4 @@ en las presentaciones; esta carpeta es el plan B.
 - Formato: MP4 (H.264 / AAC), 1280×720 los reels, listos para 16:9.
 - Si proyectas desde VLC: `Reproducción → Repetir` para dejarlos en bucle.
 - Origen reproducible: `experiments/results/{demo_reel,language_reel,pipeline_e2e,pick_with_diffusion}/`.
-- Embebido en los `.pptx` vía `scripts/embed_sim_videos.py` (sobre los `_base`),
-  regenerando las canónicas con `restyle_divulga_pastel.py` / `refresh_defensa.py`.
+- Ya embebidos en las presentaciones finales (`Presentacion_Defensa_TFM.pptx` y `Presentacion_Robotica_IA.pptx`).
