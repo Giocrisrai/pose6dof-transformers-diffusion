@@ -4,6 +4,8 @@
 
 > **English summary.** MSc thesis (Mathematical Engineering & Computation, UNIR 2026) on 6-DoF object pose estimation for robotic bin picking. It builds an end-to-end pipeline that compares FoundationPose (Transformers, CVPR 2024) against a GDR-Net++ baseline on BOP benchmarks, and adds Diffusion Policy for multi-modal grasp trajectory generation. The repository includes 293 tests, bootstrap 95% confidence intervals released as the PyPI package [`bop-bootstrap-ci`](https://pypi.org/project/bop-bootstrap-ci/), a reproducibility guide and a [live dashboard](https://giocrisrai.github.io/pose6dof-transformers-diffusion/). The rest of this document is in Spanish.
 
+[![Dashboard de resultados: precisión de pose, planificación por difusión, tiempos de ciclo y demo en simulación](docs/media/dashboard.gif)](https://giocrisrai.github.io/pose6dof-transformers-diffusion/)
+
 
 [![Tests](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/actions/workflows/ci.yml/badge.svg)](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/actions/workflows/ci.yml)
 [![Dashboard en vivo](https://img.shields.io/badge/dashboard-en%20vivo-0098cd?logo=githubpages&logoColor=white)](https://giocrisrai.github.io/pose6dof-transformers-diffusion/)
