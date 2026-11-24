@@ -1,4 +1,6 @@
 """Smoke test del tab de PLN del dashboard (lógica pura, sin runtime)."""
+from pathlib import Path
+
 import pytest
 
 pytest.importorskip("streamlit")
@@ -20,7 +22,10 @@ def test_render_language_tab_sin_match():
 def test_dashboard_text_to_cad_section_renders():
     """La sección text-to-CAD del dashboard carga y muestra sus métricas."""
     from streamlit.testing.v1 import AppTest
-    at = AppTest.from_file("dashboard.py", default_timeout=60)
+    # Ruta absoluta: AppTest resuelve las relativas contra este archivo (tests/),
+    # donde no hay ningún dashboard.py.
+    app = Path(__file__).resolve().parents[1] / "dashboard.py"
+    at = AppTest.from_file(str(app), default_timeout=60)
     at.run()
     assert not at.exception
     assert any("text-to-CAD" in o for o in at.radio[0].options)

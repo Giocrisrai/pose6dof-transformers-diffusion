@@ -4,7 +4,7 @@ Ejecucion:
     .venv/bin/streamlit run dashboard.py
 
 Muestra:
-- Resumen ejecutivo de hipotesis aceptadas
+- Resumen ejecutivo del contraste de hipotesis
 - Metricas FP con bootstrap CI 95%
 - Curvas de robustez (oclusion + ruido)
 - Profiling pipeline (cuello de botella)
@@ -302,7 +302,7 @@ if section == "📊 Resumen":
         "decidir cómo cogerlo y planificar el movimiento — todo en menos de 7 s y sin "
         "necesitar un ordenador con GPU dedicada de gama alta. Integra tres tecnologías "
         "(Transformer para visión 3D, Diffusion Policy para planificación, Visual Servoing "
-        "para control fino) y valida tres hipótesis sobre datasets industriales reconocidos "
+        "para control fino) y contrasta tres hipótesis sobre datasets industriales reconocidos "
         "(YCB-Video, T-LESS)."
     )
 
@@ -976,19 +976,19 @@ elif section == "🎯 Hipótesis":
     """)
 
     st.markdown("### H2 — Planificación multimodal")
-    st.success("✅ ACEPTADA")
+    st.warning("◐ PARCIALMENTE ACEPTADA (se cumple el score; no el muestreo ni el número de modos)")
     st.markdown("""
-    - **Criterio**: score ≥ 0.95 y muestreo < 50 ms
-    - **Resultado**: score medio 0.96, sampling 1.88 ms (DDPM) / 133 ms (DDIM-25 MPS)
+    - **Criterio**: score ≥ 0.95, muestreo < 50 ms y ≥ 3 modos
+    - **Resultado**: score medio 0.96; muestreo 118 ms con DDIM-25 (profiling del pipeline; 133 ms en la ablación dedicada)
     - **Modelo entrenado local**: M1 Pro/MPS, 30 epochs, MSE 0.020
     - **Diversidad emergente**: 2 modos detectados (silhouette 0.476), endpoint dispersión 58.6 cm
     """)
 
     st.markdown("### H3 — Viabilidad industrial sin GPU dedicada")
-    st.success("✅ ACEPTADA con margen ≥ 3.14 s")
+    st.success("✅ ACEPTADA con margen ≥ 3.32 s")
     st.markdown("""
     - **Criterio**: Cycle p95 < 10 s/instancia
-    - **Resultado E2E live**: 6.12 s YCB-V (margen 3.88 s) / 6.86 s T-LESS (margen 3.14 s)
+    - **Resultado E2E live**: 6.29 s YCB-V (margen 3.71 s) / 6.68 s T-LESS (margen 3.32 s)
     - **Hardware**: Apple M1 Pro + Colab T4 (~$1.9k vs ~$15-150k industrial)
     """)
 
@@ -1105,15 +1105,15 @@ elif section == "📦 Per-Object":
     if data:
         for ds, r in data.get("datasets", {}).items():
             st.subheader(f"{ds.upper()} - {r['n_objects']} objetos")
-            cols = st.columns(2)
-            cols[0].markdown("**Peores 3 objetos** (failure cases)")
+            cols_obj = st.columns(2)
+            cols_obj[0].markdown("**Peores 3 objetos** (failure cases)")
             for o in r["worst_3"]:
-                cols[0].markdown(
+                cols_obj[0].markdown(
                     f"- obj_id={o['obj_id']}: AUC {o['auc_adds_50mm']:.3f}, R@10mm {o['recall_10mm']:.1%}"
                 )
-            cols[1].markdown("**Mejores 3 objetos**")
+            cols_obj[1].markdown("**Mejores 3 objetos**")
             for o in r["best_3"]:
-                cols[1].markdown(
+                cols_obj[1].markdown(
                     f"- obj_id={o['obj_id']}: AUC {o['auc_adds_50mm']:.3f}, R@10mm {o['recall_10mm']:.1%}"
                 )
 

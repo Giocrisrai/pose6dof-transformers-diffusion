@@ -58,6 +58,9 @@
   .chip { font-family: var(--mono); font-size: 12px; font-weight: 600; padding: 7px 12px; border-radius: 999px;
     display: inline-flex; align-items: center; gap: 7px; border: 1px solid transparent; }
   .chip.ok { background: var(--good-wash); color: var(--good); border-color: color-mix(in srgb, var(--good) 30%, transparent); }
+  .chip.part { background: var(--warn-wash); color: var(--warn); border-color: color-mix(in srgb, var(--warn) 30%, transparent); }
+  .s-head .tag.part { background: var(--warn-wash); color: var(--warn); }
+  .neg { color: var(--warn); }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 
   /* ---- kpi ---- */
@@ -165,7 +168,7 @@
       <p class="lang">ES · <a href="dashboard_executive.html" hreflang="en">English</a></p>
       <div class="verdicts">
         <span class="chip ok"><span class="dot"></span>H1 aceptada</span>
-        <span class="chip ok"><span class="dot"></span>H2 aceptada</span>
+        <span class="chip part"><span class="dot"></span>H2 parcial</span>
         <span class="chip ok"><span class="dot"></span>H3 aceptada</span>
       </div>
       </div>
@@ -188,8 +191,8 @@
       </div>
       <div class="kpi">
         <div class="k-label">Garantía en CI</div>
-        <div class="k-val">314<small> tests</small></div>
-        <div class="k-meta">29 checks de consistencia</div>
+        <div class="k-val">317<small> tests</small></div>
+        <div class="k-meta">30 checks de consistencia</div>
       </div>
     </div>
   </div>
@@ -240,10 +243,11 @@
 
   <!-- H2 -->
   <section>
-    <div class="s-head"><span class="s-num">H2</span><h2>Planificación multimodal por difusión</h2><span class="tag">aceptada</span></div>
-    <p class="lead">Diffusion Policy genera trayectorias de agarre genuinamente diversas — a diferencia de la heurística,
-      determinista. El análisis de silueta detecta múltiples modos y la dispersión del <em>jerk</em> confirma la
-      multimodalidad, con una latencia de muestreo de 118 ms (DDIM-25).</p>
+    <div class="s-head"><span class="s-num">H2</span><h2>Planificación multimodal por difusión</h2><span class="tag part">parcialmente aceptada</span></div>
+    <p class="lead">Diffusion Policy genera trayectorias de agarre diversas — a diferencia de la heurística, determinista —
+      y cumple el criterio de score. Los dos umbrales estrictos no se alcanzan: el muestreo tarda 118 ms
+      (DDIM-25) frente al umbral de 50 ms, y se detectan 2 modos frente al objetivo de 3. Aun así, la
+      planificación ocupa solo el 2,3 % del ciclo.</p>
     <div class="cols">
       <div class="card">
         <h3>Diversidad de trayectorias (jerk RMS · desviación estándar)</h3>
@@ -259,9 +263,9 @@
       </div>
       <div class="card">
         <h3>Evidencia</h3>
-        <div class="mrow"><span class="m-k">Modos detectados (silhouette)</span><span class="m-v">2</span></div>
-        <div class="mrow"><span class="m-k">Latencia muestreo DDIM-25</span><span class="m-v">118 ms</span></div>
-        <div class="mrow"><span class="m-k">Criterio de aceptación</span><span class="m-v pos">cumplido</span></div>
+        <div class="mrow"><span class="m-k">Score medio · criterio ≥ 0.95</span><span class="m-v pos">0.96</span></div>
+        <div class="mrow"><span class="m-k">Latencia muestreo DDIM-25 · criterio &lt; 50 ms</span><span class="m-v neg">118 ms</span></div>
+        <div class="mrow"><span class="m-k">Modos detectados (silhouette) · criterio ≥ 3</span><span class="m-v neg">2</span></div>
       </div>
     </div>
   </section>
@@ -377,9 +381,9 @@
     <p class="lead">Toda la evidencia está blindada: cualquier cambio que descuadre un número entre la tesis, los reports
       y el dashboard —o que rompa la física— hace fallar la suite.</p>
     <div class="guard">
-      <div class="g"><div class="g-t">Consistencia numérica</div><div class="g-v"><span class="mono">29/29</span> checks</div></div>
+      <div class="g"><div class="g-t">Consistencia numérica</div><div class="g-v"><span class="mono">30/30</span> checks</div></div>
       <div class="g"><div class="g-t">Física reproducible</div><div class="g-v"><span class="mono">z=7.0 mm</span> repetible</div></div>
-      <div class="g"><div class="g-t">Suite de tests</div><div class="g-v"><span class="mono">314</span> passed</div></div>
+      <div class="g"><div class="g-t">Suite de tests</div><div class="g-v"><span class="mono">317</span> passed</div></div>
       <div class="g"><div class="g-t">Linter (ruff)</div><div class="g-v"><span class="mono">0</span> errores</div></div>
       <div class="g"><div class="g-t">Tipos (mypy)</div><div class="g-v"><span class="mono">0</span> errores · 72 files</div></div>
       <div class="g"><div class="g-t">Reproducibilidad</div><div class="g-v">CAD determinista</div></div>

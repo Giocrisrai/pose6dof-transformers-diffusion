@@ -107,6 +107,16 @@ n_modes = div["best_n_modes_silhouette"]
 diff_std = div["diffusion_jerk_rms"]["std"]
 heur_std = div["heuristic_jerk_rms"]["std"]
 check("H2.diffusion multimodal (>=2 modos)", n_modes >= 2, f"modos={n_modes}")
+# El veredicto publicado de H2 sigue al de la memoria: parcialmente aceptada,
+# porque el muestreo DDIM-25 supera los 50 ms y hay menos de 3 modos.
+h2_parcial = round(prof["diffusion_profiles_by_steps"]["25"]["full_sample_ms"]["mean"]) >= 50 or n_modes < 3
+publicado_parcial = all(
+    palabra in (REPO / archivo).read_text()
+    for archivo, palabra in [("README.md", "◐ partial"), ("README.es.md", "◐ parcial"),
+                             ("docs/dashboard_executive.html", "H2 partial"),
+                             ("docs/dashboard_ejecutivo.html", "H2 parcial")])
+check("H2.veredicto publicado = parcial mientras no se cumplan los umbrales",
+      publicado_parcial == h2_parcial, f"DDIM-25 y modos={n_modes}")
 check("H2.diffusion > heurística en diversidad", diff_std > heur_std * 1e6,
       f"std={diff_std:.3f} vs heurística≈{heur_std:.0e}")
 

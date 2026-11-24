@@ -28,13 +28,14 @@ jobs:
         run: |
           uv venv
           uv pip install --quiet \
-            numpy>=1.26 scipy>=1.11 \
-            torch>=2.1 torchvision>=0.16 --index-strategy unsafe-best-match \
-            matplotlib>=3.8 opencv-python-headless>=4.8 trimesh>=4.0 \
+            "numpy>=1.26" "scipy>=1.11" \
+            "torch>=2.1" "torchvision>=0.16" --index-strategy unsafe-best-match \
+            "matplotlib>=3.8" "opencv-python-headless>=4.8" "trimesh>=4.0" \
             pyyaml tqdm pillow scikit-learn \
             fastapi "uvicorn[standard]" pydantic requests \
             transformers coppeliasim-zmqremoteapi-client \
-            ruff mypy pytest>=8.0
+            "streamlit>=1.49,<2" "pandas>=2.0" \
+            ruff mypy "pytest>=8.0"
           uv pip install --quiet -e packages/bop_bootstrap_ci
 
       - name: Lint (ruff)

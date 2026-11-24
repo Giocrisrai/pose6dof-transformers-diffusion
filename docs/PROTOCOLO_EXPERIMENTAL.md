@@ -137,8 +137,15 @@ Cada ejecución genera un `RUN_CARD.md` trazable hasta el commit del repo.
 
 | Dataset | Score medio (Diff) | Latencia mediana | Jerk mediano |
 |---------|--------------------|--------------------:|--------------:|
-| YCB-V | 0.962 | 1.84 ms ✅ H2 | 1.7e-16 |
-| T-LESS | 0.963 | 1.86 ms ✅ H2 | 1.4e-16 |
+| YCB-V | 0.962 | 1.84 ms | 1.7e-16 |
+| T-LESS | 0.963 | 1.86 ms | 1.4e-16 |
+
+> **Qué mide esta tabla.** Procede de `experiments/run_diffusion_planning_real.py`: el score y la
+> latencia son los del muestreador geométrico de candidatos de agarre (`GraspSampler`, 64 candidatos),
+> y la trayectoria es la del planificador heurístico. No es la latencia de Diffusion Policy, que con
+> DDIM-25 es de 118 ms (`exp10_profiling`). Por eso el veredicto de H2 en la memoria es
+> **parcialmente aceptada**: se cumple el score (0.96), pero no el muestreo (118 ms > 50 ms) ni el
+> número de modos (K = 2 < 3, `exp8_diversity`).
 
 CoppeliaSim smoke: connect 150 ms, paso 18.12 ms (mean), 100 pasos → 5 s simulado.
 

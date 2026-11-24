@@ -10,7 +10,7 @@
 [![Live dashboard](https://img.shields.io/badge/dashboard-live-0098cd?logo=githubpages&logoColor=white)](https://giocrisrai.github.io/pose6dof-transformers-diffusion/)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-314%20passing-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/tests-317%20passing-brightgreen)](tests/)
 [![PyPI version](https://img.shields.io/pypi/v/bop-bootstrap-ci?label=PyPI%20bop-bootstrap-ci&color=blue)](https://pypi.org/project/bop-bootstrap-ci/)
 
 A perception and planning pipeline for industrial bin picking. A robot has to pick
@@ -29,8 +29,12 @@ with a diffusion model, and runs the whole cycle end to end in simulation:
 | Hypothesis | Criterion | Result | |
 |---|---|---|:-:|
 | **H1** Pose accuracy | AUC ADD-S, lead of ≥ 3 pp over GDR-Net++ | **0.908** [0.901, 0.916] on YCB-V · **0.957** [0.954, 0.959] on T-LESS | ✅ |
-| **H2** Multimodality | score ≥ 0.95, latency < 50 ms | score 0.96, sampling 1.88 ms, MSE 0.020 (trained on Apple MPS) | ✅ |
+| **H2** Multimodal planning | score ≥ 0.95, sampling < 50 ms, ≥ 3 modes | score 0.96 · sampling 118 ms (DDIM-25) · 2 modes | ◐ partial |
 | **H3** End-to-end cycle | p95 < 10 s per instance | **6.29 s** on YCB-V · **6.68 s** on T-LESS, on a MacBook Pro M1 | ✅ |
+
+H2 is **partially accepted**, as stated in the thesis: the score criterion is met, but
+diffusion sampling takes 118 ms against a 50 ms threshold and the policy shows 2 distinct
+modes against a target of 3. Planning is still only 2.3% of the cycle time.
 
 Intervals are 95% bootstrap confidence intervals (B = 1000). The lead over GDR-Net++
 is +3.0 pp (YCB-V) and +3.6 pp (T-LESS) in Mean AR on the BOP leaderboard.
@@ -51,7 +55,7 @@ cd pose6dof-transformers-diffusion
 
 uv sync --all-extras          # or: pip install -e ".[dev,colab]"
 
-pytest tests/ packages/bop_bootstrap_ci/tests/ -q  # 314 passing (no GPU, no simulator)
+pytest tests/ packages/bop_bootstrap_ci/tests/ -q  # 317 passing (no GPU, no simulator)
 ```
 
 The test suite needs neither a GPU nor the simulator. Tests marked `integration`
@@ -98,7 +102,7 @@ analysis on a Mac without a GPU.
 The figures in the thesis, the reports and the dashboards are checked on every push:
 
 - **`scripts/verify_tfm_consistency.py`** compares the published results against the
-  JSON reports they come from (29 checks).
+  JSON reports they come from (30 checks).
 - **`scripts/check_public_counts.py`** compares the test, check and type-checking
   counts printed in this README and in the dashboards with what the run just measured.
 - **ruff** and **mypy** run clean, and the API image is built.
