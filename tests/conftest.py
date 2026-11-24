@@ -1,7 +1,35 @@
 """Fixtures compartidas para tests."""
+import socket
 from unittest.mock import MagicMock
 
 import pytest
+
+COPPELIASIM = ("localhost", 23000)
+
+
+def _simulador_disponible(timeout_s: float = 0.5) -> bool:
+    """True si hay algo escuchando en el puerto de la ZMQ Remote API."""
+    try:
+        with socket.create_connection(COPPELIASIM, timeout=timeout_s):
+            return True
+    except OSError:
+        return False
+
+
+def pytest_collection_modifyitems(config, items):
+    """Omite los tests `integration` cuando CoppeliaSim no está corriendo.
+
+    El cliente ZMQ espera indefinidamente a un servidor ausente, así que sin
+    esta comprobación `pytest tests/` se queda colgado en vez de omitirlos.
+    """
+    integracion = [item for item in items if "integration" in item.keywords]
+    if not integracion or _simulador_disponible():
+        return
+    omitir = pytest.mark.skip(
+        reason=f"CoppeliaSim no disponible en {COPPELIASIM[0]}:{COPPELIASIM[1]}"
+    )
+    for item in integracion:
+        item.add_marker(omitir)
 
 
 @pytest.fixture

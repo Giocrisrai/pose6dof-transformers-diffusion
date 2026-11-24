@@ -27,13 +27,14 @@ from pathlib import Path
 from typing import Optional
 
 import numpy as np
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 REPO = Path(__file__).resolve().parents[1]
-DASHBOARD = REPO / "docs/dashboard_ejecutivo.html"
+DASHBOARD = REPO / "docs/dashboard_executive.html"  # inglés (landing)
+DASHBOARD_ES = REPO / "docs/dashboard_ejecutivo.html"
 ASSETS = REPO / "docs/assets"  # vídeo demo + poster (servidos como estáticos, no inline)
 sys.path.insert(0, str(REPO))
 
@@ -292,6 +293,16 @@ def root():
     if DASHBOARD.exists():
         return FileResponse(str(DASHBOARD), media_type="text/html")
     return JSONResponse(_service_info())
+
+
+@app.get("/dashboard_executive.html", include_in_schema=False)
+@app.get("/dashboard_ejecutivo.html", include_in_schema=False)
+def dashboard_por_idioma(request: Request):
+    """Las dos versiones del dashboard se enlazan entre sí por nombre de archivo."""
+    archivo = DASHBOARD_ES if request.url.path.endswith("ejecutivo.html") else DASHBOARD
+    if not archivo.exists():
+        raise HTTPException(status_code=404, detail="dashboard no disponible")
+    return FileResponse(str(archivo), media_type="text/html")
 
 
 def _service_info() -> dict:

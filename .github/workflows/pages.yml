@@ -1,0 +1,50 @@
+name: Dashboard (GitHub Pages)
+
+# Publica el dashboard de resultados tal como está en `main`, en inglés
+# (portada) y en español. Antes se copiaba a mano a la rama `gh-pages` y
+# se quedaba atrás respecto del repositorio.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/dashboard_executive.html
+      - docs/dashboard_ejecutivo.html
+      - docs/assets/**
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Armar el sitio
+        run: |
+          mkdir -p _site
+          cp docs/dashboard_executive.html _site/index.html
+          cp docs/dashboard_executive.html docs/dashboard_ejecutivo.html _site/
+          cp -r docs/assets _site/assets
+          touch _site/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

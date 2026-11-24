@@ -50,6 +50,7 @@ COPY README.md /app/README.md
 # Dashboard ejecutivo (servido en / por la API) + assets (vídeo demo + poster,
 # servidos en /assets como estáticos — HTML ligero, el vídeo carga bajo demanda).
 COPY docs/dashboard_ejecutivo.html /app/docs/dashboard_ejecutivo.html
+COPY docs/dashboard_executive.html /app/docs/dashboard_executive.html
 COPY docs/assets/ /app/docs/assets/
 
 # Los pesos y checkpoints se montan por volumen (no se incluyen en la imagen)

@@ -28,6 +28,15 @@ class TestRootEndpoints:
         # landing = dashboard HTML si está presente; si no, JSON de servicio
         assert "text/html" in ct or r.json()["service"] == "TFM Pose 6-DoF Pipeline API"
 
+    def test_dashboard_en_ambos_idiomas(self, client):
+        """Cada versión se sirve por su nombre y enlaza a la otra."""
+        en = client.get("/dashboard_executive.html")
+        es = client.get("/dashboard_ejecutivo.html")
+        assert en.status_code == 200 and 'lang="en"' in en.text
+        assert es.status_code == 200 and 'lang="es"' in es.text
+        assert 'href="dashboard_ejecutivo.html"' in en.text
+        assert 'href="dashboard_executive.html"' in es.text
+
     def test_api_info_contract(self, client):
         r = client.get("/api")
         assert r.status_code == 200

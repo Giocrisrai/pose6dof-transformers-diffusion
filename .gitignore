@@ -159,3 +159,6 @@ experiments/results/exp_clutter_v9/
 docs/*/*.BACKUP_*
 docs/entrega3/*_PLANTILLA.pptx
 ~$*
+
+# Salidas del CI que lee scripts/check_public_counts.py
+/reports/

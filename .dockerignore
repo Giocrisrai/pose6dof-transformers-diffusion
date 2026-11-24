@@ -31,6 +31,7 @@ docs/**
 *.docx
 # Excepción: el dashboard ejecutivo y sus assets (vídeo demo + poster) los sirve la API
 !docs/dashboard_ejecutivo.html
+!docs/dashboard_executive.html
 !docs/assets
 !docs/assets/**
 

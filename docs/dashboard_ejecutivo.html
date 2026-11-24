@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TFM · Pose 6-DoF · Dashboard</title><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='88'>🤖</text></svg>"></head><body>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TFM · Pose 6-DoF · Dashboard</title><meta property="og:title" content="6-DoF pose estimation for robotic bin picking"><meta property="og:description" content="FoundationPose + Diffusion Policy, validated on YCB-Video and T-LESS and run end to end in simulation. MSc thesis results dashboard."><meta property="og:type" content="website"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='88'>🤖</text></svg>"></head><body>
 <style>
   :root {
     --ink: #0d1620; --ink-soft: #33465a; --muted: #64788d;
@@ -52,6 +52,8 @@
   h1 { font-size: clamp(25px, 3.6vw, 38px); line-height: 1.08; letter-spacing: -.02em; margin: 0;
     text-wrap: balance; font-weight: 720; max-width: 16ch; }
   .sub { color: var(--muted); margin: 10px 0 0; font-size: 15px; max-width: 46ch; }
+  .lang { font-family: var(--mono); font-size: 12px; margin: 0 0 12px; text-align: right; }
+  .lang a { text-decoration: none; font-weight: 600; }
   .verdicts { display: flex; gap: 8px; flex-wrap: wrap; }
   .chip { font-family: var(--mono); font-size: 12px; font-weight: 600; padding: 7px 12px; border-radius: 999px;
     display: inline-flex; align-items: center; gap: 7px; border: 1px solid transparent; }
@@ -159,10 +161,13 @@
           sobre un formalismo de grupos de Lie SE(3)/SO(3), validado en YCB-Video y T-LESS, y ejecutado extremo a
           extremo en CoppeliaSim — sin GPU dedicada.</p>
       </div>
+      <div>
+      <p class="lang">ES · <a href="dashboard_executive.html" hreflang="en">English</a></p>
       <div class="verdicts">
         <span class="chip ok"><span class="dot"></span>H1 aceptada</span>
         <span class="chip ok"><span class="dot"></span>H2 aceptada</span>
         <span class="chip ok"><span class="dot"></span>H3 aceptada</span>
+      </div>
       </div>
     </div>
     <div class="kpis">
@@ -183,8 +188,8 @@
       </div>
       <div class="kpi">
         <div class="k-label">Garantía en CI</div>
-        <div class="k-val">293<small> tests</small></div>
-        <div class="k-meta">52 checks de consistencia</div>
+        <div class="k-val">314<small> tests</small></div>
+        <div class="k-meta">28 checks de consistencia</div>
       </div>
     </div>
   </div>
@@ -292,8 +297,8 @@
     <div class="cols">
       <div class="card">
         <h3>Domain randomization (Iter 8)</h3>
-        <p>La randomización de apariencia <strong>triplica la precisión</strong> de agarre y la vuelve invariante a
-          forma y color.</p>
+        <p>La randomización de apariencia lleva la proximidad de agarre de <strong>3,6 cm a 1,4 cm</strong> y la vuelve
+          invariante a forma y color.</p>
         <div class="mrow"><span class="m-k">Proximidad de agarre · antes</span><span class="m-v">3.6 cm</span></div>
         <div class="mrow"><span class="m-k">Proximidad de agarre · randomizado</span><span class="m-v pos">1.4 cm</span></div>
         <div class="mrow"><span class="m-k">Errores de ejecución</span><span class="m-v">0</span></div>
@@ -372,11 +377,11 @@
     <p class="lead">Toda la evidencia está blindada: cualquier cambio que descuadre un número entre la tesis, los reports
       y el dashboard —o que rompa la física— hace fallar la suite.</p>
     <div class="guard">
-      <div class="g"><div class="g-t">Consistencia numérica</div><div class="g-v"><span class="mono">52/52</span> checks</div></div>
+      <div class="g"><div class="g-t">Consistencia numérica</div><div class="g-v"><span class="mono">28/28</span> checks</div></div>
       <div class="g"><div class="g-t">Física reproducible</div><div class="g-v"><span class="mono">z=7.0 mm</span> repetible</div></div>
-      <div class="g"><div class="g-t">Suite de tests</div><div class="g-v"><span class="mono">293</span> passed</div></div>
+      <div class="g"><div class="g-t">Suite de tests</div><div class="g-v"><span class="mono">314</span> passed</div></div>
       <div class="g"><div class="g-t">Linter (ruff)</div><div class="g-v"><span class="mono">0</span> errores</div></div>
-      <div class="g"><div class="g-t">Tipos (mypy)</div><div class="g-v"><span class="mono">0</span> errores · 82 files</div></div>
+      <div class="g"><div class="g-t">Tipos (mypy)</div><div class="g-v"><span class="mono">0</span> errores · 72 files</div></div>
       <div class="g"><div class="g-t">Reproducibilidad</div><div class="g-v">CAD determinista</div></div>
     </div>
   </section>

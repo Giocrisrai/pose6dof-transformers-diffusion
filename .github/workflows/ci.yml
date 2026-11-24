@@ -45,22 +45,29 @@ jobs:
       - name: Type check (mypy)
         run: |
           source .venv/bin/activate
-          mypy src scripts dashboard.py packages/bop_bootstrap_ci/src
+          set -o pipefail
+          mkdir -p reports
+          mypy src scripts dashboard.py packages/bop_bootstrap_ci/src | tee reports/mypy.txt
 
       - name: Tests (TFM + paquete PyPI)
         run: |
           source .venv/bin/activate
-          pytest tests/ -q -m "not integration" \
-            --ignore=tests/test_foundationpose_eval.py \
-            --ignore=tests/test_gdrnet.py
-          pytest packages/bop_bootstrap_ci/tests/ -q
+          # Los tests `integration` se omiten solos: no hay CoppeliaSim en el runner.
+          pytest tests/ -q --junitxml=reports/tests.xml
+          pytest packages/bop_bootstrap_ci/tests/ -q --junitxml=reports/paquete.xml
         env:
           PYTHONPATH: ${{ github.workspace }}
 
       - name: Consistencia del TFM (garantía)
         run: |
           source .venv/bin/activate
-          python scripts/verify_tfm_consistency.py
+          set -o pipefail
+          python scripts/verify_tfm_consistency.py | tee reports/consistencia.txt
+
+      - name: Cifras publicadas = cifras medidas
+        run: |
+          source .venv/bin/activate
+          python scripts/check_public_counts.py reports/
 
   docker:
     name: Build imagen Docker (API + dashboard)

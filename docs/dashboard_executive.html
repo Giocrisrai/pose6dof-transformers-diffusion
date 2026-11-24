@@ -1,0 +1,467 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>6-DoF Pose · MSc Thesis · Dashboard</title><meta property="og:title" content="6-DoF pose estimation for robotic bin picking"><meta property="og:description" content="FoundationPose + Diffusion Policy, validated on YCB-Video and T-LESS and run end to end in simulation. MSc thesis results dashboard."><meta property="og:type" content="website"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='88'>🤖</text></svg>"></head><body>
+<style>
+  :root {
+    --ink: #0d1620; --ink-soft: #33465a; --muted: #64788d;
+    --bg: #f4f6f9; --surface: #ffffff; --line: #e0e6ec; --line-strong: #c8d2dc;
+    --accent: #0098cd; --accent-deep: #006f9c; --accent-wash: #e2f2fa;
+    --good: #128a5b; --good-wash: #dcf3e8; --warn: #b5760c; --warn-wash: #fbf0d9; --crit: #c0392b;
+    --grid: #eef2f6;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, monospace;
+    --sans: "Inter var", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+    --sh: 0 1px 2px rgba(13,22,32,.05), 0 2px 8px rgba(13,22,32,.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #e9eff5; --ink-soft: #b3c1cf; --muted: #7d90a2;
+      --bg: #0a1119; --surface: #111b25; --line: #22303c; --line-strong: #33465a;
+      --accent: #35b6e6; --accent-deep: #63c8f0; --accent-wash: #123040;
+      --good: #3fce93; --good-wash: #10281f; --warn: #e0a53c; --warn-wash: #2c2411; --crit: #ef6a5c;
+      --grid: #1a2833; --sh: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+    }
+  }
+  :root[data-theme="light"] {
+    --ink: #0d1620; --ink-soft: #33465a; --muted: #64788d; --bg: #f4f6f9; --surface: #fff;
+    --line: #e0e6ec; --line-strong: #c8d2dc; --accent: #0098cd; --accent-deep: #006f9c;
+    --accent-wash: #e2f2fa; --good: #128a5b; --good-wash: #dcf3e8; --warn: #b5760c;
+    --warn-wash: #fbf0d9; --crit: #c0392b; --grid: #eef2f6; --sh: 0 1px 2px rgba(13,22,32,.05), 0 2px 8px rgba(13,22,32,.04);
+  }
+  :root[data-theme="dark"] {
+    --ink: #e9eff5; --ink-soft: #b3c1cf; --muted: #7d90a2; --bg: #0a1119; --surface: #111b25;
+    --line: #22303c; --line-strong: #33465a; --accent: #35b6e6; --accent-deep: #63c8f0;
+    --accent-wash: #123040; --good: #3fce93; --good-wash: #10281f; --warn: #e0a53c;
+    --warn-wash: #2c2411; --crit: #ef6a5c; --grid: #1a2833; --sh: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+  * { box-sizing: border-box; }
+  html, body { max-width: 100%; overflow-x: hidden; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans);
+    -webkit-font-smoothing: antialiased; line-height: 1.5; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  /* Los ítems de grid/flex por defecto usan min-width:auto (tamaño min-content),
+     de modo que una tabla ancha empuja su tarjeta más allá del viewport móvil.
+     min-width:0 permite que la tarjeta se encoja y el contenido ancho haga scroll. */
+  .cols > *, .kpis > *, .guard > * { min-width: 0; }
+  .tbl-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  a { color: var(--accent-deep); }
+
+  /* ---- header ---- */
+  header { border-bottom: 1px solid var(--line); background: var(--surface); }
+  .head-grid { display: flex; flex-wrap: wrap; gap: 20px 32px; align-items: flex-end;
+    justify-content: space-between; padding: 30px 0 26px; }
+  .eyebrow { font-family: var(--mono); font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--accent-deep); margin: 0 0 10px; }
+  h1 { font-size: clamp(25px, 3.6vw, 38px); line-height: 1.08; letter-spacing: -.02em; margin: 0;
+    text-wrap: balance; font-weight: 720; max-width: 16ch; }
+  .sub { color: var(--muted); margin: 10px 0 0; font-size: 15px; max-width: 46ch; }
+  .lang { font-family: var(--mono); font-size: 12px; margin: 0 0 12px; text-align: right; }
+  .lang a { text-decoration: none; font-weight: 600; }
+  .verdicts { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { font-family: var(--mono); font-size: 12px; font-weight: 600; padding: 7px 12px; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 7px; border: 1px solid transparent; }
+  .chip.ok { background: var(--good-wash); color: var(--good); border-color: color-mix(in srgb, var(--good) 30%, transparent); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+  /* ---- kpi ---- */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 26px 0 8px; }
+  .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; box-shadow: var(--sh); }
+  .kpi .k-label { font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: .02em; }
+  .kpi .k-val { font-family: var(--mono); font-size: 27px; font-weight: 640; margin: 8px 0 2px; letter-spacing: -.01em;
+    font-variant-numeric: tabular-nums; }
+  .kpi .k-val small { font-size: 15px; color: var(--muted); font-weight: 500; }
+  .kpi .k-meta { font-size: 12px; color: var(--accent-deep); font-family: var(--mono); }
+
+  /* ---- sections ---- */
+  section { padding: 34px 0; border-top: 1px solid var(--line); }
+  .s-head { display: flex; align-items: baseline; gap: 12px; margin: 0 0 20px; }
+  .s-num { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  h2 { font-size: 20px; letter-spacing: -.01em; margin: 0; font-weight: 680; }
+  .s-head .tag { margin-left: auto; font-family: var(--mono); font-size: 11.5px; padding: 4px 9px; border-radius: 6px;
+    background: var(--good-wash); color: var(--good); font-weight: 600; }
+
+  .cols { display: grid; grid-template-columns: 1.15fr 1fr; gap: 22px; align-items: start; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; box-shadow: var(--sh); }
+  .card h3 { margin: 0 0 4px; font-size: 15px; font-weight: 650; }
+  .card p { margin: 6px 0 0; color: var(--ink-soft); font-size: 14px; }
+  .lead { color: var(--ink-soft); font-size: 15px; max-width: 62ch; margin: 0 0 20px; }
+
+  /* chart */
+  .chart { width: 100%; height: auto; display: block; }
+  .cap { font-family: var(--mono); font-size: 11.5px; color: var(--muted); margin: 10px 2px 0; }
+  .demo-vid { width: 100%; border-radius: 8px; display: block; background: #000; border: 1px solid var(--line); }
+  /* ---- inmersivo: visor 3D (estudio) + vídeo cinematográfico ---- */
+  .stage { position: relative; width: 100%; aspect-ratio: 16 / 11; border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--line); background: radial-gradient(130% 130% at 50% 12%, #14243400 0%, #05070a 72%), #0a1420;
+    cursor: grab; touch-action: none; }
+  .stage:active { cursor: grabbing; }
+  .stage canvas { display: block; width: 100%; height: 100%; }
+  .stage .ov { position: absolute; font-family: var(--mono); font-size: 11px; z-index: 2; }
+  .stage .hint { left: 13px; bottom: 11px; color: #93a8bd; background: rgba(5,7,10,.5); padding: 5px 9px;
+    border-radius: 6px; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); pointer-events: none; }
+  .stage .badge3d { right: 13px; top: 11px; color: var(--good); background: var(--good-wash);
+    padding: 4px 9px; border-radius: 6px; pointer-events: none; }
+  .stage .fallback { inset: 0; display: grid; place-items: center; text-align: center; color: #8093a6;
+    font-family: var(--sans); font-size: 13px; padding: 24px; }
+  .cine { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--line);
+    background: #000; box-shadow: 0 12px 44px rgba(0,0,0,.42); }
+  .cine .demo-vid { border: 0; border-radius: 0; }
+  .cine::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+    box-shadow: inset 0 0 110px rgba(0,0,0,.5); }
+  text { font-family: var(--mono); fill: var(--muted); }
+  .bar-lab { fill: var(--ink-soft); font-weight: 600; }
+  .val-lab { fill: var(--ink); font-weight: 700; }
+
+  /* metric rows */
+  .mrow { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0;
+    border-bottom: 1px dashed var(--line); font-size: 14px; }
+  .mrow:last-child { border-bottom: 0; }
+  .mrow .m-k { color: var(--ink-soft); }
+  .mrow .m-v { font-family: var(--mono); font-weight: 650; font-variant-numeric: tabular-nums; }
+  .pos { color: var(--good); }
+
+  /* pieces table */
+  .ptable { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .ptable th, .ptable td { text-align: right; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  .ptable th:first-child, .ptable td:first-child { text-align: left; }
+  .ptable th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; }
+  .ptable td { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .ptable td:first-child { font-family: var(--sans); font-weight: 600; }
+  .pill { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 5px; }
+  .pill.g { background: var(--good-wash); color: var(--good); }
+  .pill.a { background: var(--warn-wash); color: var(--warn); }
+
+  /* guarantees */
+  .guard { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+  .g { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--good); border-radius: 10px; padding: 14px 16px; }
+  .g .g-t { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .g .g-v { font-size: 17px; font-weight: 680; margin-top: 3px; }
+  .g .g-v .mono { font-family: var(--mono); color: var(--good); }
+
+  footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; padding: 26px 0 40px; }
+  footer .fr { display: flex; flex-wrap: wrap; gap: 6px 20px; justify-content: space-between; }
+  .note { font-family: var(--mono); font-size: 12px; }
+
+  @media (max-width: 760px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .cols { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 480px) {
+    .wrap { padding: 0 16px; }
+    .kpis { grid-template-columns: 1fr; }
+    h1 { font-size: 26px; }
+    .kpi .k-val { font-size: 24px; }
+  }
+</style>
+
+<header>
+  <div class="wrap">
+    <div class="head-grid">
+      <div>
+        <p class="eyebrow">MSc thesis · Mathematical Engineering &amp; Computation · UNIR</p>
+        <h1>6-DoF pose estimation for robotic bin picking</h1>
+        <p class="sub">A pipeline joining <strong>FoundationPose</strong> (Transformer) and <strong>Diffusion Policy</strong>
+          on an SE(3)/SO(3) Lie-group formalism, validated on YCB-Video and T-LESS and run end to
+          end in CoppeliaSim — without a dedicated GPU.</p>
+      </div>
+      <div>
+      <p class="lang"><a href="dashboard_ejecutivo.html" hreflang="es">Español</a> · EN</p>
+      <div class="verdicts">
+        <span class="chip ok"><span class="dot"></span>H1 accepted</span>
+        <span class="chip ok"><span class="dot"></span>H2 accepted</span>
+        <span class="chip ok"><span class="dot"></span>H3 accepted</span>
+      </div>
+      </div>
+    </div>
+    <div class="kpis">
+      <div class="kpi">
+        <div class="k-label">AUC ADD-S (YCB-V / T-LESS)</div>
+        <div class="k-val">0.908 <small>/ 0.957</small></div>
+        <div class="k-meta">95% CI · bootstrap B=1000</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Lead over GDR-Net++</div>
+        <div class="k-val">+3.0 <small>/ +3.6 pp</small></div>
+        <div class="k-meta">Mean AR · BOP leaderboard</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">E2E cycle p95 (YCB-V / T-LESS)</div>
+        <div class="k-val">6.29<small>s</small> <small>/ 6.68s</small></div>
+        <div class="k-meta">industrial threshold &lt; 10 s ✓</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Guaranteed in CI</div>
+        <div class="k-val">314<small> tests</small></div>
+        <div class="k-meta">28 consistency checks</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- H1 -->
+  <section>
+    <div class="s-head"><span class="s-num">H1</span><h2>Competitive pose accuracy</h2><span class="tag">accepted</span></div>
+    <p class="lead">Pose estimation matches the state of the art and beats the GDR-Net++ baseline on both datasets.
+      AUC ADD-S is reported with a 95% bootstrap confidence interval over the evaluated instances.</p>
+    <div class="cols">
+      <div class="card">
+        <h3>AUC ADD-S vs. baseline</h3>
+        <svg class="chart" viewBox="0 0 460 210" role="img" aria-label="AUC ADD-S compared with GDR-Net++">
+          <line x1="150" y1="20" x2="150" y2="170" stroke="var(--grid)"/>
+          <line x1="260" y1="20" x2="260" y2="170" stroke="var(--grid)"/>
+          <line x1="370" y1="20" x2="370" y2="170" stroke="var(--grid)"/>
+          <text x="150" y="188" text-anchor="middle" font-size="10">0.90</text>
+          <text x="260" y="188" text-anchor="middle" font-size="10">0.95</text>
+          <text x="370" y="188" text-anchor="middle" font-size="10">1.00</text>
+          <!-- YCB-V -->
+          <text x="8" y="48" font-size="11" class="bar-lab">YCB-V</text>
+          <rect x="40" y="38" width="286" height="16" rx="3" fill="var(--accent)"/>
+          <rect x="40" y="58" width="235" height="10" rx="3" fill="var(--line-strong)"/>
+          <text x="332" y="51" font-size="11" class="val-lab">0.908</text>
+          <text x="281" y="67" font-size="9.5">GDR++ 0.867</text>
+          <!-- T-LESS -->
+          <text x="8" y="112" font-size="11" class="bar-lab">T-LESS</text>
+          <rect x="40" y="102" width="393" height="16" rx="3" fill="var(--accent-deep)"/>
+          <rect x="40" y="122" width="323" height="10" rx="3" fill="var(--line-strong)"/>
+          <text x="405" y="115" font-size="11" class="val-lab" text-anchor="end" fill="#fff" style="fill:var(--surface)">0.957</text>
+          <text x="369" y="131" font-size="9.5">GDR++ 0.767 · AR</text>
+        </svg>
+        <p class="cap">Solid bar = FoundationPose (this work) · thin bar = GDR-Net++ (BOP 2022)</p>
+      </div>
+      <div class="card">
+        <h3>Recall metrics</h3>
+        <div class="mrow"><span class="m-k">Recall ADD-S &lt; 10 mm · YCB-V</span><span class="m-v">95.8%</span></div>
+        <div class="mrow"><span class="m-k">Recall ADD-S &lt; 10 mm · T-LESS</span><span class="m-v">99.7%</span></div>
+        <div class="mrow"><span class="m-k">95% CI AUC · YCB-V</span><span class="m-v">0.901–0.916</span></div>
+        <div class="mrow"><span class="m-k">95% CI AUC · T-LESS</span><span class="m-v">0.954–0.959</span></div>
+        <div class="mrow"><span class="m-k">Instances evaluated</span><span class="m-v">1098 · 1012</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- H2 -->
+  <section>
+    <div class="s-head"><span class="s-num">H2</span><h2>Multimodal planning by diffusion</h2><span class="tag">accepted</span></div>
+    <p class="lead">Diffusion Policy generates genuinely diverse grasp trajectories, unlike the deterministic
+      heuristic. Silhouette analysis detects multiple modes and the spread of the <em>jerk</em> confirms
+      multimodality, with a sampling latency of 118 ms (DDIM-25).</p>
+    <div class="cols">
+      <div class="card">
+        <h3>Trajectory diversity (jerk RMS · standard deviation)</h3>
+        <svg class="chart" viewBox="0 0 460 130" role="img" aria-label="Diversity: diffusion vs heuristic">
+          <text x="8" y="42" font-size="11" class="bar-lab">Diffusion</text>
+          <rect x="92" y="30" width="330" height="18" rx="3" fill="var(--accent)"/>
+          <text x="416" y="44" font-size="11" class="val-lab" text-anchor="end" style="fill:var(--surface)">0.364</text>
+          <text x="8" y="92" font-size="11" class="bar-lab">Heuristic</text>
+          <rect x="92" y="80" width="2" height="18" rx="1" fill="var(--muted)"/>
+          <text x="100" y="94" font-size="11" class="val-lab">≈ 0 (2·10⁻¹⁷)</text>
+        </svg>
+        <p class="cap">More spread = more multimodality. The heuristic generates no diversity.</p>
+      </div>
+      <div class="card">
+        <h3>Evidence</h3>
+        <div class="mrow"><span class="m-k">Modes detected (silhouette)</span><span class="m-v">2</span></div>
+        <div class="mrow"><span class="m-k">Sampling latency, DDIM-25</span><span class="m-v">118 ms</span></div>
+        <div class="mrow"><span class="m-k">Acceptance criterion</span><span class="m-v pos">met</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- H3 -->
+  <section>
+    <div class="s-head"><span class="s-num">H3</span><h2>Cycle time without a dedicated GPU</h2><span class="tag">accepted</span></div>
+    <p class="lead">The full bin-picking cycle runs under the industrial threshold of 10 s per instance on a
+      MacBook Pro M1 — no NVIDIA GPU. Live measurement, n=30, in CoppeliaSim.</p>
+    <div class="card">
+      <h3>E2E cycle p95 against the 10 s threshold</h3>
+      <svg class="chart" viewBox="0 0 900 128" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Cycle p95 vs the 10 s threshold">
+        <line x1="90" y1="18" x2="810" y2="18" stroke="var(--grid)"/>
+        <line x1="810" y1="12" x2="810" y2="112" stroke="var(--crit)" stroke-dasharray="4 4"/>
+        <text x="810" y="126" text-anchor="middle" font-size="11" fill="var(--crit)">10 s (threshold)</text>
+        <text x="90" y="126" text-anchor="middle" font-size="11">0 s</text>
+        <text x="10" y="42" font-size="12" class="bar-lab">YCB-V</text>
+        <rect x="90" y="30" width="453" height="20" rx="3" fill="var(--good)"/>
+        <text x="553" y="45" font-size="12" class="val-lab">6.29 s</text>
+        <text x="700" y="45" font-size="11" fill="var(--good)">margin 3.71 s</text>
+        <text x="10" y="86" font-size="12" class="bar-lab">T-LESS</text>
+        <rect x="90" y="74" width="481" height="20" rx="3" fill="var(--good)"/>
+        <text x="581" y="89" font-size="12" class="val-lab">6.68 s</text>
+        <text x="700" y="89" font-size="11" fill="var(--good)">margin 3.32 s</text>
+      </svg>
+      <p class="cap">Breakdown: FoundationPose ~4.2 s + Diffusion (DDIM-25) + control + simulation. CoppeliaSim step 18.1 ms.</p>
+    </div>
+  </section>
+
+  <!-- Robustness & clutter -->
+  <section>
+    <div class="s-head"><span class="s-num">+</span><h2>Robustness and selection in clutter</h2><span class="tag">validated</span></div>
+    <div class="cols">
+      <div class="card">
+        <h3>Domain randomization (Iter 8)</h3>
+        <p>Appearance randomization brings grasp proximity from <strong>3.6 cm down to 1.4 cm</strong> and makes it
+          invariant to shape and colour.</p>
+        <div class="mrow"><span class="m-k">Grasp proximity · before</span><span class="m-v">3.6 cm</span></div>
+        <div class="mrow"><span class="m-k">Grasp proximity · randomized</span><span class="m-v pos">1.4 cm</span></div>
+        <div class="mrow"><span class="m-k">Execution errors</span><span class="m-v">0</span></div>
+      </div>
+      <div class="card">
+        <h3>Selection among distractors (Iter 9)</h3>
+        <p>The system picks the requested part among several and <strong>verifies before acting</strong> so it does
+          not hit the others.</p>
+        <div class="mrow"><span class="m-k">Grasp with distractors · v9</span><span class="m-v pos">100%</span></div>
+        <div class="mrow"><span class="m-k">Grasp with distractors · v8</span><span class="m-v">84%</span></div>
+        <div class="mrow"><span class="m-k">Verify-then-act (safe)</span><span class="m-v">96%</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- text-to-CAD extension -->
+  <section>
+    <div class="s-head"><span class="s-num">exp27</span><h2>Extension: text-to-CAD → simulation → pose → grasp</h2><span class="tag">new · 100% local</span></div>
+    <p class="lead">Generates test parts from a language description (build123d), simulates them in CoppeliaSim with
+      real physics, estimates their 6-DoF pose from <strong>actual</strong> sensor depth and executes the grasp — all
+      on the Mac, with a gradient-based pose refiner on the integrated GPU (Apple MPS).</p>
+    <div class="cols">
+      <div class="card">
+        <h3>6-DoF pose per part (from real depth)</h3>
+        <div class="tbl-scroll">
+        <table class="ptable">
+          <thead><tr><th>Part</th><th>Translation</th><th>Rotation</th><th>Grasp</th></tr></thead>
+          <tbody>
+            <tr><td>L-bracket</td><td>4.1 mm</td><td>1.3°</td><td><span class="pill g">4.9 cm</span></td></tr>
+            <tr><td>Stepped block</td><td>1.0 mm</td><td>1.6°</td><td><span class="pill g">4.7 cm</span></td></tr>
+            <tr><td>Hex nut</td><td>37 mm</td><td>179°*</td><td><span class="pill g">3.9 cm</span></td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p class="cap">*180° flip from order-6 symmetry — the expected ambiguity under a partial view.</p>
+      </div>
+      <div class="card">
+        <h3>Pose refiner on Apple MPS</h3>
+        <svg class="chart" viewBox="0 0 440 118" role="img" aria-label="Gradient-based pose recovery on MPS">
+          <text x="8" y="40" font-size="11" class="bar-lab">Init</text>
+          <rect x="70" y="28" width="330" height="16" rx="3" fill="var(--line-strong)"/>
+          <text x="404" y="41" font-size="11" class="val-lab" text-anchor="end">27.9 mm</text>
+          <text x="8" y="82" font-size="11" class="bar-lab">Refined</text>
+          <rect x="70" y="70" width="75" height="16" rx="3" fill="var(--accent)"/>
+          <text x="152" y="83" font-size="11" class="val-lab pos">6.3 mm</text>
+        </svg>
+        <div class="mrow"><span class="m-k">Success rate (&lt; 10 mm)</span><span class="m-v pos">95%</span></div>
+        <div class="mrow"><span class="m-k">No CUDA · M1 GPU (MPS)</span><span class="m-v">~230 it/s</span></div>
+      </div>
+    </div>
+    <div class="cols" style="margin-top:22px">
+      <div class="card">
+        <h3>Explore the part in 3D (generated from text)</h3>
+        <div class="stage" id="stage3d" role="img" aria-label="Interactive 3D viewer of the L-bracket generated by text-to-CAD">
+          <span class="ov badge3d">● interactive</span>
+          <span class="ov hint">drag to rotate · scroll to zoom</span>
+          <div class="ov fallback" id="stage3dFb">Loading 3D model…</div>
+        </div>
+        <p class="cap">L-bracket (60×40×45 mm), the actual build123d mesh — the same part the pipeline simulates, estimates and grasps.</p>
+      </div>
+      <div class="card">
+        <h3>Demo · pick in CoppeliaSim (third person + HUD)</h3>
+        <div class="cine">
+          <video class="demo-vid" controls muted loop playsinline preload="none" poster="assets/demo_cine_poster.jpg">
+            <source src="assets/demo_cine.mp4" type="video/mp4">
+          </video>
+        </div>
+        <p class="cap">Full cycle for the bracket: approach → descent → snap+attach grasp → lift → deposit. Plays automatically when it scrolls into view.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Guarantees -->
+  <section>
+    <div class="s-head"><span class="s-num">✓</span><h2>Automatic guarantees (CI)</h2></div>
+    <p class="lead">The evidence is locked down: any change that puts a number out of step between the thesis, the reports
+      and this dashboard — or that breaks the physics — fails the suite.</p>
+    <div class="guard">
+      <div class="g"><div class="g-t">Numerical consistency</div><div class="g-v"><span class="mono">28/28</span> checks</div></div>
+      <div class="g"><div class="g-t">Reproducible physics</div><div class="g-v"><span class="mono">z=7.0 mm</span> repeatable</div></div>
+      <div class="g"><div class="g-t">Test suite</div><div class="g-v"><span class="mono">314</span> passed</div></div>
+      <div class="g"><div class="g-t">Linter (ruff)</div><div class="g-v"><span class="mono">0</span> errors</div></div>
+      <div class="g"><div class="g-t">Types (mypy)</div><div class="g-v"><span class="mono">0</span> errors · 72 files</div></div>
+      <div class="g"><div class="g-t">Reproducibility</div><div class="g-v">Deterministic CAD</div></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="fr">
+      <span>Giocrisrai Godoy Bonillo · José Miguel Carrasco — Supervisor: Ivón Oristela Benítez González</span>
+      <span class="note">Source of truth: JSON reports · verified in CI · June 2026</span>
+    </div>
+  </footer>
+</main>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"}}
+</script>
+<script type="module">
+  // Vídeo demo: se reproduce solo al entrar en vista (inmersivo pero ligero)
+  const vid = document.querySelector('.cine video');
+  if (vid) new IntersectionObserver(es => es.forEach(e => e.isIntersecting ? vid.play().catch(()=>{}) : vid.pause()), {threshold: 0.5}).observe(vid);
+
+  // Visor 3D de la pieza generada (Three.js). Degrada con elegancia si no hay red/WebGL.
+  const stage = document.getElementById('stage3d');
+  const fb = document.getElementById('stage3dFb');
+  try {
+    const THREE = await import('three');
+    const { OrbitControls } = await import('three/addons/controls/OrbitControls.js');
+    const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
+    const { RoomEnvironment } = await import('three/addons/environments/RoomEnvironment.js');
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(stage.clientWidth, stage.clientHeight);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
+    stage.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+    const camera = new THREE.PerspectiveCamera(38, stage.clientWidth / stage.clientHeight, 0.001, 100);
+    camera.position.set(0.11, 0.085, 0.15);
+
+    const key = new THREE.DirectionalLight(0xffffff, 2.4); key.position.set(0.25, 0.5, 0.3); scene.add(key);
+    scene.add(new THREE.HemisphereLight(0x9ec5ff, 0x0a0f16, 0.55));
+
+    const floor = new THREE.Mesh(
+      new THREE.CircleGeometry(0.6, 64),
+      new THREE.MeshStandardMaterial({ color: 0x0b1017, roughness: 0.95, metalness: 0 }));
+    floor.rotation.x = -Math.PI / 2; scene.add(floor);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true; controls.dampingFactor = 0.08;
+    controls.autoRotate = true; controls.autoRotateSpeed = 1.1;
+    controls.enablePan = false; controls.minDistance = 0.06; controls.maxDistance = 0.6;
+
+    new GLTFLoader().load('assets/pieza_escuadra.glb', (gltf) => {
+      const obj = gltf.scene;
+      obj.traverse(o => { if (o.isMesh) o.material = new THREE.MeshStandardMaterial({ color: 0xbcc6d2, metalness: 0.88, roughness: 0.34 }); });
+      const box = new THREE.Box3().setFromObject(obj);
+      const c = box.getCenter(new THREE.Vector3()), sz = box.getSize(new THREE.Vector3());
+      obj.position.sub(c);
+      const k = 0.09 / Math.max(sz.x, sz.y, sz.z); obj.scale.setScalar(k);
+      const half = (sz.y * k) / 2; obj.position.y += half;
+      controls.target.set(0, half * 0.5, 0); controls.update();
+      scene.add(obj);
+      fb.style.display = 'none';
+    }, undefined, () => { fb.textContent = 'The 3D model could not be loaded.'; });
+
+    addEventListener('resize', () => {
+      const w = stage.clientWidth, h = stage.clientHeight;
+      renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix();
+    });
+
+    let visible = false;
+    new IntersectionObserver(es => es.forEach(e => visible = e.isIntersecting), { threshold: 0.05 }).observe(stage);
+    renderer.setAnimationLoop(() => { if (visible) { controls.update(); renderer.render(scene, camera); } });
+  } catch (e) {
+    if (fb) fb.textContent = '3D viewer unavailable here (it needs WebGL and a network connection).';
+    console.warn('[viewer3d]', e);
+  }
+</script>
+</body></html>
