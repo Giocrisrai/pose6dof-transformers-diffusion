@@ -90,6 +90,13 @@ check("README.AUC 0.908/0.957", num_in(readme, CANON["auc_ycbv"], 3) and num_in(
 check("README.cycle p95 6.29/6.68", num_in(readme, CANON["p95_ycbv"], 2) and num_in(readme, CANON["p95_tless"], 2))
 
 # ── 5. H2 (diversidad multimodal) + robustez (Iter8) + clutter (Iter9) ─
+# La tabla E2E del README en español cita los p95 por etapa del mismo JSON
+readme_es = (REPO / "README.es.md").read_text()
+e2e_p95 = [str(round(e2e["datasets"][d][k]["p95"]))
+           for d in ("ycbv", "tless") for k in ("fp_ms", "diff_ms", "sim_ms", "total_ms")]
+check("README.es tabla E2E = e2e_live_metrics.json",
+      all(f"{v} ms" in readme_es for v in e2e_p95), "/".join(e2e_p95))
+
 div = json.loads((RES / "exp8_diversity/exp8_results.json").read_text())
 rob = json.loads((RES / "pick_with_diffusion/eval_v8_robustez.json").read_text())
 clt = json.loads((RES / "pick_with_diffusion/eval_v9_clutter.json").read_text())

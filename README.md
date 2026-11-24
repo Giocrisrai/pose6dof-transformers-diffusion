@@ -98,7 +98,7 @@ analysis on a Mac without a GPU.
 The figures in the thesis, the reports and the dashboards are checked on every push:
 
 - **`scripts/verify_tfm_consistency.py`** compares the published results against the
-  JSON reports they come from (28 checks).
+  JSON reports they come from (29 checks).
 - **`scripts/check_public_counts.py`** compares the test, check and type-checking
   counts printed in this README and in the dashboards with what the run just measured.
 - **ruff** and **mypy** run clean, and the API image is built.

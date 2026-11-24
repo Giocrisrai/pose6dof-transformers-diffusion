@@ -227,9 +227,10 @@ Mapa clip→slide y guión hablado en `experiments/results/demo_reel/README.md`.
 
 | Dataset | FP p95 | Diffusion p95 | Sim p95 | **Cycle p95** | H3 (<10s) |
 |---------|-------:|------------:|--------:|--------------:|:---------:|
-| YCB-Video | 4273 ms | 176 ms | 1734 ms | **6125 ms** | margen 3.88 s |
-| T-LESS | 5174 ms | 214 ms | 1971 ms | **6857 ms** | margen 3.14 s |
+| YCB-Video | 4273 ms | 223 ms | 1838 ms | **6287 ms** | margen 3.71 s |
+| T-LESS | 5174 ms | 184 ms | 1792 ms | **6684 ms** | margen 3.32 s |
 
+Fuente: `experiments/results/pipeline_e2e/e2e_live_metrics.json` (la tabla se verifica contra ese archivo en CI).
 Reproducir: `python experiments/run_e2e_live.py --n-instances 30 --ddim-steps 25`
 (requiere CoppeliaSim corriendo en localhost:23000).
 

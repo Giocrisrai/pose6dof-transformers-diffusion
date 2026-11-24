@@ -160,12 +160,12 @@ simulación stepped activa, Diffusion Policy con pesos entrenados localmente
 
 | Dataset | n | FP p95 (ms) | Diffusion p95 (ms) | Sim p95 (ms) | **Cycle p95 (ms)** | H3 (<10s) |
 |---------|--:|--------:|----------------:|----------:|-------------------:|:--------:|
-| YCB-Video | 30 | 4273 | 176 | 1734 | **6125** | ✅ margen 3875 ms |
-| T-LESS | 30 | 5174 | 214 | 1971 | **6857** | ✅ margen 3143 ms |
+| YCB-Video | 30 | 4273 | 223 | 1838 | **6287** | ✅ margen 3713 ms |
+| T-LESS | 30 | 5174 | 184 | 1792 | **6684** | ✅ margen 3316 ms |
 
-Conexión CoppeliaSim: 184 ms. Sim por step (con física activa de
+Conexión CoppeliaSim: 215 ms. Sim por step (con física activa de
 pickAndPlaceDemo): 28-34 ms (vs 18 ms del smoke test sin física).
-Ambos datasets pasan H3 con margen superior a 3.14 segundos respecto al umbral
+Ambos datasets pasan H3 con margen superior a 3.3 segundos respecto al umbral
 industrial de 10 segundos por instancia, **tanto en agregación (n = 1098/1012)
 como en ejecución en vivo (n = 30 con física)**.
 
