@@ -192,7 +192,7 @@
       <div class="kpi">
         <div class="k-label">Guaranteed in CI</div>
         <div class="k-val">317<small> tests</small></div>
-        <div class="k-meta">30 consistency checks</div>
+        <div class="k-meta">32 consistency checks</div>
       </div>
     </div>
   </div>
@@ -246,8 +246,8 @@
     <div class="s-head"><span class="s-num">H2</span><h2>Multimodal planning by diffusion</h2><span class="tag part">partially accepted</span></div>
     <p class="lead">Diffusion Policy generates diverse grasp trajectories, unlike the deterministic heuristic, and meets
       the score criterion. The two strict thresholds are not reached: sampling takes 118 ms (DDIM-25)
-      against a 50 ms threshold, and 2 modes are detected against a target of 3. Planning still accounts
-      for only 2.3% of the cycle.</p>
+      against a 50 ms threshold, and 2 modes are detected against a target of 3. Since the thesis, a distilled
+      one-step sampler closes the latency gap; the mode count is still open.</p>
     <div class="cols">
       <div class="card">
         <h3>Trajectory diversity (jerk RMS · standard deviation)</h3>
@@ -266,6 +266,7 @@
         <div class="mrow"><span class="m-k">Mean score · criterion ≥ 0.95</span><span class="m-v pos">0.96</span></div>
         <div class="mrow"><span class="m-k">Sampling latency, DDIM-25 · criterion &lt; 50 ms</span><span class="m-v neg">118 ms</span></div>
         <div class="mrow"><span class="m-k">Modes detected (silhouette) · criterion ≥ 3</span><span class="m-v neg">2</span></div>
+        <div class="mrow"><span class="m-k">Since the thesis · distilled 1-step sampler</span><span class="m-v pos">3.9 ms</span></div>
       </div>
     </div>
   </section>
@@ -381,7 +382,7 @@
     <p class="lead">The evidence is locked down: any change that puts a number out of step between the thesis, the reports
       and this dashboard — or that breaks the physics — fails the suite.</p>
     <div class="guard">
-      <div class="g"><div class="g-t">Numerical consistency</div><div class="g-v"><span class="mono">30/30</span> checks</div></div>
+      <div class="g"><div class="g-t">Numerical consistency</div><div class="g-v"><span class="mono">32/32</span> checks</div></div>
       <div class="g"><div class="g-t">Reproducible physics</div><div class="g-v"><span class="mono">z=7.0 mm</span> repeatable</div></div>
       <div class="g"><div class="g-t">Test suite</div><div class="g-v"><span class="mono">317</span> passed</div></div>
       <div class="g"><div class="g-t">Linter (ruff)</div><div class="g-v"><span class="mono">0</span> errors</div></div>

@@ -192,7 +192,7 @@
       <div class="kpi">
         <div class="k-label">Garantía en CI</div>
         <div class="k-val">317<small> tests</small></div>
-        <div class="k-meta">30 checks de consistencia</div>
+        <div class="k-meta">32 checks de consistencia</div>
       </div>
     </div>
   </div>
@@ -246,8 +246,8 @@
     <div class="s-head"><span class="s-num">H2</span><h2>Planificación multimodal por difusión</h2><span class="tag part">parcialmente aceptada</span></div>
     <p class="lead">Diffusion Policy genera trayectorias de agarre diversas — a diferencia de la heurística, determinista —
       y cumple el criterio de score. Los dos umbrales estrictos no se alcanzan: el muestreo tarda 118 ms
-      (DDIM-25) frente al umbral de 50 ms, y se detectan 2 modos frente al objetivo de 3. Aun así, la
-      planificación ocupa solo el 2,3 % del ciclo.</p>
+      (DDIM-25) frente al umbral de 50 ms, y se detectan 2 modos frente al objetivo de 3. Tras la tesis, un
+      muestreador destilado de un paso cierra la brecha de latencia; el número de modos sigue abierto.</p>
     <div class="cols">
       <div class="card">
         <h3>Diversidad de trayectorias (jerk RMS · desviación estándar)</h3>
@@ -266,6 +266,7 @@
         <div class="mrow"><span class="m-k">Score medio · criterio ≥ 0.95</span><span class="m-v pos">0.96</span></div>
         <div class="mrow"><span class="m-k">Latencia muestreo DDIM-25 · criterio &lt; 50 ms</span><span class="m-v neg">118 ms</span></div>
         <div class="mrow"><span class="m-k">Modos detectados (silhouette) · criterio ≥ 3</span><span class="m-v neg">2</span></div>
+        <div class="mrow"><span class="m-k">Tras la tesis · muestreador destilado de 1 paso</span><span class="m-v pos">3.9 ms</span></div>
       </div>
     </div>
   </section>
@@ -381,7 +382,7 @@
     <p class="lead">Toda la evidencia está blindada: cualquier cambio que descuadre un número entre la tesis, los reports
       y el dashboard —o que rompa la física— hace fallar la suite.</p>
     <div class="guard">
-      <div class="g"><div class="g-t">Consistencia numérica</div><div class="g-v"><span class="mono">30/30</span> checks</div></div>
+      <div class="g"><div class="g-t">Consistencia numérica</div><div class="g-v"><span class="mono">32/32</span> checks</div></div>
       <div class="g"><div class="g-t">Física reproducible</div><div class="g-v"><span class="mono">z=7.0 mm</span> repetible</div></div>
       <div class="g"><div class="g-t">Suite de tests</div><div class="g-v"><span class="mono">317</span> passed</div></div>
       <div class="g"><div class="g-t">Linter (ruff)</div><div class="g-v"><span class="mono">0</span> errores</div></div>

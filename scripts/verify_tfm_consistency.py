@@ -115,6 +115,17 @@ publicado_parcial = all(
     for archivo, palabra in [("README.md", "◐ partial"), ("README.es.md", "◐ parcial"),
                              ("docs/dashboard_executive.html", "H2 partial"),
                              ("docs/dashboard_ejecutivo.html", "H2 parcial")])
+# Avance posterior a la tesis: el muestreador destilado cumple el umbral de 50 ms,
+# y la cifra publicada es la del benchmark versionado.
+lat = json.loads((RES / "sampling_latency/latency.json").read_text())
+rapido = lat["models"]["ultra_fast"]
+check("H2.destilado cumple el umbral de muestreo (p95 < 50 ms)",
+      rapido["p95_ms"] < lat["h2_threshold_ms"], f"p95={rapido['p95_ms']} ms")
+check("H2.latencia del destilado publicada = latency.json",
+      all(f"{rapido['median_ms']:.1f} ms" in (REPO / a).read_text()
+          for a in ("README.md", "README.es.md", "docs/dashboard_executive.html",
+                    "docs/dashboard_ejecutivo.html")),
+      f"mediana={rapido['median_ms']:.1f} ms")
 check("H2.veredicto publicado = parcial mientras no se cumplan los umbrales",
       publicado_parcial == h2_parcial, f"DDIM-25 y modos={n_modes}")
 check("H2.diffusion > heurística en diversidad", diff_std > heur_std * 1e6,

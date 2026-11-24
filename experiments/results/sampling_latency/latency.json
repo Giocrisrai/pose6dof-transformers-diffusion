@@ -1,0 +1,31 @@
+{
+  "generated_at": "2026-11-24T15:30:43+00:00",
+  "device": "mps",
+  "machine": "Darwin arm64",
+  "h2_threshold_ms": 50.0,
+  "request": {
+    "object_position": [
+      0.0,
+      0.0,
+      0.8
+    ],
+    "n_samples": 1,
+    "n_diffusion_steps": 25
+  },
+  "models": {
+    "ultra": {
+      "sampler": "DDIM-25",
+      "n": 100,
+      "median_ms": 78.74,
+      "p95_ms": 105.24,
+      "max_ms": 137.11
+    },
+    "ultra_fast": {
+      "sampler": "distilled, 1 NFE",
+      "n": 100,
+      "median_ms": 3.9,
+      "p95_ms": 8.25,
+      "max_ms": 10.83
+    }
+  }
+}

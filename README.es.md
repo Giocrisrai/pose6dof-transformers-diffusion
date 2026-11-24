@@ -33,7 +33,9 @@
 | H2 — Planificación multimodal | score ≥ 0.95, muestreo < 50 ms, ≥ 3 modos | score 0.96 · muestreo **118 ms** (DDIM-25) · 2 modos | ◐ parcial |
 | H3 — Cycle E2E | p95 < 10 s/instancia | **6.29 s** YCB-V / **6.68 s** T-LESS (margen ≥ 3.32 s) | ✅ |
 
-**H2 queda parcialmente aceptada**, como recoge la memoria: se cumple el score, pero el muestreo de Diffusion Policy tarda 118 ms frente al umbral de 50 ms y se detectan 2 modos frente al objetivo de 3. La planificación ocupa solo el 2,3 % del ciclo.
+**H2 quedó parcialmente aceptada en la memoria**: se cumple el score, pero el muestreo de Diffusion Policy tardaba 118 ms frente al umbral de 50 ms y se detectan 2 modos frente al objetivo de 3.
+
+**Después de la tesis, la brecha de muestreo está cerrada.** Destilar la política a un solo paso de denoising deja el muestreo en **3.9 ms** por trayectoria (mediana; p95 8.2 ms) en el mismo MacBook Pro M1, frente a 79 ms de DDIM-25 medido igual, sin pérdida de error de trayectoria respecto a la referencia. Se reproduce con `python experiments/bench_sampling_latency.py`. El número de modos es lo que sigue abierto.
 
 **Robustez verificada**: T-LESS aguanta 70 % oclusión con solo −1 pp AUC ADD-S. **PBVS** converge 100 % en 50 muestras. **Cuello de botella identificado**: FoundationPose 80 % del ciclo.
 

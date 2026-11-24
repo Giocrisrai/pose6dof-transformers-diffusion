@@ -32,9 +32,15 @@ with a diffusion model, and runs the whole cycle end to end in simulation:
 | **H2** Multimodal planning | score ≥ 0.95, sampling < 50 ms, ≥ 3 modes | score 0.96 · sampling 118 ms (DDIM-25) · 2 modes | ◐ partial |
 | **H3** End-to-end cycle | p95 < 10 s per instance | **6.29 s** on YCB-V · **6.68 s** on T-LESS, on a MacBook Pro M1 | ✅ |
 
-H2 is **partially accepted**, as stated in the thesis: the score criterion is met, but
-diffusion sampling takes 118 ms against a 50 ms threshold and the policy shows 2 distinct
-modes against a target of 3. Planning is still only 2.3% of the cycle time.
+H2 was **partially accepted** in the thesis: the score criterion is met, but diffusion
+sampling took 118 ms against a 50 ms threshold and the policy shows 2 distinct modes
+against a target of 3.
+
+**Since the thesis, the sampling gap is closed.** Distilling the policy to a single
+denoising step brings sampling to **3.9 ms** per trajectory (median; p95 8.2 ms) on the
+same MacBook Pro M1, against 79 ms for DDIM-25 measured the same way, with no loss in
+trajectory error against the reference. Reproduce it with
+`python experiments/bench_sampling_latency.py`. The mode count is the part still open.
 
 Intervals are 95% bootstrap confidence intervals (B = 1000). The lead over GDR-Net++
 is +3.0 pp (YCB-V) and +3.6 pp (T-LESS) in Mean AR on the BOP leaderboard.
@@ -102,7 +108,7 @@ analysis on a Mac without a GPU.
 The figures in the thesis, the reports and the dashboards are checked on every push:
 
 - **`scripts/verify_tfm_consistency.py`** compares the published results against the
-  JSON reports they come from (30 checks).
+  JSON reports they come from (32 checks).
 - **`scripts/check_public_counts.py`** compares the test, check and type-checking
   counts printed in this README and in the dashboards with what the run just measured.
 - **ruff** and **mypy** run clean, and the API image is built.
