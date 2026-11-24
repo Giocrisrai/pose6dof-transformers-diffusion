@@ -10,7 +10,7 @@
 [![Live dashboard](https://img.shields.io/badge/dashboard-live-0098cd?logo=githubpages&logoColor=white)](https://giocrisrai.github.io/pose6dof-transformers-diffusion/)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-317%20passing-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/tests-327%20passing-brightgreen)](tests/)
 [![PyPI version](https://img.shields.io/pypi/v/bop-bootstrap-ci?label=PyPI%20bop-bootstrap-ci&color=blue)](https://pypi.org/project/bop-bootstrap-ci/)
 
 A perception and planning pipeline for industrial bin picking. A robot has to pick
@@ -40,7 +40,19 @@ against a target of 3.
 denoising step brings sampling to **3.9 ms** per trajectory (median; p95 8.2 ms) on the
 same MacBook Pro M1, against 79 ms for DDIM-25 measured the same way, with no loss in
 trajectory error against the reference. Reproduce it with
-`python experiments/bench_sampling_latency.py`. The mode count is the part still open.
+`python experiments/bench_sampling_latency.py`. Multimodality was then re-examined
+per pose, and that changes the picture:
+
+- The thesis counted 2 modes by pooling five scenes. Measured per pose, with each model's
+  training-time conditioning and against a reference that has no modes by construction,
+  **no model shows alternative grasp strategies**
+  ([write-up](docs/exploraciones/14_multimodality_per_pose.md), in Spanish).
+- That is what deterministic demonstrations should give: one correct trajectory per pose.
+  Studying real multimodality needs demonstrations that contain alternatives, which is
+  part of the real-robot work ahead.
+- What does differ between models is accuracy. The distilled sampler reaches the grasp
+  point within **1.2 cm**, against 3.0 cm for DDIM-25 and 33.8 cm for the original
+  thesis model.
 
 Intervals are 95% bootstrap confidence intervals (B = 1000). The lead over GDR-Net++
 is +3.0 pp (YCB-V) and +3.6 pp (T-LESS) in Mean AR on the BOP leaderboard.
@@ -61,7 +73,7 @@ cd pose6dof-transformers-diffusion
 
 uv sync --all-extras          # or: pip install -e ".[dev,colab]"
 
-pytest tests/ packages/bop_bootstrap_ci/tests/ -q  # 317 passing (no GPU, no simulator)
+pytest tests/ packages/bop_bootstrap_ci/tests/ -q  # 327 passing (no GPU, no simulator)
 ```
 
 The test suite needs neither a GPU nor the simulator. Tests marked `integration`
@@ -108,7 +120,7 @@ analysis on a Mac without a GPU.
 The figures in the thesis, the reports and the dashboards are checked on every push:
 
 - **`scripts/verify_tfm_consistency.py`** compares the published results against the
-  JSON reports they come from (32 checks).
+  JSON reports they come from (35 checks).
 - **`scripts/check_public_counts.py`** compares the test, check and type-checking
   counts printed in this README and in the dashboards with what the run just measured.
 - **ruff** and **mypy** run clean, and the API image is built.

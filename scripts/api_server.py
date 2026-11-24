@@ -365,9 +365,16 @@ def plan_grasp(req: GraspRequest):
     scheduler = cached["scheduler"]
     device = cached["device"]
 
-    cond_vec = np.zeros(64, dtype=np.float32)
-    cond_vec[:3] = req.object_position
-    cond_vec[3:6] = req.object_rotation_axis_angle
+    # Cada checkpoint espera la condición con la disposición de su entrenamiento.
+    from src.planning.conditioning import LAYOUT_BY_MODEL, cond_pos3, cond_pose12
+    from src.utils.lie_groups import so3_exp
+
+    posicion = np.asarray(req.object_position, dtype=np.float64)
+    eje_angulo = np.asarray(req.object_rotation_axis_angle, dtype=np.float64)
+    if LAYOUT_BY_MODEL.get(req.model) == "pose12":
+        cond_vec = cond_pose12(so3_exp(eje_angulo), posicion)
+    else:
+        cond_vec = cond_pos3(posicion, extra=eje_angulo)
     cond = torch.tensor(cond_vec, device=device).unsqueeze(0)
 
     t0 = time.time()
@@ -425,16 +432,18 @@ def e2e_pipeline(req: E2ERequest):
 
     NOMINAL_SIM_MS = 906  # 50 steps × 18 ms del smoke test
 
+    from src.planning.conditioning import condition_for_model
+
     cycle_times = []
     for pred in preds:
         fp_ms = pred["time_s"] * 1000.0
         # Sampling Diffusion
         R = np.array(pred["R_pred"])
         t = np.array(pred["t_pred"])
-        cond_vec = np.zeros(64, dtype=np.float32)
-        cond_vec[:9] = R.flatten()
-        cond_vec[9:12] = t.flatten() if np.linalg.norm(t) > 5 else t.flatten() * 1000
-        cond = torch.tensor(cond_vec, device=device).unsqueeze(0)
+        # El checkpoint FP guarda t en metros o en milímetros según el dataset;
+        # la condición va siempre en metros y con la disposición de entrenamiento.
+        t_m = t.flatten() / 1000.0 if np.linalg.norm(t) > 5 else t.flatten()
+        cond = torch.tensor(condition_for_model(model_name, R, t_m), device=device).unsqueeze(0)
         t0 = time.time()
         _ = ddim_sample(model, scheduler, cond, device, 25)
         if device == "mps":

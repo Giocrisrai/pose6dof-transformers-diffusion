@@ -126,6 +126,21 @@ check("H2.latencia del destilado publicada = latency.json",
           for a in ("README.md", "README.es.md", "docs/dashboard_executive.html",
                     "docs/dashboard_ejecutivo.html")),
       f"mediana={rapido['median_ms']:.1f} ms")
+# Multimodalidad por pose (exp28): cifra publicada = resultado versionado, y el
+# destilado es al menos tan preciso como DDIM-25.
+mm = json.loads((RES / "exp28_multimodality/exp28_results.json").read_text())["models"]
+err = {k: v["summary"]["grasp_point_error_cm_median"] for k, v in mm.items()}
+check("exp28.error de agarre publicado = exp28_results.json",
+      all(f"{err['ultra_fast']:.1f} cm" in (REPO / a).read_text()
+          for a in ("README.md", "README.es.md", "docs/dashboard_executive.html",
+                    "docs/dashboard_ejecutivo.html",
+                    "docs/exploraciones/14_multimodality_per_pose.md")),
+      f"destilado={err['ultra_fast']:.1f} cm")
+check("exp28.destilado no pierde precisión frente a DDIM-25",
+      err["ultra_fast"] <= err["ultra"], f"{err['ultra_fast']:.1f} <= {err['ultra']:.1f} cm")
+check("exp28.destilado sin modos por encima del azar",
+      mm["ultra_fast"]["summary"]["poses_with_modes"]
+      <= 2 * mm["ultra_fast"]["summary"]["poses_with_modes_expected_by_chance"])
 check("H2.veredicto publicado = parcial mientras no se cumplan los umbrales",
       publicado_parcial == h2_parcial, f"DDIM-25 y modos={n_modes}")
 check("H2.diffusion > heurística en diversidad", diff_std > heur_std * 1e6,

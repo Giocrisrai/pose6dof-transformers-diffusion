@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """Analisis de diversidad multimodal de Diffusion Policy vs heuristico determinista.
 
+NOTA (noviembre 2026). Este script respalda la cifra K = 2 de la memoria y se
+conserva tal cual. Tiene dos limitaciones conocidas: arma la condicion como
+[R.flatten(), t], que no es la de entrenamiento del modelo, y busca los modos
+agrupando escenas distintas. El analisis corregido, por pose, esta en
+experiments/exp28_multimodality_per_pose.py (docs/exploraciones/14_*).
+
 Objetivo: cuantificar la capacidad multimodal del modelo entrenado mediante
 K-means sobre N trayectorias muestreadas para una misma pose, y compararlo
 con un planificador heuristico que produce una unica solucion.

@@ -191,8 +191,8 @@
       </div>
       <div class="kpi">
         <div class="k-label">Garantía en CI</div>
-        <div class="k-val">317<small> tests</small></div>
-        <div class="k-meta">32 checks de consistencia</div>
+        <div class="k-val">327<small> tests</small></div>
+        <div class="k-meta">35 checks de consistencia</div>
       </div>
     </div>
   </div>
@@ -247,7 +247,8 @@
     <p class="lead">Diffusion Policy genera trayectorias de agarre diversas — a diferencia de la heurística, determinista —
       y cumple el criterio de score. Los dos umbrales estrictos no se alcanzan: el muestreo tarda 118 ms
       (DDIM-25) frente al umbral de 50 ms, y se detectan 2 modos frente al objetivo de 3. Tras la tesis, un
-      muestreador destilado de un paso cierra la brecha de latencia; el número de modos sigue abierto.</p>
+      muestreador destilado de un paso cierra la brecha de latencia. Medido por pose, ningún modelo
+      muestra estrategias de agarre alternativas, como cabe esperar de demostraciones deterministas.</p>
     <div class="cols">
       <div class="card">
         <h3>Diversidad de trayectorias (jerk RMS · desviación estándar)</h3>
@@ -266,6 +267,7 @@
         <div class="mrow"><span class="m-k">Score medio · criterio ≥ 0.95</span><span class="m-v pos">0.96</span></div>
         <div class="mrow"><span class="m-k">Latencia muestreo DDIM-25 · criterio &lt; 50 ms</span><span class="m-v neg">118 ms</span></div>
         <div class="mrow"><span class="m-k">Modos detectados (silhouette) · criterio ≥ 3</span><span class="m-v neg">2</span></div>
+        <div class="mrow"><span class="m-k">Tras la tesis · error en el punto de agarre, destilado</span><span class="m-v pos">1.2 cm</span></div>
         <div class="mrow"><span class="m-k">Tras la tesis · muestreador destilado de 1 paso</span><span class="m-v pos">3.9 ms</span></div>
       </div>
     </div>
@@ -382,11 +384,11 @@
     <p class="lead">Toda la evidencia está blindada: cualquier cambio que descuadre un número entre la tesis, los reports
       y el dashboard —o que rompa la física— hace fallar la suite.</p>
     <div class="guard">
-      <div class="g"><div class="g-t">Consistencia numérica</div><div class="g-v"><span class="mono">32/32</span> checks</div></div>
+      <div class="g"><div class="g-t">Consistencia numérica</div><div class="g-v"><span class="mono">35/35</span> checks</div></div>
       <div class="g"><div class="g-t">Física reproducible</div><div class="g-v"><span class="mono">z=7.0 mm</span> repetible</div></div>
-      <div class="g"><div class="g-t">Suite de tests</div><div class="g-v"><span class="mono">317</span> passed</div></div>
+      <div class="g"><div class="g-t">Suite de tests</div><div class="g-v"><span class="mono">327</span> passed</div></div>
       <div class="g"><div class="g-t">Linter (ruff)</div><div class="g-v"><span class="mono">0</span> errores</div></div>
-      <div class="g"><div class="g-t">Tipos (mypy)</div><div class="g-v"><span class="mono">0</span> errores · 72 files</div></div>
+      <div class="g"><div class="g-t">Tipos (mypy)</div><div class="g-v"><span class="mono">0</span> errores · 73 files</div></div>
       <div class="g"><div class="g-t">Reproducibilidad</div><div class="g-v">CAD determinista</div></div>
     </div>
   </section>

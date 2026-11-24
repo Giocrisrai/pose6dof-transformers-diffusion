@@ -11,7 +11,7 @@
 [![Dashboard en vivo](https://img.shields.io/badge/dashboard-en%20vivo-0098cd?logo=githubpages&logoColor=white)](https://giocrisrai.github.io/pose6dof-transformers-diffusion/)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-317%20passing-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/tests-327%20passing-brightgreen)](tests/)
 [![Bootstrap CI](https://img.shields.io/badge/bootstrap-CI%2095%25-purple)](experiments/results/local_metrics_with_bootstrap.json)
 [![Exploraciones post-TFM](https://img.shields.io/badge/exploraciones-13%2F13%20%E2%9C%85-success)](docs/PLAN_EXPLORACIONES_POST_TFM.md)
 [![PyPI version](https://img.shields.io/pypi/v/bop-bootstrap-ci?label=PyPI%20bop-bootstrap-ci&color=blue)](https://pypi.org/project/bop-bootstrap-ci/)
@@ -35,7 +35,7 @@
 
 **H2 quedó parcialmente aceptada en la memoria**: se cumple el score, pero el muestreo de Diffusion Policy tardaba 118 ms frente al umbral de 50 ms y se detectan 2 modos frente al objetivo de 3.
 
-**Después de la tesis, la brecha de muestreo está cerrada.** Destilar la política a un solo paso de denoising deja el muestreo en **3.9 ms** por trayectoria (mediana; p95 8.2 ms) en el mismo MacBook Pro M1, frente a 79 ms de DDIM-25 medido igual, sin pérdida de error de trayectoria respecto a la referencia. Se reproduce con `python experiments/bench_sampling_latency.py`. El número de modos es lo que sigue abierto.
+**Después de la tesis, la brecha de muestreo está cerrada.** Destilar la política a un solo paso de denoising deja el muestreo en **3.9 ms** por trayectoria (mediana; p95 8.2 ms) en el mismo MacBook Pro M1, frente a 79 ms de DDIM-25 medido igual, sin pérdida de error de trayectoria respecto a la referencia. Se reproduce con `python experiments/bench_sampling_latency.py`. **La multimodalidad se volvió a medir, esta vez por pose.** La memoria contaba 2 modos agrupando cinco escenas. Medido por pose, con la condición de entrenamiento de cada modelo y contra una referencia sin modos por construcción, **ningún modelo muestra estrategias de agarre alternativas** ([exploración 14](docs/exploraciones/14_multimodality_per_pose.md)). Es lo esperable con demostraciones deterministas: hay una sola trayectoria correcta por pose. Lo que sí cambia entre modelos es la precisión: el muestreador destilado llega al punto de agarre con **1.2 cm** de error, frente a 3.0 cm de DDIM-25 y 33.8 cm del modelo original de la memoria. Estudiar multimodalidad real exige demostraciones con alternativas, que es parte del trabajo con robot real.
 
 **Robustez verificada**: T-LESS aguanta 70 % oclusión con solo −1 pp AUC ADD-S. **PBVS** converge 100 % en 50 muestras. **Cuello de botella identificado**: FoundationPose 80 % del ciclo.
 
@@ -277,7 +277,7 @@ pose6dof-transformers-diffusion/
 │   └── 07_pipeline_tutorial_completo.ipynb  # Tutorial E2E
 ├── tests/                   # pytest (TFM + exploraciones)
 ├── packages/                # Paquetes PyPI (bop-bootstrap-ci 0.1.0)
-├── docs/exploraciones/      # 13 documentos de cierre de exploraciones
+├── docs/exploraciones/      # 14 documentos de cierre de exploraciones
 ├── docker/                  # ROS 2 Humble + MoveIt 2
 │   ├── Dockerfile
 │   └── docker-compose.yml
@@ -304,7 +304,7 @@ uv sync
 pip install -e ".[dev,colab]"
 
 # Tests
-pytest tests/ packages/bop_bootstrap_ci/tests/ -q  # 317 passing (sin GPU ni simulador)
+pytest tests/ packages/bop_bootstrap_ci/tests/ -q  # 327 passing (sin GPU ni simulador)
 
 # Descargar datasets BOP (requiere ~30 GB)
 bash scripts/download_datasets.sh
