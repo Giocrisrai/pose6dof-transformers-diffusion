@@ -146,8 +146,9 @@ Grounder(method="attribute").ground(instr, objs).target_obj_id   # 0, the left o
 ```
 
 **Thirteen follow-up explorations**, each with a numeric success criterion, including
-one-step distillation of the diffusion sampler, an open-licence perception pipeline
-(Apache-2.0, about 3 pp of AUC below FoundationPose) and CLIP-based visual grounding.
+one-step distillation of the diffusion sampler, a study of open-licence replacements for FoundationPose
+(a simulated estimate from published error levels puts an Apache-2.0 estimator about 3 pp of
+AUC lower; none has been run end to end yet) and CLIP-based visual grounding.
 Each has its own write-up in [`docs/exploraciones/`](docs/exploraciones/) (in Spanish).
 
 The Spanish README has the full tables for all of these: [README.es.md](README.es.md).
