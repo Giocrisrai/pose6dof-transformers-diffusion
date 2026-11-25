@@ -126,6 +126,16 @@ check("H2.latencia del destilado publicada = latency.json",
           for a in ("README.md", "README.es.md", "docs/dashboard_executive.html",
                     "docs/dashboard_ejecutivo.html")),
       f"mediana={rapido['median_ms']:.1f} ms")
+# Ciclo en vivo con el destilado: la planificación cumple el umbral y H3 se mantiene.
+e2e_rapido = json.loads((RES / "pipeline_e2e/e2e_live_ultra_fast_metrics.json").read_text())["datasets"]
+check("E2E destilado.planificación p95 < 50 ms y H3 se mantiene",
+      all(d["diff_ms"]["p95"] < lat["h2_threshold_ms"] and d["h3_acceptance"]["passed"]
+          for d in e2e_rapido.values()),
+      ", ".join(f"{k}: {d['diff_ms']['p95']:.1f} ms" for k, d in e2e_rapido.items()))
+check("E2E destilado.mediana de planificación publicada = JSON",
+      all(f"{d['diff_ms']['median']:.1f} ms" in (REPO / a).read_text()
+          for d in e2e_rapido.values() for a in ("README.md", "README.es.md")),
+      ", ".join(f"{d['diff_ms']['median']:.1f} ms" for d in e2e_rapido.values()))
 # Multimodalidad por pose (exp28): cifra publicada = resultado versionado, y el
 # destilado es al menos tan preciso como DDIM-25.
 mm = json.loads((RES / "exp28_multimodality/exp28_results.json").read_text())["models"]

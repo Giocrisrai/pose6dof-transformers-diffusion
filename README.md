@@ -40,7 +40,11 @@ against a target of 3.
 denoising step brings sampling to **3.9 ms** per trajectory (median; p95 8.2 ms) on the
 same MacBook Pro M1, against 79 ms for DDIM-25 measured the same way, with no loss in
 trajectory error against the reference. Reproduce it with
-`python experiments/bench_sampling_latency.py`. Multimodality was then re-examined
+`python experiments/bench_sampling_latency.py`. In the live cycle against CoppeliaSim
+(30 instances per dataset) the planning stage drops to a median of 7.6 ms on YCB-V and
+6.3 ms on T-LESS, both under the 50 ms threshold at p95. The full cycle stays at about
+6.6 s at p95, because recorded perception time (about 4.1 s) dominates it
+(`python experiments/run_e2e_live.py --model ultra_fast`). Multimodality was then re-examined
 per pose, and that changes the picture:
 
 - The thesis counted 2 modes by pooling five scenes. Measured per pose, with each model's
@@ -120,7 +124,7 @@ analysis on a Mac without a GPU.
 The figures in the thesis, the reports and the dashboards are checked on every push:
 
 - **`scripts/verify_tfm_consistency.py`** compares the published results against the
-  JSON reports they come from (35 checks).
+  JSON reports they come from (37 checks).
 - **`scripts/check_public_counts.py`** compares the test, check and type-checking
   counts printed in this README and in the dashboards with what the run just measured.
 - **ruff** and **mypy** run clean, and the API image is built.

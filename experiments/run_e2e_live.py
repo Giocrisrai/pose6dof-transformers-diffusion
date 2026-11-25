@@ -7,6 +7,14 @@ Mejoras vs run_pipeline_e2e.py:
 - Reporta H3 con datos reales
 
 Salida: experiments/results/pipeline_e2e/e2e_live_metrics.json
+
+Con `--model ultra` o `--model ultra_fast` se usa el checkpoint indicado, con la
+condición de su entrenamiento (src/planning/conditioning.py) y su muestreador
+(DDIM o una sola evaluación si es destilado). La salida va entonces a
+e2e_live_<model>_metrics.json y no toca el resultado de la memoria.
+
+El ciclo mide percepción (tiempo registrado de FoundationPose) + muestreo +
+`--sim-steps` pasos reales del simulador; no ejecuta la trayectoria en el robot.
 """
 from __future__ import annotations
 
@@ -70,6 +78,22 @@ def fast_diffusion_sample(planner, scheduler, cond, device, n_ddim_steps=25):
     return x.cpu().numpy()[0]
 
 
+# Checkpoints posteriores a la memoria: (pesos, hidden_dim, destilado)
+MODELOS_POSTERIORES = {
+    "ultra": ("diffusion_policy_ultra.pth", 256, False),
+    "ultra_fast": ("diffusion_policy_ultra_fast.pth", 256, True),
+}
+
+
+def muestreo_destilado(planner, cond, device):
+    """Una sola evaluación del modelo destilado: ruido -> trayectoria."""
+    import torch
+    with torch.no_grad():
+        x_ruido = torch.randn(1, 16, 7, device=device)
+        t_cero = torch.zeros(1, dtype=torch.long, device=device)
+        return planner(x_ruido, t_cero, cond).cpu().numpy()[0]
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--n-instances", type=int, default=30)
@@ -77,6 +101,10 @@ def main():
     parser.add_argument("--ddim-steps", type=int, default=25)
     parser.add_argument("--sim-steps", type=int, default=50)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument(
+        "--model", default="grasp", choices=["grasp", *MODELOS_POSTERIORES],
+        help="grasp reproduce la corrida de la memoria; ultra y ultra_fast son posteriores",
+    )
     args = parser.parse_args()
 
     print(f"[e2e-live] n_instances={args.n_instances} ddim_steps={args.ddim_steps} sim_steps={args.sim_steps}")
@@ -117,8 +145,10 @@ def main():
 
     from src.planning.diffusion_policy import ConditionalUNet1D, SimpleDDPMScheduler
     device = "mps" if torch.backends.mps.is_available() else "cpu"
-    planner = ConditionalUNet1D(action_dim=7, horizon=16, cond_dim=64, hidden_dim=128).to(device)
-    weights_path = REPO / "data/models/diffusion_policy_grasp.pth"
+    posterior = MODELOS_POSTERIORES.get(args.model)
+    pesos, hidden_dim, destilado = posterior or ("diffusion_policy_grasp.pth", 128, False)
+    planner = ConditionalUNet1D(action_dim=7, horizon=16, cond_dim=64, hidden_dim=hidden_dim).to(device)
+    weights_path = REPO / "data/models" / pesos
     if weights_path.exists():
         ckpt = torch.load(weights_path, map_location=device, weights_only=True)
         if isinstance(ckpt, dict):
@@ -163,13 +193,25 @@ def main():
             # Diffusion sampling
             R = np.array(pred["R_pred"])
             t = np.array(pred["t_pred"])
-            cond_vec = np.zeros(64, dtype=np.float32)
-            flat = np.concatenate([R.flatten(), t.flatten()])
-            cond_vec[:len(flat)] = flat
+            if posterior:
+                from src.planning.conditioning import condition_for_model
+                # El checkpoint FP guarda t en mm o en m según el dataset; la condición va en metros.
+                t_m = t.flatten() / 1000.0 if np.linalg.norm(t) > 5 else t.flatten()
+                cond_vec = condition_for_model(args.model, R, t_m)
+            else:
+                # Condición de la corrida de la memoria (se conserva para reproducirla).
+                cond_vec = np.zeros(64, dtype=np.float32)
+                flat = np.concatenate([R.flatten(), t.flatten()])
+                cond_vec[:len(flat)] = flat
             cond = torch.tensor(cond_vec, device=device).unsqueeze(0)
 
             t0 = time.time()
-            fast_diffusion_sample(planner, scheduler, cond, device, args.ddim_steps)
+            if destilado:
+                muestreo_destilado(planner, cond, device)
+            else:
+                fast_diffusion_sample(planner, scheduler, cond, device, args.ddim_steps)
+            if device == "mps":
+                torch.mps.synchronize()
             diff_ms = (time.time() - t0) * 1000.0
 
             # Sim steps reales
@@ -226,7 +268,8 @@ def main():
     except Exception:
         pass
 
-    out = OUTPUT / "e2e_live_metrics.json"
+    nombre = f"e2e_live_{args.model}_metrics.json" if posterior else "e2e_live_metrics.json"
+    out = OUTPUT / nombre
     with open(out, "w") as f:
         json.dump(results, f, indent=2)
     print(f"\n[OK] {out}")
