@@ -15,6 +15,8 @@ References:
 """
 
 import logging
+import shutil
+import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -330,7 +332,8 @@ class CoppeliaSimBridge:
         """Carga una escena .ttt.
 
         Args:
-            scene_path: Ruta al archivo .ttt (str o Path).
+            scene_path: Ruta al archivo .ttt (str o Path). Se carga una copia
+                temporal, así el simulador no puede sobrescribir el original.
             close_current: Si True (default), cierra la escena actual antes
                 de cargar la nueva.
 
@@ -356,7 +359,13 @@ class CoppeliaSimBridge:
                         break
                     time.sleep(0.05)
             self._sim.closeScene()
-        self._sim.loadScene(str(scene_path))
+        # El simulador abre una COPIA temporal, nunca el archivo original: al
+        # salir (o con Guardar en la GUI) CoppeliaSim reescribe la escena que
+        # tiene abierta, con el brazo y las piezas como hayan quedado. Así se
+        # modificó bin_base.ttt en junio de 2026 (exploración 15).
+        copia = Path(tempfile.mkdtemp(prefix="escena_")) / scene_path.name
+        shutil.copy2(scene_path, copia)
+        self._sim.loadScene(str(copia))
         # Re-inicializar handles porque la escena cambió
         self._init_handles()
         logger.info(f"Escena cargada: {scene_path.name}")

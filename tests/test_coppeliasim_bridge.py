@@ -10,15 +10,24 @@ class TestBridgeScene:
     """Tests de gestión de escena."""
 
     def test_load_scene_file_exists(self, mock_remote_api, tmp_path):
-        """load_scene llama sim.loadScene con el path string si el archivo existe."""
+        """load_scene carga una copia de la escena, nunca el archivo original.
+
+        Si el simulador abriera el original, lo reescribiría al salir.
+        """
+        from pathlib import Path
+
         scene = tmp_path / "fake.ttt"
-        scene.write_bytes(b"\x00")  # archivo dummy
+        scene.write_bytes(b"\x00contenido")  # archivo dummy
 
         bridge = CoppeliaSimBridge()
         bridge.connect(retries=1)
         bridge.load_scene(scene)
 
-        bridge._sim.loadScene.assert_called_once_with(str(scene))
+        bridge._sim.loadScene.assert_called_once()
+        cargada = Path(bridge._sim.loadScene.call_args[0][0])
+        assert cargada.resolve() != scene.resolve()
+        assert cargada.name == scene.name
+        assert cargada.read_bytes() == scene.read_bytes()
 
     def test_load_scene_file_missing_raises(self, mock_remote_api):
         """load_scene levanta FileNotFoundError si el path no existe."""

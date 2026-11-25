@@ -165,6 +165,22 @@ check("robustez.randomización mejora precisión (v8<v7a)",
 check("robustez.sin errores en todas las condiciones",
       all(c["resumen"]["errores"] == 0 for c in rob["condiciones"].values()))
 
+# Depósito (exploración 15): cifras publicadas = resultados versionados
+bdj = json.loads((RES / "pick_with_diffusion/eval_v9_bandeja.json").read_text())["condiciones"]
+pp_antes = {c: clt["condiciones"][c]["resumen"]["pick_place_pct"] for c in bdj}
+pp_despues = {c: bdj[c]["resumen"]["pick_place_pct"] for c in bdj}
+check("depósito.bandeja y soltado suave mejoran el pick-and-place sin perder agarre",
+      all(pp_despues[c] > pp_antes[c] and bdj[c]["resumen"]["grasp_pct"] == 100.0 for c in bdj),
+      ", ".join(f"{pp_antes[c]:.0f}→{pp_despues[c]:.0f} %" for c in bdj))
+_con = "v9_clutter__con_distractores"
+_sin = "v9_clutter__sin_distractores"
+check("depósito.cifras publicadas = eval_v9_bandeja.json",
+      all(f"{pp_despues[c]:.0f}%" in (REPO / "README.md").read_text() for c in (_sin, _con))
+      and f">{pp_despues[_con]:.0f}%<" in (REPO / "docs/dashboard_executive.html").read_text()
+      and f">{pp_despues[_con]:.0f} %<" in (REPO / "docs/dashboard_ejecutivo.html").read_text()
+      and f">{pp_antes[_con]:.0f}%<" in (REPO / "docs/dashboard_executive.html").read_text(),
+      f"{pp_despues[_sin]:.0f} % / {pp_despues[_con]:.0f} %")
+
 # Clutter (Iter9): grasp con distractores mejora sobre v8
 g_v9 = clt["condiciones"]["v9_clutter__con_distractores"]["resumen"]["grasp_pct"]
 g_v8 = clt["condiciones"]["v8_randomized__con_distractores_seguro"]["resumen"]["grasp_pct"]

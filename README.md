@@ -10,7 +10,7 @@
 [![Live dashboard](https://img.shields.io/badge/dashboard-live-0098cd?logo=githubpages&logoColor=white)](https://giocrisrai.github.io/pose6dof-transformers-diffusion/)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-332%20passing-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/tests-337%20passing-brightgreen)](tests/)
 [![PyPI version](https://img.shields.io/pypi/v/bop-bootstrap-ci?label=PyPI%20bop-bootstrap-ci&color=blue)](https://pypi.org/project/bop-bootstrap-ci/)
 
 A perception and planning pipeline for industrial bin picking. A robot has to pick
@@ -77,7 +77,7 @@ cd pose6dof-transformers-diffusion
 
 uv sync --all-extras          # or: pip install -e ".[dev,colab]"
 
-pytest tests/ packages/bop_bootstrap_ci/tests/ -q  # 332 passing (no GPU, no simulator)
+pytest tests/ packages/bop_bootstrap_ci/tests/ -q  # 337 passing (no GPU, no simulator)
 ```
 
 The test suite needs neither a GPU nor the simulator. Tests marked `integration`
@@ -124,7 +124,7 @@ analysis on a Mac without a GPU.
 The figures in the thesis, the reports and the dashboards are checked on every push:
 
 - **`scripts/verify_tfm_consistency.py`** compares the published results against the
-  JSON reports they come from (37 checks).
+  JSON reports they come from (39 checks).
 - **`scripts/check_public_counts.py`** compares the test, check and type-checking
   counts printed in this README and in the dashboards with what the run just measured.
 - **ruff** and **mypy** run clean, and the API image is built.
@@ -146,6 +146,17 @@ pick-and-place success (Iter 5). Reinforcement-learning fine-tuning then *broke*
 grasp (28%), a negative result that is reported as such; a curriculum, best-of-N
 trajectory selection and an inverse-kinematics fix brought it to **84%** (Iter 7c),
 with IK convergence at 100%.
+
+**Why deposit failed with random shapes, fixed.** With randomized appearance the grasp
+succeeded but full pick-and-place stayed at 36–40%. Measuring where the part is at the
+moment the gripper opens showed the policy was not at fault: it releases the part inside
+the deposit zone, and spheres and cylinders then got ejected by the closing fingers or
+rolled away. Holding the part still while the gripper opens and depositing into a tray
+with walls brings pick-and-place to **92%** without distractors and **88%** with them
+(same seeds, 25 picks each, policy unchanged). The same work found that the base scene
+had been re-saved with the arm in a different pose, which silently cut the grasp rate
+from 100% to about 58%; the scene is restored and now guarded by a test
+([write-up](docs/exploraciones/15_deposit_and_scene.md), in Spanish).
 
 **Language-guided picking.** The pipeline can choose the object from an instruction
 such as "give me the red cube on the left" instead of an index. The default parser

@@ -41,6 +41,7 @@ from experiments.eval_diffusion_iter8_sim import (
 from experiments.run_pick_with_diffusion import pick_with_dp
 from src.planning.visual_encoder import ResNet18RGBDEncoder
 from src.simulation.coppeliasim_bridge import CoppeliaSimBridge
+from src.simulation.deposit_tray import crear_bandeja_deposito
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger("eval_v9")
@@ -99,8 +100,12 @@ def _crear_distractor(sim, forma: str, color: str, xy: tuple) -> int:
     return h
 
 
+DEPOSITO_XY = (-0.30, -0.30)   # objetivo de depósito de pick_with_dp
+
+
 def _eval_condicion(planner, encoder, n: int, con_distractores: bool,
-                    seguro: bool = False) -> list[dict]:
+                    seguro: bool = False, release_hold_steps: int = 0,
+                    bandeja: bool = False) -> list[dict]:
     rng = np.random.default_rng(EVAL_SEED)
     rng_app = np.random.default_rng(77)           # misma secuencia que Iter 8
     rng_dist = np.random.default_rng(EVAL_SEED + 123)
@@ -119,6 +124,8 @@ def _eval_condicion(planner, encoder, n: int, con_distractores: bool,
                 bridge.load_scene(SCENE)
                 park_piezas_fijas(bridge.sim)
                 _preparar_pieza(bridge.sim, forma, color)
+                if bandeja:
+                    crear_bandeja_deposito(bridge.sim, DEPOSITO_XY)
                 handles = []
                 if con_distractores:
                     handles = [_crear_distractor(bridge.sim, fd, cd, xy)
@@ -127,7 +134,8 @@ def _eval_condicion(planner, encoder, n: int, con_distractores: bool,
                               if (con_distractores and seguro) else None)
                 r = pick_with_dp(planner, pose, bridge, frames_dir=None,
                                  visual_encoder=encoder, best_of_n=8,
-                                 obstacles=obstaculos, track_handles=handles)
+                                 obstacles=obstaculos, track_handles=handles,
+                                 release_hold_steps=release_hold_steps)
             # ¿el brazo empujó alguna pieza que no era el objetivo?
             despl = [float(np.hypot(p[0] - x, p[1] - y))
                      for p, (x, y) in zip(r["tracked_end"], pos_dist)]
@@ -141,6 +149,8 @@ def _eval_condicion(planner, encoder, n: int, con_distractores: bool,
                 "ik_converged": r["ik_converged"],
                 "grasp_plausible": r["grasp_plausible"],
                 "deposit_plausible": r["deposit_plausible"],
+                "release_error_m": r.get("release_error_m"),
+                "released_in_zone": r.get("released_in_zone"),
                 "desplazamiento_distractores_m": [round(d, 4) for d in despl],
                 "n_candidates_unsafe": r["n_candidates_unsafe"],
                 "clearance_m_selected": r["clearance_m_selected"],
@@ -162,6 +172,17 @@ def _resumen_v9(rs: list[dict]) -> dict:
     Los empujones cuentan cuánto se movió el distractor más desplazado en
     cada pick (las piezas fijas se estacionan fuera, no participan)."""
     res = _resumen(rs)
+    medidos = [r for r in rs if "error" not in r and r.get("released_in_zone") is not None]
+    if medidos:
+        # agarre + pieza soltada dentro de la zona de depósito
+        res["released_in_zone_pct"] = round(
+            100 * float(np.mean([r["released_in_zone"] for r in medidos])), 1)
+        for forma in FORMAS:
+            de_forma = [r for r in medidos if r["forma"] == forma]
+            if de_forma:
+                res[f"n_{forma}"] = len(de_forma)
+                res[f"deposit_pct_{forma}"] = round(
+                    100 * float(np.mean([r["deposit_plausible"] for r in de_forma])), 1)
     ok = [r for r in rs if "error" not in r and r.get("distractores")]
     if ok:
         maxd = [max(r["desplazamiento_distractores_m"]) for r in ok
@@ -187,6 +208,12 @@ def main() -> int:
     parser.add_argument("--condiciones", nargs="+",
                         default=["sin_distractores", "con_distractores",
                                  "con_distractores_seguro"])
+    parser.add_argument("--out", default="eval_v9_clutter.json",
+                        help="archivo de salida dentro de results/pick_with_diffusion")
+    parser.add_argument("--release-hold-steps", type=int, default=0,
+                        help="pasos con la pieza quieta tras abrir la pinza (0 = memoria)")
+    parser.add_argument("--bandeja", action="store_true",
+                        help="añade una bandeja de depósito con paredes")
     args = parser.parse_args()
 
     torch.manual_seed(args.torch_seed)
@@ -206,12 +233,15 @@ def main() -> int:
         "v9_clutter": (REPO / "data/models/diffusion_policy_v9_clutter.pth",
                        "visual_encoder_iter9clut"),
     }
-    out_path = OUT / "eval_v9_clutter.json"
+    out_path = OUT / args.out
     salida: dict = {"n": args.n, "torch_seed": args.torch_seed,
                     "n_distractores": N_DISTRACTORES, "condiciones": {}}
     if out_path.exists():
         salida = json.loads(out_path.read_text())
         salida["condiciones"] = salida.get("condiciones", {})
+    if args.release_hold_steps or args.bandeja:
+        salida["release_hold_steps"] = args.release_hold_steps
+        salida["bandeja"] = args.bandeja
     for nombre, (path, enc_nombre) in politicas.items():
         if nombre not in args.politicas:
             continue
@@ -227,7 +257,9 @@ def main() -> int:
                 continue
             logger.info(f"═══ {nombre} × {cond} (n={args.n}) ═══")
             torch.manual_seed(args.torch_seed)
-            rs = _eval_condicion(planner, encoder, args.n, con_d, seguro)
+            rs = _eval_condicion(planner, encoder, args.n, con_d, seguro,
+                                 release_hold_steps=args.release_hold_steps,
+                                 bandeja=args.bandeja)
             clave = f"{nombre}__{cond}"
             salida["condiciones"][clave] = {"resumen": _resumen_v9(rs), "resultados": rs}
             logger.info(f"  → {salida['condiciones'][clave]['resumen']}")

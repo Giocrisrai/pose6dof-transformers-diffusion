@@ -11,7 +11,7 @@
 [![Dashboard en vivo](https://img.shields.io/badge/dashboard-en%20vivo-0098cd?logo=githubpages&logoColor=white)](https://giocrisrai.github.io/pose6dof-transformers-diffusion/)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-332%20passing-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/tests-337%20passing-brightgreen)](tests/)
 [![Bootstrap CI](https://img.shields.io/badge/bootstrap-CI%2095%25-purple)](experiments/results/local_metrics_with_bootstrap.json)
 [![Exploraciones post-TFM](https://img.shields.io/badge/exploraciones-13%2F13%20%E2%9C%85-success)](docs/PLAN_EXPLORACIONES_POST_TFM.md)
 [![PyPI version](https://img.shields.io/pypi/v/bop-bootstrap-ci?label=PyPI%20bop-bootstrap-ci&color=blue)](https://pypi.org/project/bop-bootstrap-ci/)
@@ -153,6 +153,7 @@ Sobre el TFM entregado se planificaron y ejecutaron 13 exploraciones adicionales
 | 12 | **Robustez con domain randomization** | **12/12 condiciones** ≥ 75 % (oclusión 60 %, ruido σ=50, illum 2x) | [12](docs/exploraciones/12_robustness_domain_random.md) |
 | 13 | **Razonamiento espacial** | **98.4 %** sobre 13 templates ("leftmost", "closest", "topmost") | [13](docs/exploraciones/13_spatial_reasoning.md) |
 | 14 | **Multimodalidad por pose** | Sin estrategias alternativas (demostraciones deterministas); error en el punto de agarre **1,2 cm** con el destilado frente a 3,0 cm con DDIM-25 | [14](docs/exploraciones/14_multimodality_per_pose.md) |
+| 15 | **Depósito y escena** | Pick-and-place con apariencia aleatoria **36 → 92 %** (sin distractores) y **40 → 88 %** (con distractores) con soltado suave y bandeja, sin tocar la política; escena base restaurada y protegida por un test | [15](docs/exploraciones/15_deposit_and_scene.md) |
 
 Plan completo: [`docs/PLAN_EXPLORACIONES_POST_TFM.md`](docs/PLAN_EXPLORACIONES_POST_TFM.md). Extrapolación industrial: [`docs/EXTRAPOLACION_INDUSTRIAL.md`](docs/EXTRAPOLACION_INDUSTRIAL.md). Etapas físicas post-TFM: [`docs/ROADMAP_POSTTFM.md`](docs/ROADMAP_POSTTFM.md). Estado del arte mayo 2026: [`docs/INNOVACION_Y_ESTADO_DEL_ARTE.md`](docs/INNOVACION_Y_ESTADO_DEL_ARTE.md). Percepción intercambiable y comercializable (swap de FoundationPose por un estimador open-license): [`docs/PERCEPCION_INTERCAMBIABLE.md`](docs/PERCEPCION_INTERCAMBIABLE.md).
 
@@ -305,7 +306,7 @@ uv sync
 pip install -e ".[dev,colab]"
 
 # Tests
-pytest tests/ packages/bop_bootstrap_ci/tests/ -q  # 332 passing (sin GPU ni simulador)
+pytest tests/ packages/bop_bootstrap_ci/tests/ -q  # 337 passing (sin GPU ni simulador)
 
 # Descargar datasets BOP (requiere ~30 GB)
 bash scripts/download_datasets.sh

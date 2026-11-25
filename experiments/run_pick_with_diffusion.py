@@ -100,6 +100,7 @@ def pick_with_dp(
     obstacles=None,
     clearance_m: float = 0.07,
     track_handles=None,
+    release_hold_steps: int = 0,
 ):
     """Ejecuta un pick usando la DP entrenada.
 
@@ -111,6 +112,10 @@ def pick_with_dp(
         n_substeps / steps_per_substep: pasados a _move_tcp_via_ik.
         visual_encoder: opcional ResNet18RGBDEncoder. Si está presente,
             captura RGB-D y construye cond v3.
+        release_hold_steps: pasos que la pieza queda quieta en el aire tras abrir
+            la pinza, antes de activar su física. Con 0 (corridas de la memoria)
+            la pieza se vuelve dinámica todavía entre los dedos y la colisión
+            puede expulsarla; con unos pocos pasos los dedos ya se apartaron.
         obstacles: opcional, lista de posiciones [x,y,z] de piezas que NO son
             el objetivo (de la percepción). Con best_of_n > 1, los candidatos
             cuyo camino pasa a < clearance_m de un obstáculo se descartan
@@ -220,6 +225,7 @@ def pick_with_dp(
     ik_convergence = []
     prev_gripper = 1.0
     attached = False
+    posicion_al_soltar = None  # dónde estaba la pieza al abrir la pinza
     for i, wp in enumerate(waypoints):
         x, y, z, _, _, _, gripper = wp.tolist()
         gripper_open = gripper > 0.5
@@ -237,7 +243,10 @@ def pick_with_dp(
                 attached = True
             elif gripper_open and attached:
                 # Apertura del gripper → release (cubo cae)
+                posicion_al_soltar = sim.getObjectPosition(obj1, -1)
                 sim.setObjectParent(obj1, -1, True)
+                for _ in range(release_hold_steps):
+                    bridge.step()  # la pinza se abre con la pieza aún estática
                 sim.setObjectInt32Param(obj1, sim.shapeintparam_respondable, 1)
                 sim.setObjectInt32Param(obj1, sim.shapeintparam_static, 0)
                 try:
@@ -272,6 +281,13 @@ def pick_with_dp(
         (cube_end[1] - DEPOSIT_TARGET[1]) ** 2
     )
     deposit_plausible = deposit_error_m < DEPOSIT_THRESHOLD_M
+    # Error en el instante de soltar: mide si la política lleva la pieza a la zona
+    # de depósito, sin mezclar lo que ocurra después con la física de la pieza.
+    release_error_m = None
+    if posicion_al_soltar is not None:
+        release_error_m = math.hypot(posicion_al_soltar[0] - DEPOSIT_TARGET[0],
+                                     posicion_al_soltar[1] - DEPOSIT_TARGET[1])
+    released_in_zone = release_error_m is not None and release_error_m < DEPOSIT_THRESHOLD_M
 
     bridge.stop_simulation()
     try:
@@ -288,6 +304,8 @@ def pick_with_dp(
         "deposit_error_m": deposit_error_m,
         "grasp_plausible": grasp_plausible,
         "deposit_plausible": deposit_plausible,
+        "release_error_m": release_error_m,
+        "released_in_zone": released_in_zone,
         "n_waypoints": len(waypoints),
         "waypoints": waypoints.tolist(),
         "n_candidates_unsafe": n_unsafe,
