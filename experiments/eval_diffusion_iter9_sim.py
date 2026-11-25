@@ -212,9 +212,14 @@ def main() -> int:
                         help="archivo de salida dentro de results/pick_with_diffusion")
     parser.add_argument("--release-hold-steps", type=int, default=0,
                         help="pasos con la pieza quieta tras abrir la pinza (0 = memoria)")
+    parser.add_argument("--scene", type=Path, default=None,
+                        help="escena alternativa (por defecto data/scenes/bin_base.ttt)")
     parser.add_argument("--bandeja", action="store_true",
                         help="añade una bandeja de depósito con paredes")
     args = parser.parse_args()
+    if args.scene is not None:
+        global SCENE
+        SCENE = args.scene.resolve()
 
     torch.manual_seed(args.torch_seed)
     device = "mps" if torch.backends.mps.is_available() else "cpu"
@@ -232,6 +237,8 @@ def main() -> int:
                           "visual_encoder_iter8rand"),
         "v9_clutter": (REPO / "data/models/diffusion_policy_v9_clutter.pth",
                        "visual_encoder_iter9clut"),
+        # ablación: mismos datos que v9, condicionada solo con la pose (sin imagen)
+        "v9_pose_only": (REPO / "data/models/diffusion_policy_v9_pose_only.pth", None),
     }
     out_path = OUT / args.out
     salida: dict = {"n": args.n, "torch_seed": args.torch_seed,
@@ -248,7 +255,7 @@ def main() -> int:
         if not path.exists():
             logger.warning(f"política {nombre} no existe ({path}); se omite")
             continue
-        encoder = _cargar_encoder(enc_nombre)
+        encoder = _cargar_encoder(enc_nombre) if enc_nombre else None
         planner = _load_policy(path, device)
         for cond, con_d, seguro in (("sin_distractores", False, False),
                                     ("con_distractores", True, False),

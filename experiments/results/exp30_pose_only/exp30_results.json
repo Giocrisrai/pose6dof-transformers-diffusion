@@ -1,0 +1,10 @@
+{
+  "solo_pose_validacion": {
+    "n": 100,
+    "seed": 2026,
+    "mejor_de_n": 8,
+    "error_agarre_medio_cm": 1.77,
+    "agarres_bajo_5cm_pct": 100.0,
+    "error_deposito_mediano_cm": 0.51
+  }
+}

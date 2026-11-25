@@ -1,0 +1,7 @@
+{
+  "epochs": 300,
+  "final_train_loss": 0.01800851540215183,
+  "final_val_loss": 0.013971565690423762,
+  "min_val_loss": 0.013772511189537389,
+  "min_val_epoch": 259
+}
