@@ -38,7 +38,8 @@ en MSE-vs-GT-heuristic, manteniendo los criterios de jerk y latencia.
 |---|---|---|---|
 | MSE vs GT heurístico | 0.01290 | **0.01235** | ✅ **−4.3 %** |
 | Jerk RMS | 0.0636 | **0.0183** | ✅ **−71 %** |
-| Latencia por trayectoria | 48.5 ms | **0.09 ms** | ✅ **×517 speedup** |
+| Latencia por trayectoria (lote de 1000) | 48.5 ms | **0.09 ms** | ✅ **×517 speedup** |
+| Latencia de una petición individual (mediana, `latency.json`) | 78.7 ms | **3.9 ms** | ✅ ×20 |
 | Tamaño del modelo | 5.15 MB | 5.4 MB | ≈ igual |
 | NFE (inference) | 25 | **1** | ×25 menos |
 

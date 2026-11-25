@@ -11,7 +11,7 @@
 [![Dashboard en vivo](https://img.shields.io/badge/dashboard-en%20vivo-0098cd?logo=githubpages&logoColor=white)](https://giocrisrai.github.io/pose6dof-transformers-diffusion/)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-327%20passing-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/tests-332%20passing-brightgreen)](tests/)
 [![Bootstrap CI](https://img.shields.io/badge/bootstrap-CI%2095%25-purple)](experiments/results/local_metrics_with_bootstrap.json)
 [![Exploraciones post-TFM](https://img.shields.io/badge/exploraciones-13%2F13%20%E2%9C%85-success)](docs/PLAN_EXPLORACIONES_POST_TFM.md)
 [![PyPI version](https://img.shields.io/pypi/v/bop-bootstrap-ci?label=PyPI%20bop-bootstrap-ci&color=blue)](https://pypi.org/project/bop-bootstrap-ci/)
@@ -140,7 +140,7 @@ Sobre el TFM entregado se planificaron y ejecutaron 13 exploraciones adicionales
 | # | Exploración | Resultado clave | Doc |
 |---|---|---|---|
 | 1 | **bop-bootstrap-ci** ([paquete publicado en PyPI](https://pypi.org/project/bop-bootstrap-ci/)) | `pip install bop-bootstrap-ci` · 27 tests, 97 % cov, bit-a-bit reproduce el TFM | [01](docs/exploraciones/01_bootstrap_ci_toolkit.md) |
-| 2 | **Distillation 1-NFE** | **×517 speedup** real con mejor MSE y jerk que teacher | [02](docs/exploraciones/02_distillation_2nfe.md) |
+| 2 | **Distillation 1-NFE** | **×517** por trayectoria en lote de 1000 (≈×20 en una petición individual: 3,9 ms frente a 79 ms), con mejor MSE y jerk que el teacher | [02](docs/exploraciones/02_distillation_2nfe.md) |
 | 3 | **Pipeline open-license** | FreeZeV2 Apache-2.0 viable a solo **−3 pp AUC** | [03](docs/exploraciones/03_open_license_pipeline.md) |
 | 4 | **VLA-lite con CLIP (color)** | **98.6 %** selection accuracy en escenas multi-objeto | [04](docs/exploraciones/04_vla_lite_clip.md) |
 | 5 | **Robustez lingüística** | **100 %** sobre 6 familias de frases no vistas (n=900) | [05](docs/exploraciones/05_vla_robustness.md) |
@@ -152,6 +152,7 @@ Sobre el TFM entregado se planificaron y ejecutaron 13 exploraciones adicionales
 | 11 | **CLIP-image visual grounding** | **100 %** sin atributos declarados — cierra el pipeline real | [11](docs/exploraciones/11_clip_image_grounding.md) |
 | 12 | **Robustez con domain randomization** | **12/12 condiciones** ≥ 75 % (oclusión 60 %, ruido σ=50, illum 2x) | [12](docs/exploraciones/12_robustness_domain_random.md) |
 | 13 | **Razonamiento espacial** | **98.4 %** sobre 13 templates ("leftmost", "closest", "topmost") | [13](docs/exploraciones/13_spatial_reasoning.md) |
+| 14 | **Multimodalidad por pose** | Sin estrategias alternativas (demostraciones deterministas); error en el punto de agarre **1,2 cm** con el destilado frente a 3,0 cm con DDIM-25 | [14](docs/exploraciones/14_multimodality_per_pose.md) |
 
 Plan completo: [`docs/PLAN_EXPLORACIONES_POST_TFM.md`](docs/PLAN_EXPLORACIONES_POST_TFM.md). Extrapolación industrial: [`docs/EXTRAPOLACION_INDUSTRIAL.md`](docs/EXTRAPOLACION_INDUSTRIAL.md). Etapas físicas post-TFM: [`docs/ROADMAP_POSTTFM.md`](docs/ROADMAP_POSTTFM.md). Estado del arte mayo 2026: [`docs/INNOVACION_Y_ESTADO_DEL_ARTE.md`](docs/INNOVACION_Y_ESTADO_DEL_ARTE.md). Percepción intercambiable y comercializable (swap de FoundationPose por un estimador open-license): [`docs/PERCEPCION_INTERCAMBIABLE.md`](docs/PERCEPCION_INTERCAMBIABLE.md).
 
@@ -304,7 +305,7 @@ uv sync
 pip install -e ".[dev,colab]"
 
 # Tests
-pytest tests/ packages/bop_bootstrap_ci/tests/ -q  # 327 passing (sin GPU ni simulador)
+pytest tests/ packages/bop_bootstrap_ci/tests/ -q  # 332 passing (sin GPU ni simulador)
 
 # Descargar datasets BOP (requiere ~30 GB)
 bash scripts/download_datasets.sh

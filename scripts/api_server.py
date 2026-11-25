@@ -85,7 +85,10 @@ class GraspRequest(BaseModel):
         description="axis-angle representation, 3 floats",
         min_length=3, max_length=3,
     )
-    model: str = Field(default="ultra", description="Modelo a usar: original, extended, ultra")
+    model: str = Field(
+        default="ultra_fast",
+        description="Modelo a usar: ultra_fast (destilado, por defecto), ultra, extended, original",
+    )
     n_diffusion_steps: int = Field(default=25, ge=1, le=100)
     n_samples: int = Field(default=1, ge=1, le=20, description="Número de trayectorias a muestrear")
 
@@ -103,7 +106,14 @@ class GraspResponse(BaseModel):
 class E2ERequest(BaseModel):
     dataset: str = Field(default="ycbv", description="ycbv o tless")
     n_instances: int = Field(default=1, ge=1, le=30)
-    use_ultra_model: bool = Field(default=True)
+    model: Optional[str] = Field(
+        default=None,
+        description="Modelo del planificador. Por defecto ultra_fast (destilado, 1 evaluación).",
+    )
+    use_ultra_model: bool = Field(
+        default=True,
+        description="Obsoleto: usar `model`. Solo se respeta si se envía y `model` no.",
+    )
 
 
 class E2EResponse(BaseModel):
@@ -113,6 +123,7 @@ class E2EResponse(BaseModel):
     h3_passed: bool
     h3_margin_ms: float
     dataset: str
+    model_used: str = "ultra_fast"
 
 
 # ============================================================================
@@ -148,7 +159,7 @@ MODELS_INFO: dict = {
         "path": REPO / "data/models/diffusion_policy_ultra_fast.pth",
         "hidden_dim": 256,
         "mse_val": 0.01235,  # MSE student vs GT heuristic (exp14)
-        "description": "Modelo ultra distillado a 1 NFE (exp14): igual calidad, ~500x mas rapido",
+        "description": "Modelo ultra destilado a 1 evaluación (exp14): más preciso en el punto de agarre y ~20x más rápido que DDIM-25 (exp28, latency.json)",
         "nfe": 1,
         "is_distilled": True,
     },
@@ -350,6 +361,32 @@ def list_models():
     return out
 
 
+def muestrear_trayectoria(cached: dict, cond, n_pasos: int) -> np.ndarray:
+    """Muestrea una trayectoria [16, 7] con el muestreador propio del checkpoint.
+
+    Los modelos destilados se evalúan una sola vez; el resto usa DDIM con
+    `n_pasos` pasos.
+    """
+    import torch
+    model = cached["model"]
+    device = cached["device"]
+    if cached["info"].get("is_distilled", False):
+        with torch.no_grad():
+            x_ruido = torch.randn(1, 16, 7, device=device)
+            t_cero = torch.zeros(1, dtype=torch.long, device=device)
+            return model(x_ruido, t_cero, cond).cpu().numpy()[0]
+    return ddim_sample(model, cached["scheduler"], cond, device, n_pasos)
+
+
+def modelo_e2e(req: "E2ERequest") -> str:
+    """Modelo del ciclo E2E: `model` manda; `use_ultra_model` solo si se envió."""
+    if req.model is not None:
+        return req.model
+    if "use_ultra_model" in req.model_fields_set:
+        return "ultra" if req.use_ultra_model else "original"
+    return "ultra_fast"
+
+
 @app.post("/plan-grasp", response_model=GraspResponse, tags=["pipeline"])
 def plan_grasp(req: GraspRequest):
     """Genera trayectoria(s) de agarre desde una pose 6-DoF objetivo.
@@ -357,12 +394,10 @@ def plan_grasp(req: GraspRequest):
     Ejemplo:
         curl -X POST http://localhost:8000/plan-grasp \\
              -H "Content-Type: application/json" \\
-             -d '{"object_position": [0.0, 0.0, 0.8], "model": "ultra", "n_samples": 3}'
+             -d '{"object_position": [0.0, 0.0, 0.8], "n_samples": 3}'
     """
     import torch
     cached = load_model(req.model)
-    model = cached["model"]
-    scheduler = cached["scheduler"]
     device = cached["device"]
 
     # Cada checkpoint espera la condición con la disposición de su entrenamiento.
@@ -379,17 +414,8 @@ def plan_grasp(req: GraspRequest):
 
     t0 = time.time()
     trajectories = []
-    is_distilled = cached["info"].get("is_distilled", False)
     for _ in range(req.n_samples):
-        if is_distilled:
-            # Modelos distillados: 1 forward pass directo (no iteration DDIM)
-            with torch.no_grad():
-                x_noise = torch.randn(1, 16, 7, device=device)
-                t_dummy = torch.zeros(1, dtype=torch.long, device=device)
-                pred = model(x_noise, t_dummy, cond)
-                traj = pred.cpu().numpy()[0]
-        else:
-            traj = ddim_sample(model, scheduler, cond, device, req.n_diffusion_steps)
+        traj = muestrear_trayectoria(cached, cond, req.n_diffusion_steps)
         trajectories.append(traj.tolist())
     latency_ms = (time.time() - t0) * 1000
 
@@ -424,10 +450,8 @@ def e2e_pipeline(req: E2ERequest):
         ckpt = json.load(f)
     preds = ckpt["results"][:req.n_instances]
 
-    model_name = "ultra" if req.use_ultra_model else "original"
+    model_name = modelo_e2e(req)
     cached = load_model(model_name)
-    model = cached["model"]
-    scheduler = cached["scheduler"]
     device = cached["device"]
 
     NOMINAL_SIM_MS = 906  # 50 steps × 18 ms del smoke test
@@ -445,7 +469,7 @@ def e2e_pipeline(req: E2ERequest):
         t_m = t.flatten() / 1000.0 if np.linalg.norm(t) > 5 else t.flatten()
         cond = torch.tensor(condition_for_model(model_name, R, t_m), device=device).unsqueeze(0)
         t0 = time.time()
-        _ = ddim_sample(model, scheduler, cond, device, 25)
+        _ = muestrear_trayectoria(cached, cond, 25)
         if device == "mps":
             torch.mps.synchronize()
         diff_ms = (time.time() - t0) * 1000.0
@@ -459,6 +483,7 @@ def e2e_pipeline(req: E2ERequest):
         h3_passed=p95 < 10000,
         h3_margin_ms=10000 - p95,
         dataset=req.dataset,
+        model_used=model_name,
     )
 
 

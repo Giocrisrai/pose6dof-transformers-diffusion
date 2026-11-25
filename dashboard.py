@@ -389,7 +389,9 @@ elif section == "🔬 Exploraciones post-TFM":
     st.subheader("2️⃣  Distillation Diffusion 1-NFE  ✅")
     st.markdown(
         "El modelo `ultra` (DDIM-25, 93 ms) se destila a un student `ultra_fast` de "
-        "**1 forward pass**. Verificado en vivo en la API REST."
+        "**1 forward pass**. Es el modelo por defecto de la API REST. La latencia de la tabla "
+        "es por trayectoria en un lote de 1000; en una petición individual la mediana es "
+        "3,9 ms frente a 79 ms (≈×20, `experiments/results/sampling_latency/latency.json`)."
     )
     st.table(
         pd.DataFrame(

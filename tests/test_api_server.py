@@ -143,6 +143,15 @@ class TestPlanGraspEndpoint:
         assert d_fast["latency_ms"] < d_ultra["latency_ms"] / 10, \
             f"distilled latency {d_fast['latency_ms']:.1f} no es <10x de ultra {d_ultra['latency_ms']:.1f}"
 
+    def test_plan_grasp_usa_el_destilado_por_defecto(self, client):
+        """Sin indicar modelo, la API planifica con el muestreador destilado."""
+        models = {m["name"]: m for m in client.get("/models").json()}
+        if not models["ultra_fast"]["exists"]:
+            pytest.skip("Modelo ultra_fast (destilado) no presente")
+        r = client.post("/plan-grasp", json={"object_position": [0.0, 0.0, 0.8]})
+        assert r.status_code == 200
+        assert r.json()["model_used"] == "ultra_fast"
+
     def test_plan_grasp_unknown_model_400(self, client):
         r = client.post("/plan-grasp", json={
             "object_position": [0.0, 0.0, 0.8],
@@ -200,6 +209,27 @@ class TestE2EEndpoint:
         assert data["h3_passed"] is True
         assert data["h3_margin_ms"] > 0
         assert data["dataset"] == "ycbv"
+
+    @pytest.mark.parametrize(
+        ("cuerpo", "esperado"),
+        [
+            ({}, "ultra_fast"),
+            ({"use_ultra_model": True}, "ultra"),
+            ({"use_ultra_model": False}, "original"),
+            ({"model": "ultra", "use_ultra_model": False}, "ultra"),
+        ],
+    )
+    def test_e2e_modelo_elegido(self, client, cuerpo, esperado):
+        """`model` manda; el indicador antiguo solo cuenta si se envía solo."""
+        models = {m["name"]: m for m in client.get("/models").json()}
+        if not models[esperado]["exists"]:
+            pytest.skip(f"Modelo {esperado} no presente")
+        ckpt = Path(__file__).resolve().parents[1] / "experiments/checkpoints/fp_ycbv_checkpoint.json"
+        if not ckpt.exists():
+            pytest.skip("Checkpoint YCB-V no descargado")
+        r = client.post("/e2e", json={"dataset": "ycbv", "n_instances": 1, **cuerpo})
+        assert r.status_code == 200
+        assert r.json()["model_used"] == esperado
 
     def test_e2e_unknown_dataset_404(self, client):
         r = client.post("/e2e", json={
