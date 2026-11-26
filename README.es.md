@@ -156,6 +156,8 @@ Sobre el TFM entregado se planificaron y ejecutaron 13 exploraciones adicionales
 | 15 | **Depósito y escena** | Pick-and-place con apariencia aleatoria **36 → 92 %** (sin distractores) y **40 → 88 %** (con distractores) con soltado suave y bandeja, sin tocar la política; escena base restaurada y protegida por un test | [15](docs/exploraciones/15_deposit_and_scene.md) |
 | 16 | **Ablación solo pose** | Sin imagen, la política agarra igual o mejor: agarre 100 % y pick-and-place **92 %** con y sin distractores, y no se degrada con la escena re-guardada (la visual cae a 72 %). Datos y pesos en el repo | [16](docs/exploraciones/16_pose_only_ablation.md) |
 
+Los pesos de las políticas visuales (Iter 8 e Iter 9) no caben en el repositorio: `scripts/download_sim_weights.sh` los descarga de la release [`weights-sim-v9`](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/releases/tag/weights-sim-v9) y verifica su huella. El GIF de cabecera se regenera con `python scripts/make_dashboard_gif.py`.
+
 Plan completo: [`docs/PLAN_EXPLORACIONES_POST_TFM.md`](docs/PLAN_EXPLORACIONES_POST_TFM.md). Extrapolación industrial: [`docs/EXTRAPOLACION_INDUSTRIAL.md`](docs/EXTRAPOLACION_INDUSTRIAL.md). Etapas físicas post-TFM: [`docs/ROADMAP_POSTTFM.md`](docs/ROADMAP_POSTTFM.md). Estado del arte mayo 2026: [`docs/INNOVACION_Y_ESTADO_DEL_ARTE.md`](docs/INNOVACION_Y_ESTADO_DEL_ARTE.md). Percepción intercambiable y comercializable (swap de FoundationPose por un estimador open-license): [`docs/PERCEPCION_INTERCAMBIABLE.md`](docs/PERCEPCION_INTERCAMBIABLE.md).
 
 ---

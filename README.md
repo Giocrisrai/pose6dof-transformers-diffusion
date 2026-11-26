@@ -166,6 +166,11 @@ pose-only one stays at 100%. Its training data (under 1 MB) and weights are in t
 repository, so it retrains in about five minutes
 ([write-up](docs/exploraciones/16_pose_only_ablation.md), in Spanish).
 
+The weights of the visual policies (Iter 8 and Iter 9) are too large for the repository;
+`scripts/download_sim_weights.sh` fetches them from the
+[`weights-sim-v9` release](https://github.com/Giocrisrai/pose6dof-transformers-diffusion/releases/tag/weights-sim-v9)
+and checks their hashes.
+
 **Language-guided picking.** The pipeline can choose the object from an instruction
 such as "give me the red cube on the left" instead of an index. The default parser
 is deterministic (Spanish and English, no network, no weights); LLM backends plug in.
