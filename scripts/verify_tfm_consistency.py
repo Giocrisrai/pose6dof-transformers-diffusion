@@ -181,6 +181,21 @@ check("depósito.cifras publicadas = eval_v9_bandeja.json",
       and f">{pp_antes[_con]:.0f}%<" in (REPO / "docs/dashboard_executive.html").read_text(),
       f"{pp_despues[_sin]:.0f} % / {pp_despues[_con]:.0f} %")
 
+# Ablación solo pose (exploración 16)
+_pp = RES / "pick_with_diffusion"
+solo = json.loads((_pp / "eval_v9_pose_only.json").read_text())["condiciones"]
+regu = json.loads((_pp / "eval_v9_escena_reguardada.json").read_text())["condiciones"]
+check("solo pose.no pierde frente a la visual (agarre y pick-and-place)",
+      all(solo[c.replace("v9_clutter", "v9_pose_only")]["resumen"][k] >= bdj[c]["resumen"][k]
+          for c in bdj for k in ("grasp_pct", "pick_place_pct")),
+      ", ".join(f"{v['resumen']['pick_place_pct']:.0f} %" for v in solo.values()))
+_rv = regu["v9_clutter__sin_distractores"]["resumen"]["grasp_pct"]
+_rp = regu["v9_pose_only__sin_distractores"]["resumen"]["grasp_pct"]
+check("solo pose.inmune a la escena re-guardada; cifras publicadas = JSON",
+      _rp == 100.0 and _rv < _rp and f"{_rv:.0f}% grasp" in (REPO / "README.md").read_text()
+      and f"{_rv:.0f} %" in (REPO / "docs/exploraciones/16_pose_only_ablation.md").read_text(),
+      f"visual {_rv:.0f} %, solo pose {_rp:.0f} %")
+
 # Clutter (Iter9): grasp con distractores mejora sobre v8
 g_v9 = clt["condiciones"]["v9_clutter__con_distractores"]["resumen"]["grasp_pct"]
 g_v8 = clt["condiciones"]["v8_randomized__con_distractores_seguro"]["resumen"]["grasp_pct"]

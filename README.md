@@ -124,7 +124,7 @@ analysis on a Mac without a GPU.
 The figures in the thesis, the reports and the dashboards are checked on every push:
 
 - **`scripts/verify_tfm_consistency.py`** compares the published results against the
-  JSON reports they come from (39 checks).
+  JSON reports they come from (41 checks).
 - **`scripts/check_public_counts.py`** compares the test, check and type-checking
   counts printed in this README and in the dashboards with what the run just measured.
 - **ruff** and **mypy** run clean, and the API image is built.
@@ -155,8 +155,16 @@ rolled away. Holding the part still while the gripper opens and depositing into 
 with walls brings pick-and-place to **92%** without distractors and **88%** with them
 (same seeds, 25 picks each, policy unchanged). The same work found that the base scene
 had been re-saved with the arm in a different pose, which silently cut the grasp rate
-from 100% to about 58%; the scene is restored and now guarded by a test
+from 100% to 72% or lower; the scene is restored and now guarded by a test
 ([write-up](docs/exploraciones/15_deposit_and_scene.md), in Spanish).
+
+**The image was not helping the grasp policy.** An ablation trained on the same data
+with the object pose alone, no image, grasps as well or better: 100% grasp and **92%**
+pick-and-place with and without distractors, at 1.4 cm grasp error against 2.0 cm for
+the visual policy. On the re-saved scene the visual policy drops to 72% grasp while the
+pose-only one stays at 100%. Its training data (under 1 MB) and weights are in the
+repository, so it retrains in about five minutes
+([write-up](docs/exploraciones/16_pose_only_ablation.md), in Spanish).
 
 **Language-guided picking.** The pipeline can choose the object from an instruction
 such as "give me the red cube on the left" instead of an index. The default parser

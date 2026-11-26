@@ -53,7 +53,9 @@ Al repetir la evaluación, el agarre salió en 60 % en vez del 100 % versionado.
 | Escena | Error de agarre | Agarre |
 |---|---:|---:|
 | La del entrenamiento (junio) | 1.9 cm | 100 % |
-| La re-guardada | 4.6 cm | 56-60 % |
+| La re-guardada | 4.5 cm | 72 % |
+
+La fila de la escena re-guardada es la corrida versionada (`eval_v9_escena_reguardada.json`, 25 agarres); en las corridas de diagnóstico previas, no versionadas, el agarre salió entre 56 % y 60 %.
 
 Se restauró la escena del entrenamiento y `tests/test_scene_integrity.py` fija su huella: si el archivo cambia, el test falla.
 
